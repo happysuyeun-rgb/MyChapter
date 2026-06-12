@@ -1,5 +1,6 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
+import { generateGeminiText, parseJsonResponse } from '../_shared/gemini.ts'
 
 const SYSTEM_PROMPT = `사용자 일기 기록을 에세이로 재구성하세요.
 JSON만 응답: {"chapter_title":"제목","chapter_content":"본문"}`
@@ -21,7 +22,7 @@ Deno.serve(async (req) => {
     const { chapter_id } = await req.json()
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const serviceRoleKey = Deno.env.get('SERVICE_ROLE_KEY')!
 
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -63,32 +64,21 @@ Deno.serve(async (req) => {
     let title = chapter.title
     let content = chapter.ai_content ?? ''
 
-    const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
-    if (anthropicKey && recordsText) {
-      const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': anthropicKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2048,
-          system: SYSTEM_PROMPT,
-          messages: [{ role: 'user', content: recordsText }],
-        }),
+    if (recordsText) {
+      const aiText = await generateGeminiText({
+        systemInstruction: SYSTEM_PROMPT,
+        prompt: recordsText,
+        maxOutputTokens: 2048,
+        json: true,
       })
 
-      if (aiResponse.ok) {
-        const aiData = await aiResponse.json()
-        const text = aiData?.content?.[0]?.text?.trim() ?? ''
-        try {
-          const parsed = JSON.parse(text)
+      if (aiText) {
+        const parsed = parseJsonResponse<{ chapter_title?: string; chapter_content?: string }>(aiText)
+        if (parsed) {
           title = parsed.chapter_title ?? title
           content = parsed.chapter_content ?? content
-        } catch {
-          content = text || content
+        } else {
+          content = aiText || content
         }
       }
     }

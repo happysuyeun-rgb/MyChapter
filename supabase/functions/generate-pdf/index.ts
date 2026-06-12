@@ -1,6 +1,7 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 import { PDFDocument, rgb, type PDFFont, type RGB } from 'npm:pdf-lib@1.17.1'
 import { corsHeaders } from '../_shared/cors.ts'
+import { generateGeminiText, stripQuotes } from '../_shared/gemini.ts'
 
 const FONT_URL =
   'https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/OTF/Korean/NotoSansKR-Regular.otf'
@@ -80,7 +81,7 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const serviceRoleKey = Deno.env.get('SERVICE_ROLE_KEY')!
 
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -145,6 +146,14 @@ Deno.serve(async (req) => {
     const authorName = profile?.nickname ?? '작가'
     const coverStyle = COVER_STYLES[cover_template_id] ?? COVER_STYLES.cover_01
 
+    const coverTagline = await generateGeminiText({
+      systemInstruction: '전자책 표지용 한 줄 태그라인을 생성하세요. 25자 이내, 한국어, 따옴표 없이.',
+      prompt: `책 제목: ${project.title}\n챕터 수: ${chapters.length}\n작가: ${authorName}`,
+      maxOutputTokens: 64,
+    })
+
+    const tagline = coverTagline ? stripQuotes(coverTagline) : null
+
     const fontBytes = await loadKoreanFont()
     const pdfDoc = await PDFDocument.create()
     const font = await pdfDoc.embedFont(fontBytes)
@@ -177,6 +186,18 @@ Deno.serve(async (req) => {
       font,
       color: coverStyle.text,
     })
+
+    if (tagline) {
+      const taglineSize = 11
+      const taglineWidth = font.widthOfTextAtSize(tagline, taglineSize)
+      coverPage.drawText(tagline, {
+        x: (PAGE_WIDTH - taglineWidth) / 2,
+        y: PAGE_HEIGHT * 0.55 - 72,
+        size: taglineSize,
+        font,
+        color: coverStyle.text,
+      })
+    }
 
     let pageCount = 1
     const maxWidth = PAGE_WIDTH - MARGIN * 2

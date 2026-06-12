@@ -1,5 +1,6 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
+import { generateGeminiText, parseJsonResponse } from '../_shared/gemini.ts'
 
 const SYSTEM_PROMPT = `당신은 에세이 편집자입니다.
 사용자의 일기 기록들을 자연스러운 에세이 문체로 재구성하세요.
@@ -29,7 +30,7 @@ Deno.serve(async (req) => {
     const { project_id } = await req.json()
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const serviceRoleKey = Deno.env.get('SERVICE_ROLE_KEY')!
 
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -103,36 +104,20 @@ Deno.serve(async (req) => {
     let chapterTitle = `챕터 ${(chapterCount ?? 0) + 1}`
     let chapterContent = unassigned.map((r) => r.content).join('\n\n')
 
-    const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
-    if (anthropicKey) {
-      const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': anthropicKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2048,
-          system: SYSTEM_PROMPT,
-          messages: [{
-            role: 'user',
-            content: `프로젝트: ${project.title} (${project.type})\n챕터 번호: ${(chapterCount ?? 0) + 1}\n\n기록:\n${recordsText}`,
-          }],
-        }),
-      })
+    const aiText = await generateGeminiText({
+      systemInstruction: SYSTEM_PROMPT,
+      prompt: `프로젝트: ${project.title} (${project.type})\n챕터 번호: ${(chapterCount ?? 0) + 1}\n\n기록:\n${recordsText}`,
+      maxOutputTokens: 2048,
+      json: true,
+    })
 
-      if (aiResponse.ok) {
-        const aiData = await aiResponse.json()
-        const text = aiData?.content?.[0]?.text?.trim() ?? ''
-        try {
-          const parsed = JSON.parse(text)
-          chapterTitle = parsed.chapter_title ?? chapterTitle
-          chapterContent = parsed.chapter_content ?? chapterContent
-        } catch {
-          chapterContent = text || chapterContent
-        }
+    if (aiText) {
+      const parsed = parseJsonResponse<{ chapter_title?: string; chapter_content?: string }>(aiText)
+      if (parsed) {
+        chapterTitle = parsed.chapter_title ?? chapterTitle
+        chapterContent = parsed.chapter_content ?? chapterContent
+      } else {
+        chapterContent = aiText || chapterContent
       }
     }
 

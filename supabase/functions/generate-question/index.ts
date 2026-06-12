@@ -1,5 +1,6 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
+import { generateGeminiText, stripQuotes } from '../_shared/gemini.ts'
 
 const FALLBACK_QUESTIONS: Record<string, string> = {
   emotion: '오늘 하루 중 가장 선명하게 남는 감정의 순간은 언제인가요?',
@@ -43,7 +44,7 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const serviceRoleKey = Deno.env.get('SERVICE_ROLE_KEY')!
 
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -137,36 +138,22 @@ Deno.serve(async (req) => {
       .join(' ')
       .slice(0, 100)
 
-    const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
     let question = FALLBACK_QUESTIONS[project.type] ?? FALLBACK_QUESTIONS.emotion
 
-    if (anthropicKey) {
-      const userPrompt = `프로젝트 유형: ${project.type}
+    const userPrompt = `프로젝트 유형: ${project.type}
 프로젝트 제목: ${project.title}
 현재까지 기록 수: ${recordCount ?? 0}
 최근 감정 태그: ${recentEmotions.join(', ') || '없음'}
 최근 기록 요약: ${recentContent || '없음'}`
 
-      const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': anthropicKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 256,
-          system: SYSTEM_PROMPT,
-          messages: [{ role: 'user', content: userPrompt }],
-        }),
-      })
+    const aiText = await generateGeminiText({
+      systemInstruction: SYSTEM_PROMPT,
+      prompt: userPrompt,
+      maxOutputTokens: 256,
+    })
 
-      if (aiResponse.ok) {
-        const aiData = await aiResponse.json()
-        const text = aiData?.content?.[0]?.text?.trim()
-        if (text) question = text.replace(/^["']|["']$/g, '')
-      }
+    if (aiText) {
+      question = stripQuotes(aiText)
     }
 
     await adminClient.from('daily_questions').insert({

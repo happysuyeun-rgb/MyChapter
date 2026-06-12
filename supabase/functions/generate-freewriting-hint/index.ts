@@ -1,5 +1,6 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
+import { generateGeminiText, stripQuotes } from '../_shared/gemini.ts'
 
 const FALLBACK_HINTS: Record<string, string> = {
   emotion: '오늘 하루 중 예상과 달랐던 순간을 떠올려보세요.',
@@ -26,7 +27,7 @@ Deno.serve(async (req) => {
     const { project_id } = await req.json()
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const serviceRoleKey = Deno.env.get('SERVICE_ROLE_KEY')!
 
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -63,37 +64,20 @@ Deno.serve(async (req) => {
       .order('created_at', { ascending: false })
       .limit(3)
 
-    const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
     let hint = FALLBACK_HINTS[project.type] ?? FALLBACK_HINTS.emotion
 
-    if (anthropicKey) {
-      const emotions = (recentRecords ?? [])
-        .flatMap((r) => r.emotion_tags ?? [])
-        .join(', ')
+    const emotions = (recentRecords ?? [])
+      .flatMap((r) => r.emotion_tags ?? [])
+      .join(', ')
 
-      const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': anthropicKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 128,
-          system: '자유 일기 글감을 1문장으로 제안하세요. 한국어 경어, 따옴표 없이.',
-          messages: [{
-            role: 'user',
-            content: `프로젝트 유형: ${project.type}\n최근 감정: ${emotions || '없음'}`,
-          }],
-        }),
-      })
+    const aiText = await generateGeminiText({
+      systemInstruction: '자유 일기 글감을 1문장으로 제안하세요. 한국어 경어, 따옴표 없이.',
+      prompt: `프로젝트 유형: ${project.type}\n최근 감정: ${emotions || '없음'}`,
+      maxOutputTokens: 128,
+    })
 
-      if (aiResponse.ok) {
-        const aiData = await aiResponse.json()
-        const text = aiData?.content?.[0]?.text?.trim()
-        if (text) hint = text.replace(/^["']|["']$/g, '')
-      }
+    if (aiText) {
+      hint = stripQuotes(aiText)
     }
 
     await adminClient.from('ai_usage').insert({
