@@ -7,6 +7,7 @@ import { generateQuestion, getTodayQuestion } from '@/lib/api/questions'
 import { getProjects } from '@/lib/api/projects'
 import { listRecords } from '@/lib/api/records'
 import { calculateStreak, getNextStreakGoal } from '@/utils/streak'
+import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthStore } from '@/stores/authStore'
 import { useProjectStore } from '@/stores/projectStore'
 import type { Project } from '@/types/database'
@@ -15,6 +16,7 @@ export function HomePage() {
   const navigate = useNavigate()
   const { user, profile } = useAuthStore()
   const { setActiveProject } = useProjectStore()
+  const { isPro } = useSubscription()
   const [projects, setProjects] = useState<Project[]>([])
   const [recordCount, setRecordCount] = useState(0)
   const [todayQuestion, setTodayQuestion] = useState<string | null>(null)
@@ -125,7 +127,7 @@ export function HomePage() {
       <div className="px-5 pt-4">
         <div className="mb-2.5 flex items-center justify-between">
           <span className="text-[13px] font-semibold">진행 중인 프로젝트</span>
-          {projects.length > 1 && (
+          {isPro && projects.length > 1 && (
             <button
               type="button"
               className="text-xs text-accent"

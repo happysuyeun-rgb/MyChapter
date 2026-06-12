@@ -82,6 +82,36 @@ export async function generateChapter(projectId: string): Promise<Chapter | null
   return null
 }
 
+export async function reorderChapters(
+  projectId: string,
+  orderedChapterIds: string[],
+): Promise<void> {
+  const offset = 1000
+
+  for (let i = 0; i < orderedChapterIds.length; i++) {
+    const { error } = await supabase
+      .from('chapters')
+      .update({ chapter_number: offset + i })
+      .eq('id', orderedChapterIds[i])
+      .eq('project_id', projectId)
+
+    if (error) throw error
+  }
+
+  for (let i = 0; i < orderedChapterIds.length; i++) {
+    const { error } = await supabase
+      .from('chapters')
+      .update({
+        sort_order: i,
+        chapter_number: i + 1,
+      })
+      .eq('id', orderedChapterIds[i])
+      .eq('project_id', projectId)
+
+    if (error) throw error
+  }
+}
+
 export async function regenerateChapter(chapterId: string): Promise<Chapter> {
   const response = await supabase.functions.invoke('regenerate-chapter', {
     body: { chapter_id: chapterId },

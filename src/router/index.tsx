@@ -32,7 +32,7 @@ import {
   ChapterPreviewPage,
   PublishCompletePage,
 } from '@/pages/book'
-import { ProjectsListPage } from '@/pages/placeholders'
+import { ProjectsListPage } from '@/pages/project/ProjectsListPage'
 import { SplashPage } from '@/pages/splash/SplashPage'
 import { AuthGuard, GuestGuard, OnboardingGuard } from './guards'
 

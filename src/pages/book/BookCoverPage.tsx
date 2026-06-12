@@ -6,9 +6,8 @@ import { COVER_TEMPLATES } from '@/constants/coverTemplates'
 import { listChapters } from '@/lib/api/chapters'
 import {
   BookApiError,
-  downloadBookHtml,
-  prepareBookExport,
-  savePublishedBook,
+  downloadPdfFromUrl,
+  generateBookPdf,
 } from '@/lib/api/books'
 import { listRecords } from '@/lib/api/records'
 import { getSubscriptionPlan } from '@/lib/api/subscriptions'
@@ -57,24 +56,13 @@ export function BookCoverPage() {
       }
 
       const records = await listRecords(user.id, { projectId: project.id })
-      const authorName = profile?.nickname ?? '작가'
 
-      const data = await prepareBookExport(
-        user.id,
-        project,
-        chapters,
-        authorName,
-        selectedCoverId,
-      )
-
-      const { pageCount } = await downloadBookHtml(data)
-      await savePublishedBook(
-        user.id,
+      const { pdfUrl, pageCount } = await generateBookPdf(
         project.id,
         selectedCoverId,
-        pageCount,
-        `${project.title}.html`,
       )
+
+      downloadPdfFromUrl(pdfUrl, `${project.title}.pdf`)
 
       setPublishResult({
         project,
@@ -87,6 +75,8 @@ export function BookCoverPage() {
     } catch (err) {
       if (err instanceof BookApiError && err.code === 'PDF_PRO_ONLY') {
         showPaywall()
+      } else if (err instanceof BookApiError && err.code === 'PDF_GENERATE_FAILED') {
+        console.error(err.message)
       }
     } finally {
       setPublishing(false)

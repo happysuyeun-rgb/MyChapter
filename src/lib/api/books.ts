@@ -174,3 +174,43 @@ export async function downloadBookHtml(data: BookExportData): Promise<{ pageCoun
 
   return { pageCount }
 }
+
+export async function generateBookPdf(
+  projectId: string,
+  coverTemplateId: string,
+): Promise<{ pdfUrl: string; storagePath: string; pageCount: number }> {
+  const response = await supabase.functions.invoke('generate-pdf', {
+    body: { project_id: projectId, cover_template_id: coverTemplateId },
+  })
+
+  const body = response.data as {
+    pdf_url?: string
+    storage_path?: string
+    page_count?: number
+    code?: string
+    error?: string
+  } | null
+
+  if (body?.code === 'PDF_PRO_ONLY') {
+    throw new BookApiError('PDF_PRO_ONLY', body.error ?? 'PDF 출판은 Pro 플랜이 필요해요.')
+  }
+
+  if (response.error || body?.error || !body?.pdf_url) {
+    throw new BookApiError('PDF_GENERATE_FAILED', body?.error ?? 'PDF 생성에 실패했어요.')
+  }
+
+  return {
+    pdfUrl: body.pdf_url,
+    storagePath: body.storage_path ?? `${projectId}.pdf`,
+    pageCount: body.page_count ?? 1,
+  }
+}
+
+export function downloadPdfFromUrl(url: string, filename: string): void {
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.target = '_blank'
+  a.rel = 'noopener'
+  a.click()
+}
