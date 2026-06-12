@@ -1,0 +1,4 @@
+-- Daily reminder cron (configure in Supabase Dashboard → Integrations → Cron)
+-- Schedule: */1 * * * *  (every minute, KST logic in Edge Function)
+-- HTTP POST: https://<project-ref>.supabase.co/functions/v1/send-daily-reminder
+-- Headers: Authorization: Bearer <CRON_SECRET>
