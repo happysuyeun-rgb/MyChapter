@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { isDevBypass } from '@/lib/devBypass'
+import { getDevBypassEnv, isDevBypass } from '@/lib/devBypass'
 import { useAuthStore } from '@/stores/authStore'
 import { supabase } from '@/lib/supabase'
 
 export function SplashPage() {
   const navigate = useNavigate()
-  const { initialize, session, profile } = useAuthStore()
-  const [ready, setReady] = useState(false)
+  const { initialize, session, profile, initialized } = useAuthStore()
   const [fadeIn, setFadeIn] = useState(false)
 
   useEffect(() => {
@@ -16,20 +15,33 @@ export function SplashPage() {
   }, [])
 
   useEffect(() => {
-    void initialize().then(() => setReady(true))
+    void initialize()
   }, [initialize])
 
   useEffect(() => {
-    if (!ready) return
+    if (!initialized) return
 
-    const delay = isDevBypass() ? 300 : 1500
+    const bypassActive = isDevBypass()
+    const bypassEnv = getDevBypassEnv()
+
+    if (import.meta.env.DEV || bypassEnv !== undefined) {
+      console.info(
+        '[MyChapter dev-bypass]',
+        'import.meta.env.VITE_DEV_BYPASS =',
+        import.meta.env.VITE_DEV_BYPASS,
+        '| parsed =',
+        bypassEnv,
+        '| active =',
+        bypassActive,
+      )
+    }
+
+    if (bypassActive) {
+      navigate('/home', { replace: true })
+      return
+    }
 
     const timer = setTimeout(async () => {
-      if (isDevBypass()) {
-        navigate('/home', { replace: true })
-        return
-      }
-
       if (!session) {
         navigate('/login', { replace: true })
         return
@@ -51,10 +63,10 @@ export function SplashPage() {
         .eq('user_id', session.user.id)
 
       navigate(count && count > 0 ? '/home' : '/home', { replace: true })
-    }, delay)
+    }, 1500)
 
     return () => clearTimeout(timer)
-  }, [ready, session, profile, navigate])
+  }, [initialized, session, profile, navigate])
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-ink px-7 text-center text-white">

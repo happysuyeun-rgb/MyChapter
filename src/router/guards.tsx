@@ -1,9 +1,17 @@
+import { useEffect } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { isDevBypass } from '@/lib/devBypass'
 import { useAuthStore } from '@/stores/authStore'
 
 export function AuthGuard() {
-  const { session, initialized } = useAuthStore()
+  const { session, initialized, initialize } = useAuthStore()
   const location = useLocation()
+
+  useEffect(() => {
+    if (isDevBypass() && initialized && !session) {
+      void initialize()
+    }
+  }, [initialized, session, initialize])
 
   if (!initialized) {
     return (
@@ -14,6 +22,14 @@ export function AuthGuard() {
   }
 
   if (!session) {
+    if (isDevBypass()) {
+      return (
+        <div className="flex min-h-dvh items-center justify-center text-sm text-ink-muted">
+          로딩 중...
+        </div>
+      )
+    }
+
     return <Navigate to="/login" replace state={{ from: location }} />
   }
 
@@ -40,6 +56,10 @@ export function GuestGuard() {
 
 export function OnboardingGuard() {
   const { profile } = useAuthStore()
+
+  if (isDevBypass()) {
+    return <Outlet />
+  }
 
   if (!profile?.onboarding_completed) {
     if (!profile?.nickname) {

@@ -22,7 +22,20 @@ interface AuthState {
   signOut: () => Promise<void>
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+let initPromise: Promise<void> | null = null
+
+function applyMockAuth(set: (partial: Partial<AuthState>) => void) {
+  set({
+    session: DEV_MOCK_SESSION,
+    user: DEV_MOCK_USER,
+    profile: DEV_MOCK_PROFILE,
+    initialized: true,
+  })
+  useSubscriptionStore.getState().setPlan('pro')
+  useProjectStore.getState().setActiveProject(DEV_MOCK_PROJECT)
+}
+
+export const useAuthStore = create<AuthState>((set, get) => ({
   session: null,
   user: null,
   profile: null,
@@ -30,31 +43,21 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   initialize: async () => {
     if (isDevBypass()) {
-      set({
-        session: DEV_MOCK_SESSION,
-        user: DEV_MOCK_USER,
-        profile: DEV_MOCK_PROFILE,
-        initialized: true,
-      })
-      useSubscriptionStore.getState().setPlan('pro')
-      useProjectStore.getState().setActiveProject(DEV_MOCK_PROJECT)
+      applyMockAuth(set)
       return
     }
 
-    const { data: { session } } = await supabase.auth.getSession()
-    set({ session, user: session?.user ?? null })
+    if (get().initialized) return
 
-    if (session?.user) {
-      const { data } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', session.user.id)
-        .maybeSingle()
-      set({ profile: data })
+    if (initPromise) {
+      await initPromise
+      return
     }
 
-    supabase.auth.onAuthStateChange(async (_event, session) => {
+    initPromise = (async () => {
+      const { data: { session } } = await supabase.auth.getSession()
       set({ session, user: session?.user ?? null })
+
       if (session?.user) {
         const { data } = await supabase
           .from('users')
@@ -62,26 +65,45 @@ export const useAuthStore = create<AuthState>((set) => ({
           .eq('id', session.user.id)
           .maybeSingle()
         set({ profile: data })
-      } else {
-        set({ profile: null })
       }
-    })
 
-    set({ initialized: true })
+      supabase.auth.onAuthStateChange(async (_event, session) => {
+        if (isDevBypass()) return
+
+        set({ session, user: session?.user ?? null })
+        if (session?.user) {
+          const { data } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .maybeSingle()
+          set({ profile: data })
+        } else {
+          set({ profile: null })
+        }
+      })
+
+      set({ initialized: true })
+    })()
+
+    try {
+      await initPromise
+    } finally {
+      initPromise = null
+    }
   },
 
   setProfile: (profile) => set({ profile }),
 
   signOut: async () => {
     if (isDevBypass()) {
-      useSubscriptionStore.getState().reset()
-      useProjectStore.getState().setActiveProject(null)
-      set({ session: null, user: null, profile: null })
+      applyMockAuth(set)
       return
     }
 
     await supabase.auth.signOut()
     useSubscriptionStore.getState().reset()
+    useProjectStore.getState().setActiveProject(null)
     set({ session: null, user: null, profile: null })
   },
 }))
