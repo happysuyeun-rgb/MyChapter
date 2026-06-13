@@ -5,10 +5,12 @@ import { NavBar } from '@/components/layout/NavBar'
 import { getChapter, regenerateChapter, updateChapterContent } from '@/lib/api/chapters'
 import type { Chapter } from '@/types/database'
 import { getChapterDisplayContent } from '@/utils/chapterContent'
+import { useToastStore } from '@/stores/toastStore'
 
 export function ChapterEditPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { showToast } = useToastStore()
 
   const [chapter, setChapter] = useState<Chapter | null>(null)
   const [title, setTitle] = useState('')
@@ -38,6 +40,8 @@ export function ChapterEditPage() {
       const updated = await updateChapterContent(chapter.id, title.trim(), content.trim())
       setChapter(updated)
       navigate(`/book/chapter/${chapter.id}`, { replace: true })
+    } catch {
+      showToast('저장에 실패했어요. 다시 시도해주세요.')
     } finally {
       setSaving(false)
     }

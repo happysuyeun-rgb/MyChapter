@@ -1,3 +1,4 @@
+import { ApiError } from '@/lib/api/questions'
 import { supabase } from '@/lib/supabase'
 import type { ProjectType } from '@/types/database'
 
@@ -9,12 +10,21 @@ const FALLBACK_HINTS: Record<ProjectType, string> = {
   custom: '오늘 하루를 한 문장으로 표현한다면?',
 }
 
+export function getFallbackHint(projectType: ProjectType): string {
+  return FALLBACK_HINTS[projectType]
+}
+
 export async function generateFreewritingHint(projectId: string): Promise<string> {
   const response = await supabase.functions.invoke('generate-freewriting-hint', {
     body: { project_id: projectId },
   })
 
-  const body = response.data as { hint?: string } | null
+  const body = response.data as { hint?: string; code?: string } | null
+
+  if (body?.code === 'AI_LIMIT') {
+    throw new ApiError('AI_LIMIT', '이번 달 AI 글감 한도에 도달했어요.')
+  }
+
   if (body?.hint) return body.hint
 
   const { data: project } = await supabase

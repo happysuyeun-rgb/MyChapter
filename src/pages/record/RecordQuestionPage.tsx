@@ -7,13 +7,15 @@ import { NavBar } from '@/components/layout/NavBar'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { deleteDraft, loadDraft, saveDraft } from '@/lib/api/drafts'
 import { createRecord, getRecordCount, updateRecord } from '@/lib/api/records'
-import { generateQuestion, getTodayQuestion } from '@/lib/api/questions'
+import { ApiError, generateQuestion, getFallbackQuestion, getTodayQuestion } from '@/lib/api/questions'
 import { useAuthStore } from '@/stores/authStore'
+import { usePaywallStore } from '@/stores/paywallStore'
 import { useRecordStore } from '@/stores/recordStore'
 
 export function RecordQuestionPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  const { showPaywall } = usePaywallStore()
   const { project, loading } = useActiveProject()
   const { editingRecord, setEditingRecord, setLastSave } = useRecordStore()
 
@@ -45,8 +47,15 @@ export function RecordQuestionPage() {
       if (cached) {
         setQuestion(cached)
       } else {
-        const q = await generateQuestion(project.id)
-        setQuestion(q)
+        try {
+          const q = await generateQuestion(project.id)
+          setQuestion(q)
+        } catch (err) {
+          if (err instanceof ApiError && err.code === 'AI_LIMIT') {
+            showPaywall()
+          }
+          setQuestion(getFallbackQuestion(project.type))
+        }
       }
 
       const draft = await loadDraft(user.id, project.id, 'question')
@@ -56,7 +65,7 @@ export function RecordQuestionPage() {
     }
 
     void init()
-  }, [project, user, editingRecord])
+  }, [project, user, editingRecord, showPaywall])
 
   const handleClose = () => {
     if (isDirty) setShowExit(true)

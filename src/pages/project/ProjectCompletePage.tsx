@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card } from '@/components/common'
+import { AppLottie, Button, Card } from '@/components/common'
+import bookOpenAnimation from '@/assets/animations/book-open.json'
 import { ApiError, generateQuestion } from '@/lib/api/questions'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { useProjectStore } from '@/stores/projectStore'
@@ -56,7 +57,13 @@ export function ProjectCompletePage() {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col items-center justify-center bg-white px-7 py-10 text-center">
-      <div className="mb-6 text-[64px]">🎉</div>
+      <AppLottie
+        animationData={bookOpenAnimation}
+        width={100}
+        height={80}
+        loop={false}
+        className="mb-6"
+      />
       <h1 className="mb-3 text-lg font-bold">프로젝트가 시작됐어요!</h1>
       <p className="mb-8 text-sm leading-relaxed text-ink-muted">
         <strong className="text-ink">{createdProject.title}</strong>

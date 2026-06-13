@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, EmptyState, ProgressBar } from '@/components/common'
+import { Card, EmptyState, ProgressBar, AppLottie } from '@/components/common'
+import bookStackAnimation from '@/assets/animations/book-stack.json'
+import { ChapterLimitBanner } from '@/components/features/chapter/ChapterLimitBanner'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
+import { useChapterLimitStatus } from '@/hooks/useChapterLimitStatus'
+import { useSubscription } from '@/hooks/useSubscription'
 import { getUnreadCount } from '@/lib/api/notifications'
-import { generateQuestion, getTodayQuestion } from '@/lib/api/questions'
+import { ApiError, generateQuestion, getFallbackQuestion, getTodayQuestion } from '@/lib/api/questions'
 import { getProjects } from '@/lib/api/projects'
 import { listRecords } from '@/lib/api/records'
 import { calculateStreak, getNextStreakGoal } from '@/utils/streak'
-import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthStore } from '@/stores/authStore'
+import { usePaywallStore } from '@/stores/paywallStore'
 import { useProjectStore } from '@/stores/projectStore'
 import type { Project } from '@/types/database'
 
@@ -17,12 +21,14 @@ export function HomePage() {
   const { user, profile } = useAuthStore()
   const { setActiveProject } = useProjectStore()
   const { isPro } = useSubscription()
+  const { showPaywall } = usePaywallStore()
   const [projects, setProjects] = useState<Project[]>([])
   const [recordCount, setRecordCount] = useState(0)
   const [todayQuestion, setTodayQuestion] = useState<string | null>(null)
   const [streak, setStreak] = useState(0)
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const { chapterLimitReached } = useChapterLimitStatus(projects[0]?.id)
 
   useEffect(() => {
     if (!user) return
@@ -44,8 +50,15 @@ export function HomePage() {
         if (cached) {
           setTodayQuestion(cached)
         } else {
-          const question = await generateQuestion(projectData[0].id)
-          setTodayQuestion(question)
+          try {
+            const question = await generateQuestion(projectData[0].id)
+            setTodayQuestion(question)
+          } catch (err) {
+            if (err instanceof ApiError && err.code === 'AI_LIMIT') {
+              showPaywall()
+            }
+            setTodayQuestion(getFallbackQuestion(projectData[0].type))
+          }
         }
       }
 
@@ -55,7 +68,7 @@ export function HomePage() {
     }
 
     void load()
-  }, [user, setActiveProject])
+  }, [user, setActiveProject, showPaywall])
 
   if (loading) {
     return (
@@ -124,6 +137,12 @@ export function HomePage() {
         </Card>
       </div>
 
+      {!isPro && chapterLimitReached && (
+        <div className="px-5 pt-4">
+          <ChapterLimitBanner onUpgrade={() => showPaywall()} />
+        </div>
+      )}
+
       <div className="px-5 pt-4">
         <div className="mb-2.5 flex items-center justify-between">
           <span className="text-[13px] font-semibold">진행 중인 프로젝트</span>
@@ -144,6 +163,13 @@ export function HomePage() {
               <p className="text-xs text-accent">{typeLabel}</p>
             </div>
             <div className="text-right">
+              <AppLottie
+                animationData={bookStackAnimation}
+                width={60}
+                height={80}
+                loop
+                className="mx-auto mb-1"
+              />
               <p className="text-[22px] font-extrabold text-accent">{progress}%</p>
               <p className="text-[11px] text-ink-faint">완성</p>
             </div>

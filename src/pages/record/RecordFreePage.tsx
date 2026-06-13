@@ -6,14 +6,17 @@ import { ExitConfirmModal } from '@/components/features/record/ExitConfirmModal'
 import { NavBar } from '@/components/layout/NavBar'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { deleteDraft, loadDraft, saveDraft } from '@/lib/api/drafts'
-import { generateFreewritingHint } from '@/lib/api/hints'
+import { generateFreewritingHint, getFallbackHint } from '@/lib/api/hints'
+import { ApiError } from '@/lib/api/questions'
 import { createRecord, getRecordCount, updateRecord } from '@/lib/api/records'
 import { useAuthStore } from '@/stores/authStore'
+import { usePaywallStore } from '@/stores/paywallStore'
 import { useRecordStore } from '@/stores/recordStore'
 
 export function RecordFreePage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  const { showPaywall } = usePaywallStore()
   const { project, loading } = useActiveProject()
   const { editingRecord, setEditingRecord, setLastSave } = useRecordStore()
 
@@ -41,8 +44,15 @@ export function RecordFreePage() {
       const count = await getRecordCount(project.id)
       setRecordNumber(count + 1)
 
-      const h = await generateFreewritingHint(project.id)
-      setHint(h)
+      try {
+        const h = await generateFreewritingHint(project.id)
+        setHint(h)
+      } catch (err) {
+        if (err instanceof ApiError && err.code === 'AI_LIMIT') {
+          showPaywall()
+        }
+        setHint(getFallbackHint(project.type))
+      }
 
       const draft = await loadDraft(user.id, project.id, 'free')
       if (draft?.content) setContent(draft.content)
@@ -51,7 +61,7 @@ export function RecordFreePage() {
     }
 
     void init()
-  }, [project, user, editingRecord])
+  }, [project, user, editingRecord, showPaywall])
 
   const handleSave = async () => {
     if (!user || !project) return

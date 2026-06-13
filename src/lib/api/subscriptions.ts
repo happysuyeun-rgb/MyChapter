@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { DEV_MOCK_USER_ID, isDevBypass } from '@/lib/devBypass'
 import type { SubscriptionPlan } from '@/types/database'
 
 export interface SubscriptionInfo {
@@ -17,6 +18,10 @@ export class SubscriptionApiError extends Error {
 }
 
 export async function getSubscriptionPlan(userId: string): Promise<SubscriptionPlan> {
+  if (isDevBypass() && userId === DEV_MOCK_USER_ID) {
+    return 'pro'
+  }
+
   const { data } = await supabase
     .from('subscriptions')
     .select('plan')

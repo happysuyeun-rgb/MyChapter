@@ -1,9 +1,14 @@
 import { supabase } from '@/lib/supabase'
+import { DEV_MOCK_PROJECT, isDevBypass } from '@/lib/devBypass'
 import type { Project } from '@/types/database'
 import type { NewProjectDraft } from '@/stores/projectStore'
 import { calculateRoutine } from '@/utils/calculateRoutine'
 
 export async function getProjects(userId: string): Promise<Project[]> {
+  if (isDevBypass() && userId === DEV_MOCK_PROJECT.user_id) {
+    return [DEV_MOCK_PROJECT]
+  }
+
   const { data, error } = await supabase
     .from('projects')
     .select('*')
@@ -15,6 +20,10 @@ export async function getProjects(userId: string): Promise<Project[]> {
 }
 
 export async function getProjectCount(userId: string): Promise<number> {
+  if (isDevBypass() && userId === DEV_MOCK_PROJECT.user_id) {
+    return 1
+  }
+
   const { count, error } = await supabase
     .from('projects')
     .select('*', { count: 'exact', head: true })

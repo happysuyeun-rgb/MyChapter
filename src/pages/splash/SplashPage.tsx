@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { isDevBypass } from '@/lib/devBypass'
 import { useAuthStore } from '@/stores/authStore'
 import { supabase } from '@/lib/supabase'
 
@@ -21,7 +22,14 @@ export function SplashPage() {
   useEffect(() => {
     if (!ready) return
 
+    const delay = isDevBypass() ? 300 : 1500
+
     const timer = setTimeout(async () => {
+      if (isDevBypass()) {
+        navigate('/home', { replace: true })
+        return
+      }
+
       if (!session) {
         navigate('/login', { replace: true })
         return
@@ -43,7 +51,7 @@ export function SplashPage() {
         .eq('user_id', session.user.id)
 
       navigate(count && count > 0 ? '/home' : '/home', { replace: true })
-    }, 1500)
+    }, delay)
 
     return () => clearTimeout(timer)
   }, [ready, session, profile, navigate])

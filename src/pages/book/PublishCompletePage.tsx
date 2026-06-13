@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card } from '@/components/common'
+import { AppLottie, Button, Card } from '@/components/common'
+import confettiAnimation from '@/assets/animations/confetti-burst.json'
 import { COVER_TEMPLATES } from '@/constants/coverTemplates'
 import { useBookStore } from '@/stores/bookStore'
 
@@ -31,7 +32,15 @@ export function PublishCompletePage() {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col items-center justify-center bg-white px-7 py-10 text-center">
-      <div className="mb-6 text-[64px]">📚</div>
+      <div className="relative mb-6 flex h-[120px] w-full items-center justify-center">
+        <AppLottie
+          animationData={confettiAnimation}
+          width={200}
+          height={200}
+          loop={false}
+          className="pointer-events-none absolute"
+        />
+      </div>
       <h1 className="mb-3 text-lg font-bold">책이 완성됐어요!</h1>
       <p className="mb-8 text-sm leading-relaxed text-ink-muted">
         <strong className="text-ink">{project.title}</strong>

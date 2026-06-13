@@ -1,4 +1,9 @@
 import { supabase } from '@/lib/supabase'
+import {
+  DEV_MOCK_PROJECT_ID,
+  DEV_MOCK_TODAY_QUESTION,
+  isDevBypass,
+} from '@/lib/devBypass'
 import type { ProjectType } from '@/types/database'
 
 export class ApiError extends Error {
@@ -18,11 +23,15 @@ const FALLBACK_QUESTIONS: Record<ProjectType, string> = {
   custom: '오늘 하루를 돌아보며 가장 먼저 떠오르는 생각은 무엇인가요?',
 }
 
-function getFallbackQuestion(projectType: ProjectType): string {
+export function getFallbackQuestion(projectType: ProjectType): string {
   return FALLBACK_QUESTIONS[projectType]
 }
 
 export async function generateQuestion(projectId: string): Promise<string> {
+  if (isDevBypass() && projectId === DEV_MOCK_PROJECT_ID) {
+    return DEV_MOCK_TODAY_QUESTION
+  }
+
   const { data: session } = await supabase.auth.getSession()
   if (!session.session) throw new Error('로그인이 필요합니다.')
 
@@ -54,6 +63,10 @@ export async function generateQuestion(projectId: string): Promise<string> {
 }
 
 export async function getTodayQuestion(projectId: string): Promise<string | null> {
+  if (isDevBypass() && projectId === DEV_MOCK_PROJECT_ID) {
+    return DEV_MOCK_TODAY_QUESTION
+  }
+
   const today = new Date().toISOString().slice(0, 10)
   const { data } = await supabase
     .from('daily_questions')

@@ -57,6 +57,34 @@ Deno.serve(async (req) => {
       })
     }
 
+    const { data: subscription } = await adminClient
+      .from('subscriptions')
+      .select('plan')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    const isPro = subscription?.plan === 'pro'
+
+    if (!isPro) {
+      const monthStart = new Date()
+      monthStart.setDate(1)
+      monthStart.setHours(0, 0, 0, 0)
+
+      const { count } = await adminClient
+        .from('ai_usage')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .in('feature', ['question', 'freewriting_hint'])
+        .gte('created_at', monthStart.toISOString())
+
+      if ((count ?? 0) >= 10) {
+        return new Response(JSON.stringify({ code: 'AI_LIMIT', error: 'Monthly limit reached' }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
+
     const { data: recentRecords } = await adminClient
       .from('records')
       .select('emotion_tags, created_at')
