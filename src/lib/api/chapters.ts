@@ -1,3 +1,5 @@
+import { devBypassMocks } from '@/lib/devBypassMocks'
+import { isDevBypass } from '@/lib/devBypass'
 import { supabase } from '@/lib/supabase'
 import type { Chapter } from '@/types/database'
 
@@ -11,6 +13,8 @@ export class ChapterApiError extends Error {
 }
 
 export async function listChapters(projectId: string): Promise<Chapter[]> {
+  if (isDevBypass()) return devBypassMocks.listChapters(projectId)
+
   const { data, error } = await supabase
     .from('chapters')
     .select('*')
@@ -22,6 +26,8 @@ export async function listChapters(projectId: string): Promise<Chapter[]> {
 }
 
 export async function getChapter(id: string): Promise<Chapter | null> {
+  if (isDevBypass()) return devBypassMocks.getChapter(id)
+
   const { data, error } = await supabase
     .from('chapters')
     .select('*')
@@ -33,6 +39,8 @@ export async function getChapter(id: string): Promise<Chapter | null> {
 }
 
 export async function getUnassignedRecordCount(projectId: string): Promise<number> {
+  if (isDevBypass()) return devBypassMocks.getUnassignedRecordCount(projectId)
+
   const { count, error } = await supabase
     .from('records')
     .select('*', { count: 'exact', head: true })
@@ -49,6 +57,8 @@ export async function updateChapterContent(
   title: string,
   userContent: string,
 ): Promise<Chapter> {
+  if (isDevBypass()) return devBypassMocks.updateChapterContent(chapterId, title, userContent)
+
   const { data, error } = await supabase
     .from('chapters')
     .update({ title, user_content: userContent })
@@ -61,6 +71,8 @@ export async function updateChapterContent(
 }
 
 export async function generateChapter(projectId: string): Promise<Chapter | null> {
+  if (isDevBypass()) return devBypassMocks.generateChapter(projectId)
+
   const response = await supabase.functions.invoke('generate-chapter', {
     body: { project_id: projectId },
   })
@@ -86,6 +98,11 @@ export async function reorderChapters(
   projectId: string,
   orderedChapterIds: string[],
 ): Promise<void> {
+  if (isDevBypass()) {
+    devBypassMocks.reorderChapters(projectId, orderedChapterIds)
+    return
+  }
+
   const offset = 1000
 
   for (let i = 0; i < orderedChapterIds.length; i++) {
@@ -113,6 +130,8 @@ export async function reorderChapters(
 }
 
 export async function regenerateChapter(chapterId: string): Promise<Chapter> {
+  if (isDevBypass()) return devBypassMocks.regenerateChapter(chapterId)
+
   const response = await supabase.functions.invoke('regenerate-chapter', {
     body: { chapter_id: chapterId },
   })

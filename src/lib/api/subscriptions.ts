@@ -1,5 +1,6 @@
+import { devBypassMocks } from '@/lib/devBypassMocks'
+import { isDevBypass } from '@/lib/devBypass'
 import { supabase } from '@/lib/supabase'
-import { DEV_MOCK_USER_ID, isDevBypass } from '@/lib/devBypass'
 import type { SubscriptionPlan } from '@/types/database'
 
 export interface SubscriptionInfo {
@@ -18,9 +19,7 @@ export class SubscriptionApiError extends Error {
 }
 
 export async function getSubscriptionPlan(userId: string): Promise<SubscriptionPlan> {
-  if (isDevBypass() && userId === DEV_MOCK_USER_ID) {
-    return 'pro'
-  }
+  if (isDevBypass()) return devBypassMocks.getSubscriptionPlan()
 
   const { data } = await supabase
     .from('subscriptions')
@@ -32,6 +31,8 @@ export async function getSubscriptionPlan(userId: string): Promise<SubscriptionP
 }
 
 export async function getSubscription(userId: string): Promise<SubscriptionInfo> {
+  if (isDevBypass()) return devBypassMocks.getSubscription()
+
   const { data } = await supabase
     .from('subscriptions')
     .select('plan, started_at, expires_at')
@@ -50,6 +51,8 @@ export async function verifyPurchase(
   productId: string,
   orderId?: string,
 ): Promise<SubscriptionPlan> {
+  if (isDevBypass()) return devBypassMocks.verifyPurchase()
+
   const response = await supabase.functions.invoke('verify-subscription', {
     body: {
       purchase_token: purchaseToken,
