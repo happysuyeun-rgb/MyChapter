@@ -1,12 +1,17 @@
-import { devBypassMocks } from '@/lib/devBypassMocks'
 import { isDevBypass } from '@/lib/devBypass'
+import {
+  mockCreateProject,
+  mockGetProjectById,
+  mockGetProjectCount,
+  mockGetProjects,
+} from '@/mocks'
 import { supabase } from '@/lib/supabase'
 import type { Project } from '@/types/database'
 import type { NewProjectDraft } from '@/stores/projectStore'
 import { calculateRoutine } from '@/utils/calculateRoutine'
 
 export async function getProjects(userId: string): Promise<Project[]> {
-  if (isDevBypass()) return devBypassMocks.getProjects()
+  if (isDevBypass()) return mockGetProjects()
 
   const { data, error } = await supabase
     .from('projects')
@@ -19,7 +24,7 @@ export async function getProjects(userId: string): Promise<Project[]> {
 }
 
 export async function getProjectCount(userId: string): Promise<number> {
-  if (isDevBypass()) return devBypassMocks.getProjectCount()
+  if (isDevBypass()) return mockGetProjectCount()
 
   const { count, error } = await supabase
     .from('projects')
@@ -34,7 +39,7 @@ export async function createProject(
   userId: string,
   draft: NewProjectDraft,
 ): Promise<Project> {
-  if (isDevBypass()) return devBypassMocks.createProject(userId, draft)
+  if (isDevBypass()) return mockCreateProject(userId, draft)
 
   if (!draft.type || !draft.title.trim()) {
     throw new Error('프로젝트 정보가 올바르지 않습니다.')
@@ -63,7 +68,7 @@ export async function createProject(
 }
 
 export async function getProjectById(projectId: string): Promise<Project | null> {
-  if (isDevBypass()) return devBypassMocks.getProjectById(projectId)
+  if (isDevBypass()) return mockGetProjectById(projectId)
 
   const { data, error } = await supabase
     .from('projects')

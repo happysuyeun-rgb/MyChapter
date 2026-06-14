@@ -1,3 +1,11 @@
+import { isDevBypass } from '@/lib/devBypass'
+import {
+  mockCreateBadgeNotifications,
+  mockGetUnreadCount,
+  mockListNotifications,
+  mockMarkAllRead,
+  mockMarkAsRead,
+} from '@/mocks'
 import { supabase } from '@/lib/supabase'
 import type { NotificationType } from '@/types/database'
 import type { BadgeEvent } from '@/utils/badges'
@@ -16,6 +24,8 @@ export async function listNotifications(
   userId: string,
   limit = 30,
 ): Promise<AppNotification[]> {
+  if (isDevBypass()) return mockListNotifications(userId, limit)
+
   const { data, error } = await supabase
     .from('notifications')
     .select('id, type, title, body, link, is_read, created_at')
@@ -28,6 +38,8 @@ export async function listNotifications(
 }
 
 export async function getUnreadCount(userId: string): Promise<number> {
+  if (isDevBypass()) return mockGetUnreadCount(userId)
+
   const { count, error } = await supabase
     .from('notifications')
     .select('*', { count: 'exact', head: true })
@@ -39,6 +51,11 @@ export async function getUnreadCount(userId: string): Promise<number> {
 }
 
 export async function markAsRead(notificationId: string): Promise<void> {
+  if (isDevBypass()) {
+    mockMarkAsRead(notificationId)
+    return
+  }
+
   const { error } = await supabase
     .from('notifications')
     .update({ is_read: true })
@@ -48,6 +65,11 @@ export async function markAsRead(notificationId: string): Promise<void> {
 }
 
 export async function markAllRead(userId: string): Promise<void> {
+  if (isDevBypass()) {
+    mockMarkAllRead(userId)
+    return
+  }
+
   const { error } = await supabase
     .from('notifications')
     .update({ is_read: true })
@@ -61,6 +83,11 @@ export async function createBadgeNotifications(
   userId: string,
   badges: BadgeEvent[],
 ): Promise<void> {
+  if (isDevBypass()) {
+    await mockCreateBadgeNotifications(userId, badges)
+    return
+  }
+
   for (const badge of badges) {
     const { count } = await supabase
       .from('notifications')

@@ -1,5 +1,16 @@
-import { devBypassMocks } from '@/lib/devBypassMocks'
 import { isDevBypass } from '@/lib/devBypass'
+import {
+  mockCreateRecord,
+  mockDeleteRecord,
+  mockGetNextRecordNumber,
+  mockGetPhotoSignedUrl,
+  mockGetRecord,
+  mockGetRecordCount,
+  mockListRecords,
+  mockUpdateRecord,
+  mockUploadRecordPhoto,
+} from '@/mocks'
+import { mockCreateBadgeNotifications } from '@/mocks/notifications'
 import { supabase } from '@/lib/supabase'
 import type { JournalRecord, RecordModeInstance } from '@/types/database'
 import { checkBadgeEvents } from '@/utils/badges'
@@ -34,7 +45,7 @@ export interface SaveRecordResult {
 }
 
 export async function getNextRecordNumber(projectId: string): Promise<number> {
-  if (isDevBypass()) return devBypassMocks.getNextRecordNumber(projectId)
+  if (isDevBypass()) return mockGetNextRecordNumber(projectId)
 
   const { data } = await supabase
     .from('records')
@@ -51,7 +62,7 @@ export async function listRecords(
   userId: string,
   options?: { projectId?: string; limit?: number; offset?: number },
 ): Promise<JournalRecord[]> {
-  if (isDevBypass()) return devBypassMocks.listRecords(userId, options)
+  if (isDevBypass()) return mockListRecords(userId, options)
 
   let query = supabase
     .from('records')
@@ -73,7 +84,7 @@ export async function listRecords(
 }
 
 export async function getRecord(id: string): Promise<JournalRecord | null> {
-  if (isDevBypass()) return devBypassMocks.getRecord(id)
+  if (isDevBypass()) return mockGetRecord(id)
 
   const { data, error } = await supabase
     .from('records')
@@ -86,7 +97,7 @@ export async function getRecord(id: string): Promise<JournalRecord | null> {
 }
 
 export async function getRecordCount(projectId: string): Promise<number> {
-  if (isDevBypass()) return devBypassMocks.getRecordCount(projectId)
+  if (isDevBypass()) return mockGetRecordCount(projectId)
 
   const { count, error } = await supabase
     .from('records')
@@ -102,7 +113,14 @@ export async function createRecord(
   input: CreateRecordInput,
   targetCount: number,
 ): Promise<SaveRecordResult> {
-  if (isDevBypass()) return devBypassMocks.createRecord(input, targetCount)
+  if (isDevBypass()) {
+    const result = mockCreateRecord(input, targetCount)
+    const badges = checkBadgeEvents(result.streak, result.recordCount)
+    if (badges.length > 0) {
+      await mockCreateBadgeNotifications(input.userId, badges)
+    }
+    return result
+  }
 
   const recordNumber = await getNextRecordNumber(input.projectId)
 
@@ -135,7 +153,7 @@ export async function updateRecord(
   targetCount: number,
 ): Promise<SaveRecordResult> {
   if (isDevBypass()) {
-    return devBypassMocks.updateRecord(id, userId, projectId, input, targetCount)
+    return mockUpdateRecord(id, userId, projectId, input, targetCount)
   }
 
   const { data, error } = await supabase
@@ -158,7 +176,7 @@ export async function updateRecord(
 
 export async function deleteRecord(id: string, userId: string): Promise<void> {
   if (isDevBypass()) {
-    devBypassMocks.deleteRecord(id, userId)
+    mockDeleteRecord(id, userId)
     return
   }
 
@@ -207,7 +225,7 @@ export async function uploadRecordPhoto(
   projectId: string,
   file: File,
 ): Promise<string> {
-  if (isDevBypass()) return devBypassMocks.uploadRecordPhoto(userId, projectId, file)
+  if (isDevBypass()) return mockUploadRecordPhoto(userId, projectId, file)
 
   const ext = file.name.split('.').pop() ?? 'jpg'
   const path = `${userId}/${projectId}/${crypto.randomUUID()}.${ext}`
@@ -221,7 +239,7 @@ export async function uploadRecordPhoto(
 }
 
 export async function getPhotoSignedUrl(path: string): Promise<string | null> {
-  if (isDevBypass()) return devBypassMocks.getPhotoSignedUrl(path)
+  if (isDevBypass()) return mockGetPhotoSignedUrl(path)
 
   const { data, error } = await supabase.storage
     .from('record-photos')

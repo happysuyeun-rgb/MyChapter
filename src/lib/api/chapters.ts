@@ -1,5 +1,13 @@
-import { devBypassMocks } from '@/lib/devBypassMocks'
 import { isDevBypass } from '@/lib/devBypass'
+import {
+  mockGenerateChapter,
+  mockGetChapter,
+  mockGetUnassignedRecordCount,
+  mockListChapters,
+  mockRegenerateChapter,
+  mockReorderChapters,
+  mockUpdateChapterContent,
+} from '@/mocks'
 import { supabase } from '@/lib/supabase'
 import type { Chapter } from '@/types/database'
 
@@ -13,7 +21,7 @@ export class ChapterApiError extends Error {
 }
 
 export async function listChapters(projectId: string): Promise<Chapter[]> {
-  if (isDevBypass()) return devBypassMocks.listChapters(projectId)
+  if (isDevBypass()) return mockListChapters(projectId)
 
   const { data, error } = await supabase
     .from('chapters')
@@ -26,7 +34,7 @@ export async function listChapters(projectId: string): Promise<Chapter[]> {
 }
 
 export async function getChapter(id: string): Promise<Chapter | null> {
-  if (isDevBypass()) return devBypassMocks.getChapter(id)
+  if (isDevBypass()) return mockGetChapter(id)
 
   const { data, error } = await supabase
     .from('chapters')
@@ -39,7 +47,7 @@ export async function getChapter(id: string): Promise<Chapter | null> {
 }
 
 export async function getUnassignedRecordCount(projectId: string): Promise<number> {
-  if (isDevBypass()) return devBypassMocks.getUnassignedRecordCount(projectId)
+  if (isDevBypass()) return mockGetUnassignedRecordCount(projectId)
 
   const { count, error } = await supabase
     .from('records')
@@ -57,7 +65,7 @@ export async function updateChapterContent(
   title: string,
   userContent: string,
 ): Promise<Chapter> {
-  if (isDevBypass()) return devBypassMocks.updateChapterContent(chapterId, title, userContent)
+  if (isDevBypass()) return mockUpdateChapterContent(chapterId, title, userContent)
 
   const { data, error } = await supabase
     .from('chapters')
@@ -71,7 +79,7 @@ export async function updateChapterContent(
 }
 
 export async function generateChapter(projectId: string): Promise<Chapter | null> {
-  if (isDevBypass()) return devBypassMocks.generateChapter(projectId)
+  if (isDevBypass()) return mockGenerateChapter(projectId)
 
   const response = await supabase.functions.invoke('generate-chapter', {
     body: { project_id: projectId },
@@ -99,7 +107,7 @@ export async function reorderChapters(
   orderedChapterIds: string[],
 ): Promise<void> {
   if (isDevBypass()) {
-    devBypassMocks.reorderChapters(projectId, orderedChapterIds)
+    mockReorderChapters(projectId, orderedChapterIds)
     return
   }
 
@@ -130,7 +138,7 @@ export async function reorderChapters(
 }
 
 export async function regenerateChapter(chapterId: string): Promise<Chapter> {
-  if (isDevBypass()) return devBypassMocks.regenerateChapter(chapterId)
+  if (isDevBypass()) return mockRegenerateChapter(chapterId)
 
   const response = await supabase.functions.invoke('regenerate-chapter', {
     body: { chapter_id: chapterId },

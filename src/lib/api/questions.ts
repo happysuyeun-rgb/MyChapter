@@ -1,5 +1,5 @@
-import { devBypassMocks } from '@/lib/devBypassMocks'
 import { isDevBypass } from '@/lib/devBypass'
+import { mockGenerateQuestion, mockGetTodayQuestion } from '@/mocks'
 import { supabase } from '@/lib/supabase'
 import type { ProjectType } from '@/types/database'
 
@@ -25,7 +25,7 @@ export function getFallbackQuestion(projectType: ProjectType): string {
 }
 
 export async function generateQuestion(projectId: string): Promise<string> {
-  if (isDevBypass()) return devBypassMocks.generateQuestion()
+  if (isDevBypass()) return mockGenerateQuestion()
 
   const { data: session } = await supabase.auth.getSession()
   if (!session.session) throw new Error('로그인이 필요합니다.')
@@ -58,7 +58,7 @@ export async function generateQuestion(projectId: string): Promise<string> {
 }
 
 export async function getTodayQuestion(projectId: string): Promise<string | null> {
-  if (isDevBypass()) return devBypassMocks.getTodayQuestion()
+  if (isDevBypass()) return mockGetTodayQuestion()
 
   const today = new Date().toISOString().slice(0, 10)
   const { data } = await supabase
