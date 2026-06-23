@@ -1,7 +1,9 @@
 # MyChapter — 직접 해야 하는 일 (비개발자 가이드)
 
+> **최종 갱신:** 2026-06-23  
 > **대상:** 서비스 운영·출시를 직접 진행하는 담당자  
-> **전제:** 코드 구현은 Cursor AI가 완료했으며, 아래 항목은 **외부 서비스 계정·설정·업로드**가 필요합니다.
+> **전제:** 코드 구현은 Cursor AI가 완료했으며, 아래 항목은 **외부 서비스 계정·설정·업로드**가 필요합니다.  
+> **출시 순서:** [`15-launch-roadmap.md`](./15-launch-roadmap.md) — 무엇부터 할지 한눈에 보기
 
 ---
 
@@ -9,7 +11,7 @@
 
 | 순서 | 할 일 | 예상 난이도 | 없으면 |
 |------|--------|-------------|--------|
-| 1 | Supabase 프로젝트 생성 + 마이그레이션 | ★★☆ | 앱이 동작하지 않음 |
+| 1 | Supabase 프로젝트 생성 + 마이그레이션 | ★★☆ | ✅ 완료 (2026-06-23) |
 | 2 | `.env.local` 환경 변수 입력 | ★☆☆ | 로그인·DB 연결 불가 |
 | 3 | Supabase Auth (Kakao/Google/이메일) 설정 | ★★☆ | 로그인 불가 |
 | 4 | Edge Function 배포 + API Key | ★★★ | AI 질문·챕터 생성 불가 |
@@ -31,6 +33,8 @@
 3. DB 비밀번호 안전하게 보관
 
 ### 2.2 마이그레이션 적용
+
+> **✅ 2026-06-23 적용 완료:** `supabase/scripts/001_idempotent.sql` ~ `006_idempotent.sql` 순서로 실행함.
 
 AI가 SQL 파일을 준비해 두었습니다. **아래 중 편한 방법 하나**를 선택하세요.
 
@@ -82,31 +86,76 @@ com.mychapter.app://home
 
 ### 2.5 Edge Function 시크릿
 
-Dashboard → **Edge Functions** → **Secrets**:
+Dashboard → **Project Settings** → **Edge Functions** → **Secrets** (또는 Edge Functions 탭의 Secrets)
 
-| Secret | 설명 |
-|--------|------|
-| `ANTHROPIC_API_KEY` | Claude API (AI 질문·챕터) |
-| `SUPABASE_SERVICE_ROLE_KEY` | service_role 키 |
-| `BILLING_DEV_BYPASS` | `true` *(테스트 결제용, 출시 전 false)* |
-| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Play 결제 검증 *(출시 시)* |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | FCM 푸시 *(푸시 사용 시)* |
-| `FIREBASE_PROJECT_ID` | Firebase 프로젝트 ID |
-| `CRON_SECRET` | 일일 알림 Cron 인증용 임의 문자열 |
+> `SUPABASE_URL`, `SUPABASE_ANON_KEY`는 배포 시 **자동 주입**됩니다. 아래만 직접 등록하세요.
+
+| Secret | 필수 | 설명 |
+|--------|------|------|
+| `GOOGLE_AI_API_KEY` | ✅ AI 사용 시 | [Google AI Studio](https://aistudio.google.com/apikey) API 키 (Gemini) |
+| `SERVICE_ROLE_KEY` | ✅ | Dashboard → Settings → API → **service_role** 키 *(anon 아님)* |
+| `BILLING_DEV_BYPASS` | ✅ 테스트 시 | `true` *(앱의 `VITE_BILLING_DEV_MODE`와 맞춤)* |
+| `CRON_SECRET` | 나중에 | 일일 알림 Cron용 임의 긴 문자열 |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | 출시 시 | Play 결제 검증 |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | 푸시 시 | FCM |
+| `FIREBASE_PROJECT_ID` | 푸시 시 | Firebase 프로젝트 ID |
+
+**등록 방법 (Dashboard):**
+
+1. [app.supabase.com](https://app.supabase.com) → 프로젝트 선택
+2. 왼쪽 **Project Settings** (톱니) → **Edge Functions**
+3. **Secrets** → **Add new secret**
+4. Name / Value 한 쌍씩 추가 (예: `GOOGLE_AI_API_KEY` = `AIza...`)
 
 ### 2.6 Edge Function 배포
 
-개발자에게 아래 배포를 요청하거나, Supabase CLI로 진행:
+Supabase CLI가 PC에 없어도 **`npx supabase`** 로 배포할 수 있습니다.
+
+**한 번만 (프로젝트 연결):**
 
 ```bash
-supabase functions deploy generate-question
-supabase functions deploy generate-freewriting-hint
-supabase functions deploy generate-chapter
-supabase functions deploy regenerate-chapter
-supabase functions deploy verify-subscription
-supabase functions deploy delete-account
-supabase functions deploy send-daily-reminder
+cd MyChapter
+npx supabase login
+npx supabase link --project-ref rdrafwfdwfzgcfiqkgug
 ```
+
+`rdrafwfdwfzgcfiqkgug`는 본인 `.env.local`의 URL과 동일한 ref입니다.
+
+**Secrets를 CLI로 넣을 때 (선택, Dashboard 대신):**
+
+```bash
+npx supabase secrets set GOOGLE_AI_API_KEY=여기에_키
+npx supabase secrets set SERVICE_ROLE_KEY=여기에_service_role_키
+npx supabase secrets set BILLING_DEV_BYPASS=true
+```
+
+**함수 8개 배포 (순서 무관, 하나씩 Run):**
+
+```bash
+npx supabase functions deploy generate-question
+npx supabase functions deploy generate-freewriting-hint
+npx supabase functions deploy generate-chapter
+npx supabase functions deploy regenerate-chapter
+npx supabase functions deploy verify-subscription
+npx supabase functions deploy delete-account
+npx supabase functions deploy send-daily-reminder
+npx supabase functions deploy generate-pdf
+```
+
+**성공 확인:** Dashboard → **Edge Functions** 목록에 8개 이름이 보이면 OK.
+
+**동작 확인:** 앱에서 `VITE_DEV_BYPASS=false` 후 프로젝트 생성 → 첫 AI 질문이 나오는지 확인.
+
+| # | Function | 용도 |
+|---|----------|------|
+| 1 | `generate-question` | 홈 AI 질문 |
+| 2 | `generate-freewriting-hint` | 자유 일기 힌트 |
+| 3 | `generate-chapter` | 챕터 생성 |
+| 4 | `regenerate-chapter` | 챕터 재생성 |
+| 5 | `verify-subscription` | Play 결제 검증 |
+| 6 | `delete-account` | 계정 삭제 |
+| 7 | `send-daily-reminder` | 일일 알림 Cron |
+| 8 | `generate-pdf` | PDF 출판 |
 
 ### 2.7 일일 알림 Cron
 
@@ -226,10 +275,10 @@ Google Play Developer API + 서비스 계정 연동 → Supabase `verify-subscri
 
 ### 계정·인프라
 
-- [ ] Supabase 마이그레이션 001~004 적용 완료
+- [x] Supabase 마이그레이션 001~006 적용 완료 (2026-06-23, `scripts/*_idempotent.sql`)
 - [ ] `.env.local` / Vercel 환경 변수 설정
-- [ ] Edge Function 7개 배포
-- [ ] Anthropic API Key 등록
+- [ ] Edge Function 8개 배포
+- [ ] `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`, `BILLING_DEV_BYPASS` Secrets 등록
 
 ### 기능 테스트 (직접 또는 테스터)
 
@@ -270,4 +319,15 @@ Google Play Developer API + 서비스 계정 연동 → Supabase `verify-subscri
 | 푸시 안 옴 | `google-services.json`, Firebase Secret, Cron |
 | 결제 안 됨 | Play 상품 ID `mychapter_pro_monthly`, Billing Secret |
 
-개발 진행 현황은 **`docs/07-dev-progress.md`** 를 참고하세요.
+개발 진행 현황은 **`docs/07-dev-progress.md`** 를 참고하세요.  
+출시 우선순위는 **`docs/15-launch-roadmap.md`** 를 따르세요.
+
+---
+
+## 갱신 이력
+
+| 날짜 | 내용 |
+|------|------|
+| 2026-06-23 | `15-launch-roadmap.md` 링크 추가, 최종 갱신 날짜 표기 |
+| 2026-06-23 | 마이그레이션 001~006 완료, Edge Function 8개 목록 보완 |
+| 2026-06-23 | §2.5~2.6 Secrets·배포 절차 상세 (`GOOGLE_AI_API_KEY`, `npx supabase`) |

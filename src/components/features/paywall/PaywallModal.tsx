@@ -1,11 +1,17 @@
 import { useState } from 'react'
-import { Button } from '@/components/common'
+import { Button, FlatIcon } from '@/components/common'
 import { PRO_PRICE_LABEL } from '@/constants/billing'
 import { BillingError, isBillingAvailable, purchasePro } from '@/lib/billing'
 import { verifyPurchase } from '@/lib/api/subscriptions'
 import { useAuthStore } from '@/stores/authStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
+
+const features = [
+  { icon: 'pdf' as const, label: 'PDF 출판 무제한' },
+  { icon: 'chapters' as const, label: 'AI 챕터 구성' },
+  { icon: 'projects' as const, label: '프로젝트 무제한' },
+]
 
 export function PaywallModal() {
   const { user } = useAuthStore()
@@ -53,30 +59,34 @@ export function PaywallModal() {
     <div className="fixed inset-0 z-[60] flex items-end justify-center">
       <button
         type="button"
-        className="absolute inset-0 bg-black/45"
+        className="absolute inset-0 bg-black/40"
         aria-label="닫기"
         onClick={closePaywall}
       />
-      <div className="relative z-10 w-full max-w-phone rounded-t-3xl bg-white px-6 pb-6 pt-7">
+      <div className="relative z-10 w-full max-w-phone rounded-t-[20px] bg-surface-card px-6 pb-6 pt-7 shadow-[0_-8px_32px_rgba(0,0,0,0.08)]">
         <div className="mx-auto mb-5 h-1 w-9 rounded-sm bg-border-strong" />
-        <div className="mb-5 text-center">
-          <div className="mb-2.5 text-3xl">✨</div>
-          <h2 className="mb-1.5 text-lg font-bold">Pro로 업그레이드</h2>
+        <div className="mb-6 text-center">
+          <div
+            className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-accent-light text-accent"
+            aria-hidden
+          >
+            <FlatIcon name="sparkle" size={28} />
+          </div>
+          <h2 className="mb-1.5 font-serif text-xl font-bold text-ink">Pro로 업그레이드</h2>
           <p className="text-sm text-ink-muted">첫 책을 PDF로 받아보세요</p>
         </div>
-        <div className="mb-4 rounded-card border-[1.5px] border-accent bg-accent-light p-4 text-sm">
-          <div className="flex justify-between py-1">
-            <span>PDF 출판 무제한</span>
-            <span className="text-accent">✓</span>
-          </div>
-          <div className="flex justify-between py-1">
-            <span>AI 챕터 구성</span>
-            <span className="text-accent">✓</span>
-          </div>
-          <div className="flex justify-between py-1">
-            <span>프로젝트 무제한</span>
-            <span className="text-accent">✓</span>
-          </div>
+        <div className="mb-5 rounded-card bg-surface-alt p-4">
+          <ul className="space-y-3">
+            {features.map((feature) => (
+              <li key={feature.label} className="flex items-center gap-3 text-sm text-ink">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white text-accent">
+                  <FlatIcon name={feature.icon} size={16} />
+                </span>
+                <span className="flex-1">{feature.label}</span>
+                <FlatIcon name="check" size={18} className="shrink-0 text-accent" />
+              </li>
+            ))}
+          </ul>
         </div>
         {error && (
           <p className="mb-3 text-center text-sm text-danger">{error}</p>

@@ -1,8 +1,8 @@
 # MyChapter — 개발 진행 현황 (AI 구현 기준)
 
 > **작성 기준:** Cursor AI가 코드베이스에 구현한 내용  
-> **최종 갱신:** 2026-06-12 *(generate-pdf, S-17 드래그, S-10b 반영)*  
-> **본인이 할 일:** `docs/06-user-tasks.md`
+> **최종 갱신:** 2026-06-23  
+> **본인이 할 일:** `docs/06-user-tasks.md` · **출시 순서:** `docs/15-launch-roadmap.md`
 
 ---
 
@@ -25,7 +25,7 @@
 | 공통 컴포넌트 10종 | ✅ | Button, Card, Modal 등 |
 | AppLayout + TabBar + Guards | ✅ | |
 | `src/lib/supabase.ts`, `database.ts` | ✅ | |
-| 마이그레이션 SQL 001~006 | ✅ | **Supabase에 적용은 본인** → `09-supabase-setup.md` |
+| 마이그레이션 SQL 001~006 | ✅ | Supabase 적용 완료 (`scripts/*_idempotent.sql`, 2026-06-23) |
 | `npm run build` | ✅ | |
 
 ---
@@ -159,7 +159,7 @@
 
 AI가 코드를 작성했지만 **본인 Supabase/외부 설정**이 필요한 항목:
 
-1. **Supabase 마이그레이션 001~006 SQL 실행**
+1. ~~**Supabase 마이그레이션 001~006 SQL 실행**~~ ✅ (2026-06-23)
 2. **Edge Function 8개 배포** + Secrets 등록
 3. **`.env.local` / Vercel 환경 변수**
 4. **Kakao / Google OAuth** Redirect URL
@@ -213,8 +213,20 @@ public/legal/          ✅ privacy, terms
 
 | 문서 | 내용 |
 |------|------|
+| **`15-launch-roadmap.md`** | **출시 로드맵·P0~P3 우선순위** |
 | `06-user-tasks.md` | **본인**이 할 일 |
+| `11-agent-workflow.md` | AI 에이전트 프롬프트 |
 | `08-development-specification.md` | 개발명세서 |
 | `09-supabase-setup.md` | Supabase + 마이그레이션 상세 |
 | `10`~`14` | Phase별 화면·플랫폼 기능명세 |
 | `00`~`05` | 설계·스키마·API·비즈니스 규칙 |
+
+---
+
+## 갱신 이력
+
+| 날짜 | 내용 |
+|------|------|
+| 2026-06-12 | generate-pdf, S-17 드래그, S-10b 반영 |
+| 2026-06-23 | 출시 로드맵 문서 연동, UI 폴리싱(Paywall·Empty) 반영 |
+| 2026-06-23 | Supabase 마이그레이션 001~006 적용 완료 |
