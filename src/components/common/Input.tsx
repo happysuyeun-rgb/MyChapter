@@ -10,10 +10,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <input
         ref={ref}
         className={[
-          'w-full rounded-xl px-4 py-3.5 text-sm outline-none transition-colors',
-          active
-            ? 'border-[1.5px] border-accent bg-white text-ink'
-            : 'bg-surface-alt text-ink-muted',
+          'w-full border-0 border-b bg-transparent px-0 py-3 text-[15px] text-ink outline-none transition-colors placeholder:text-ink-faint',
+          active ? 'border-ink' : 'border-border',
+          'focus:border-ink',
           className,
         ].join(' ')}
         {...props}
