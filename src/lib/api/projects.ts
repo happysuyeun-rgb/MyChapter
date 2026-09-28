@@ -117,3 +117,26 @@ export async function updateProjectSettings(
   if (error) throw error
   return data
 }
+
+
+export async function updateProjectCoverSelection(
+  projectId: string,
+  userId: string,
+  coverId: string,
+): Promise<Project> {
+  if (isDevBypass()) {
+    const { mockUpdateProjectCoverSelection } = await import('@/mocks/projects')
+    return mockUpdateProjectCoverSelection(projectId, userId, coverId)
+  }
+
+  const { data, error } = await supabase
+    .from('projects')
+    .update({ selected_cover_id: coverId })
+    .eq('id', projectId)
+    .eq('user_id', userId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
