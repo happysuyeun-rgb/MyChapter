@@ -80,3 +80,22 @@ export function mockUpdateProjectSettings(
   mockStore.projects[index] = updated
   return updated
 }
+
+
+export function mockUpdateProjectCoverSelection(
+  projectId: string,
+  userId: string,
+  coverId: string,
+): Project {
+  const index = mockStore.projects.findIndex((p) => p.id === projectId && p.user_id === userId)
+  if (index < 0) throw new Error('책을 찾을 수 없어요.')
+
+  const updated: Project = {
+    ...mockStore.projects[index],
+    selected_cover_id: coverId,
+    updated_at: mockNowIso(),
+  }
+
+  mockStore.projects[index] = updated
+  return updated
+}
