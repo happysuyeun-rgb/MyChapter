@@ -51,6 +51,16 @@ export interface Database {
           user_id: string
           type: ProjectType
           title: string
+          subtitle: string | null
+          author_name: string | null
+          ready_at: string | null
+          archived_at: string | null
+          readiness_min_days: number | null
+          readiness_min_records: number | null
+          readiness_target_days: number | null
+          readiness_target_records: number | null
+          readiness_policy_version: number
+          selected_cover_id: string | null
           target_count: number
           frequency: RecordFrequency
           notification_time: string
@@ -67,6 +77,16 @@ export interface Database {
           user_id: string
           type: ProjectType
           title: string
+          subtitle?: string | null
+          author_name?: string | null
+          ready_at?: string | null
+          archived_at?: string | null
+          readiness_min_days?: number | null
+          readiness_min_records?: number | null
+          readiness_target_days?: number | null
+          readiness_target_records?: number | null
+          readiness_policy_version?: number
+          selected_cover_id?: string | null
           target_count: number
           frequency: RecordFrequency
           notification_time?: string
