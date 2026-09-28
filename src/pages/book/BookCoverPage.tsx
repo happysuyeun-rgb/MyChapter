@@ -4,9 +4,11 @@ import { Button } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { COVER_TEMPLATES } from '@/constants/coverTemplates'
 import { getSubscriptionPlan } from '@/lib/api/subscriptions'
+import { updateProjectCoverSelection } from '@/lib/api/projects'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { useAuthStore } from '@/stores/authStore'
 import { useBookStore } from '@/stores/bookStore'
+import { useProjectStore } from '@/stores/projectStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { listRecords } from '@/lib/api/records'
 import { getBookReadiness } from '@/utils/bookReadiness'
@@ -16,6 +18,7 @@ export function BookCoverPage() {
   const { user, profile } = useAuthStore()
   const { project, loading: projectLoading } = useActiveProject()
   const { selectedCoverId, setSelectedCoverId } = useBookStore()
+  const { setActiveProject } = useProjectStore()
   const { showPaywall } = usePaywallStore()
   const [isPro, setIsPro] = useState(false)
   const [readinessChecked, setReadinessChecked] = useState(false)
@@ -25,13 +28,24 @@ export function BookCoverPage() {
     void Promise.all([getSubscriptionPlan(user.id), listRecords(user.id, { projectId: project.id })]).then(([plan, records]) => {
       setIsPro(plan === 'pro')
       if (!getBookReadiness(project, records.length).isReady) navigate('/project/workspace', { replace: true })
+      const persistedCover = project.selected_cover_id ?? project.cover_template_id
+      if (persistedCover) setSelectedCoverId(persistedCover)
       setReadinessChecked(true)
     })
   }, [user, project, navigate])
 
-  const handleSelect = (id: string, proOnly: boolean) => {
+  const handleSelect = async (id: string, proOnly: boolean) => {
+    if (!user || !project) return
     if (proOnly && !isPro) return showPaywall()
+
     setSelectedCoverId(id)
+
+    try {
+      const updated = await updateProjectCoverSelection(project.id, user.id, id)
+      setActiveProject(updated)
+    } catch {
+      // Keep the preview responsive; persistence will be retried on the next selection.
+    }
   }
 
   if (projectLoading || !project || !readinessChecked) {
@@ -69,7 +83,7 @@ export function BookCoverPage() {
               const locked = template.proOnly && !isPro
               const selected = selectedCoverId === template.id
               return (
-                <button key={template.id} type="button" className="flex w-full items-center gap-4 border-b border-border py-4 text-left" onClick={() => handleSelect(template.id, template.proOnly)}>
+                <button key={template.id} type="button" className="flex w-full items-center gap-4 border-b border-border py-4 text-left" onClick={() => void handleSelect(template.id, template.proOnly)}>
                   <div className={['flex h-16 w-11 shrink-0 flex-col justify-between rounded-r-sm rounded-l-[2px] p-2', template.bgClass, template.textClass].join(' ')}>
                     <span className="text-[5px] opacity-50">MC</span><span className={['h-px w-4', template.accentClass].join(' ')} />
                   </div>
