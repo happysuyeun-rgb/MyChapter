@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, EmptyState, ProgressBar } from '@/components/common'
+import { EmptyState, ProgressBar } from '@/components/common'
 import { ChapterLimitBanner } from '@/components/features/chapter/ChapterLimitBanner'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { useChapterLimitStatus } from '@/hooks/useChapterLimitStatus'
