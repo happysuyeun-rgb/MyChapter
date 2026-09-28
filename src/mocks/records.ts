@@ -8,21 +8,15 @@ function projectRecords(projectId: string): JournalRecord[] {
   return mockStore.records.filter((r) => r.project_id === projectId && !r.is_draft)
 }
 
-function buildSaveResult(
-  record: JournalRecord,
-  projectId: string,
-  targetCount: number,
-): SaveRecordResult {
+function buildSaveResult(record: JournalRecord, projectId: string): SaveRecordResult {
   const allRecords = projectRecords(projectId)
   const recordCount = allRecords.length
   const streak = calculateStreak(allRecords)
-  const progress = Math.min(100, Math.round((recordCount / targetCount) * 100))
   const badges = checkBadgeEvents(streak, recordCount)
 
   return {
     record,
     recordCount,
-    progress,
     streak,
     badgeTitles: badges.map((b) => b.title),
   }
@@ -64,10 +58,7 @@ export function mockGetRecordCount(projectId: string): number {
   return projectRecords(projectId).length
 }
 
-export function mockCreateRecord(
-  input: CreateRecordInput,
-  targetCount: number,
-): SaveRecordResult {
+export function mockCreateRecord(input: CreateRecordInput): SaveRecordResult {
   const recordNumber = mockGetNextRecordNumber(input.projectId)
   const ts = mockNowIso()
 
@@ -89,7 +80,7 @@ export function mockCreateRecord(
   }
 
   mockStore.records.push(record)
-  return buildSaveResult(record, input.projectId, targetCount)
+  return buildSaveResult(record, input.projectId)
 }
 
 export function mockUpdateRecord(
@@ -97,7 +88,6 @@ export function mockUpdateRecord(
   userId: string,
   projectId: string,
   input: UpdateRecordInput,
-  targetCount: number,
 ): SaveRecordResult {
   const index = mockStore.records.findIndex((r) => r.id === id && r.user_id === userId)
   if (index < 0) throw new Error('기록을 찾을 수 없어요.')
@@ -117,7 +107,7 @@ export function mockUpdateRecord(
   }
 
   mockStore.records[index] = updated
-  return buildSaveResult(updated, projectId, targetCount)
+  return buildSaveResult(updated, projectId)
 }
 
 export function mockDeleteRecord(id: string, userId: string): void {
