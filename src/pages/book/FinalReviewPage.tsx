@@ -68,7 +68,14 @@ export function FinalReviewPage() {
       setPublishStage('pdf')
       const result = await generateBookPdf(project.id, effectiveCoverId)
       downloadPdfFromUrl(result.pdfUrl, project.title + '.pdf')
-      setPublishResult({ project, recordCount, pageCount: result.pageCount, coverTemplateId: effectiveCoverId })
+      setPublishResult({
+        project,
+        recordCount,
+        pageCount: result.pageCount,
+        coverTemplateId: effectiveCoverId,
+        publicationId: result.publicationId,
+        version: result.version,
+      })
       setPublishStage('done')
       navigate('/book/publish/complete')
     } catch (error) {
