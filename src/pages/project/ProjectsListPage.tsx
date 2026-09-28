@@ -59,6 +59,7 @@ export function ProjectsListPage() {
   }
 
   const filteredProjects = filter === '전체' ? projects : projects.filter((project) => project.statusLabel === filter)
+  const emptyFilterMessage = filter === '전체' ? '' : filter === '진행중' ? '지금 쓰고 있는 책이 없어요.' : filter === '발행가능' ? '아직 발행 준비를 마친 책이 없어요.' : '아직 발행한 책이 없어요.'
 
   if (loading) return <div className="flex flex-1 items-center justify-center text-sm text-ink-muted">로딩 중...</div>
 
@@ -74,6 +75,7 @@ export function ProjectsListPage() {
         {projects.length > 0 && <div className="mb-5 flex gap-2 overflow-x-auto pb-1">{(['전체', '진행중', '발행가능', '발행완료'] as const).map((item) => <button key={item} type="button" onClick={() => setFilter(item)} className={['shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors', filter === item ? 'border-ink bg-ink text-surface' : 'border-border bg-surface-card text-ink-muted'].join(' ')}>{item}</button>)}</div>}
         {projects.length === 0 ? <EmptyState variant="home" /> : (
           <div className="border-t border-border">
+            {filteredProjects.length === 0 && <div className="border-b border-border py-10 text-center"><p className="font-serif text-sm font-bold">{emptyFilterMessage}</p><p className="mt-2 text-xs text-ink-muted">다른 상태의 책을 선택하거나 기록을 이어가보세요.</p></div>}
             {filteredProjects.map((project) => {
               const typeLabel = PROJECT_TYPES.find((p) => p.type === project.type)?.label ?? '나의 기록'
               const isActive = activeProject?.id === project.id
