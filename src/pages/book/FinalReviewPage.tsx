@@ -11,6 +11,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useBookStore } from '@/stores/bookStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import type { Chapter } from '@/types/database'
+import { getBookReadiness } from '@/utils/bookReadiness'
 
 export function FinalReviewPage() {
   const navigate = useNavigate()
@@ -24,6 +25,7 @@ export function FinalReviewPage() {
   const [allowed, setAllowed] = useState(false)
   const [checks, setChecks] = useState({ cover: false, toc: false, manuscript: false })
   const [publishing, setPublishing] = useState(false)
+  const [readinessChecked, setReadinessChecked] = useState(false)
 
   useEffect(() => {
     if (!user || !project) return
@@ -37,10 +39,12 @@ export function FinalReviewPage() {
       setRecordCount(records.length)
       setIsPro(plan === 'pro')
       setAllowed(canPublish)
+      if (!getBookReadiness(project, records.length).isReady) navigate('/project/workspace', { replace: true })
+      setReadinessChecked(true)
     })
-  }, [user, project])
+  }, [user, project, navigate])
 
-  if (projectLoading || !project) return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
+  if (projectLoading || !project || !readinessChecked) return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
 
   const cover = COVER_TEMPLATES.find((item) => item.id === selectedCoverId)
   const ready = checks.cover && checks.toc && checks.manuscript && chapters.length > 0
