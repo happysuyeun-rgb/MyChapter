@@ -130,11 +130,15 @@ Stages:
 
 ### P-07 · Project Settings
 
-**Status:** Planned
+**Status:** Implemented / partial
 
-Needed for:
-- title
+Implemented:
+- title change
 - type change
+- readiness snapshot update
+- sticky `ready_at` preservation
+
+Still planned:
 - archive/delete
 - optional notification/book settings
 
@@ -187,13 +191,13 @@ Saved-state progress now uses Story Readiness.
 
 ### B-01/B-02 · Chapter start/list
 
-**Status:** Implemented / backend deployment pending
+**Status:** Implemented / backend deployed
 
 The current source uses semantic clustering across unassigned records. Automatic 10-record chapter creation has been removed.
 
 ### B-03 · Generate
 
-**Status:** Implemented / backend deployment pending
+**Status:** Implemented / backend deployed
 
 AI selects related source records by recurring themes and change flow, then generates the chapter from the selected originals.
 
@@ -253,6 +257,8 @@ Progress state exists in Final Review.
 ### U-05 · Published
 
 **Status:** Implemented
+
+Publication viewer opens a specific versioned `publication/:id` snapshot.
 
 ### U-06 · Failed
 
