@@ -12,6 +12,7 @@ export type AiFeature =
   | 'chapter'
   | 'caption_expand'
   | 'chapter_regenerate'
+  | 'record_analysis'
 
 export interface Database {
   public: {
@@ -163,6 +164,110 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['chapters']['Insert']>
         Relationships: []
       }
+      record_analysis: {
+        Row: {
+          id: string
+          record_id: string
+          project_id: string
+          user_id: string
+          summary: string | null
+          themes: Json
+          people: Json
+          places: Json
+          emotions: Json
+          events: Json
+          conflict: string | null
+          change: string | null
+          insight: string | null
+          goals: Json
+          model: string | null
+          schema_version: number
+          analyzed_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          record_id: string
+          project_id: string
+          user_id: string
+          summary?: string | null
+          themes?: Json
+          people?: Json
+          places?: Json
+          emotions?: Json
+          events?: Json
+          conflict?: string | null
+          change?: string | null
+          insight?: string | null
+          goals?: Json
+          model?: string | null
+          schema_version?: number
+          analyzed_at?: string
+          updated_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['record_analysis']['Insert']>
+        Relationships: []
+      }
+      chapter_records: {
+        Row: {
+          chapter_id: string
+          record_id: string
+          position: number
+          relevance_score: number | null
+          created_at: string
+        }
+        Insert: {
+          chapter_id: string
+          record_id: string
+          position?: number
+          relevance_score?: number | null
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['chapter_records']['Insert']>
+        Relationships: []
+      }
+      publications: {
+        Row: {
+          id: string
+          project_id: string
+          user_id: string
+          version: number
+          status: 'processing' | 'published' | 'failed'
+          title_snapshot: string
+          subtitle_snapshot: string | null
+          author_snapshot: string
+          cover_snapshot: Json
+          toc_snapshot: Json
+          pdf_path: string | null
+          epub_path: string | null
+          page_count: number | null
+          error_code: string | null
+          error_message: string | null
+          created_at: string
+          published_at: string | null
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          user_id: string
+          version: number
+          status?: 'processing' | 'published' | 'failed'
+          title_snapshot: string
+          subtitle_snapshot?: string | null
+          author_snapshot: string
+          cover_snapshot?: Json
+          toc_snapshot?: Json
+          pdf_path?: string | null
+          epub_path?: string | null
+          page_count?: number | null
+          error_code?: string | null
+          error_message?: string | null
+          created_at?: string
+          published_at?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['publications']['Insert']>
+        Relationships: []
+      }
       daily_questions: {
         Row: {
           id: string
@@ -302,7 +407,7 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      publication_status: 'processing' | 'published' | 'failed'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -314,3 +419,8 @@ export type UserProfile = Database['public']['Tables']['users']['Row']
 export type Project = Database['public']['Tables']['projects']['Row']
 export type JournalRecord = Database['public']['Tables']['records']['Row']
 export type Chapter = Database['public']['Tables']['chapters']['Row']
+
+
+export type RecordAnalysis = Database['public']['Tables']['record_analysis']['Row']
+export type ChapterRecord = Database['public']['Tables']['chapter_records']['Row']
+export type Publication = Database['public']['Tables']['publications']['Row']
