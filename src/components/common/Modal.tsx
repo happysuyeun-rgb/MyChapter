@@ -12,14 +12,14 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-      <button
-        type="button"
-        className="absolute inset-0 bg-black/45"
-        aria-label="닫기"
-        onClick={onClose}
-      />
-      <div className="relative z-10 w-full max-w-phone rounded-t-3xl bg-white p-6 sm:rounded-3xl">
-        {title && <h2 className="mb-4 text-center text-lg font-bold">{title}</h2>}
+      <button type="button" className="absolute inset-0 bg-ink/50" aria-label="닫기" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-phone border-t border-ink bg-surface p-6 sm:border">
+        {title && (
+          <div className="mb-5 border-b border-border pb-4">
+            <p className="text-[9px] font-semibold tracking-[0.16em] text-sage">DIALOG</p>
+            <h2 className="mt-2 font-serif text-xl font-bold">{title}</h2>
+          </div>
+        )}
         {children}
       </div>
     </div>
