@@ -63,7 +63,7 @@ export function MyPage() {
         <Card accent className="mx-5 mt-2 p-4">
           <p className="mb-1.5 text-[13px] font-bold text-accent">✨ Pro로 업그레이드</p>
           <p className="mb-3 text-sm text-ink-muted">
-            PDF 출판 무제한 · AI 챕터 구성 · 프로젝트 무제한
+            여러 권의 책 · 재발행 · 확장 AI 기능
           </p>
           <button
             type="button"
