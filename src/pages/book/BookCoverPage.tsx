@@ -82,7 +82,7 @@ export function BookCoverPage() {
                     template.textClass,
                   ].join(' ')}
                 >
-                  {template.emoji && <span className="mb-2 text-2xl">{template.emoji}</span>}
+                  <div className={['mb-5 h-px w-8', template.accentClass].join(' ')} />
                   <p className="text-center text-xs font-bold leading-tight">{project.title}</p>
                   <p className="mt-2 text-[10px] opacity-70">{profile?.nickname ?? '작가'}</p>
                 </div>
