@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { EmptyState, ProgressBar } from '@/components/common'
+import { EmptyState, FlatIcon, ProgressBar } from '@/components/common'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { getUnreadCount } from '@/lib/api/notifications'
 import { getProjects } from '@/lib/api/projects'
@@ -42,84 +42,122 @@ export function HomePage() {
   const project = projects.find((item) => item.id === activeProjectId) ?? projects[0]
   const typeLabel = PROJECT_TYPES.find((p) => p.type === project.type)?.label ?? '나의 이야기'
   const readiness = getBookReadiness(project, recordCount)
-  const progress = readiness.score
   const today = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' })
-  const steps = ['기록', '챕터', '원고', '표지', '발행']
-  const activeStep = readiness.isReady ? 1 : 0
 
   return (
     <div className="flex flex-1 flex-col overflow-y-auto bg-surface">
-      <header className="flex items-center justify-between px-5 pb-3 pt-6">
-        <div>
-          <p className="text-xs text-ink-faint">{today}</p>
-          <h1 className="mt-1 font-serif text-xl font-bold">안녕하세요, {profile?.nickname ?? '회원'}님</h1>
-          <p className="mt-1 text-xs text-ink-muted">오늘의 한 페이지를 남겨볼까요?</p>
+      <header className="px-5 pb-5 pt-6">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-[11px] tracking-[0.12em] text-ink-faint">{today}</p>
+            <h1 className="mt-2 font-serif text-[24px] font-bold tracking-[-0.03em]">
+              {profile?.nickname ?? '회원'}님의 오늘 페이지
+            </h1>
+          </div>
+          <button
+            type="button"
+            aria-label="알림"
+            className="relative flex h-11 w-11 items-center justify-center border border-border bg-surface"
+            onClick={() => navigate('/notifications')}
+          >
+            <span className="text-base">◇</span>
+            {unreadCount > 0 && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-terracotta" />}
+          </button>
         </div>
-        <button type="button" aria-label="알림" className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface-card" onClick={() => navigate('/notifications')}>
-          <span className="text-lg">♢</span>
-          {unreadCount > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-terracotta ring-2 ring-surface" />}
-        </button>
       </header>
 
-      <main className="px-5 pb-6 pt-3">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-serif text-base font-bold">지금 쓰고 있는 책</h2>
-          <button className="text-xs font-semibold text-sage" onClick={() => navigate('/library')}>내 서재 →</button>
-        </div>
-
-        <section className="border-y border-border py-5">
-          <div className="flex items-start gap-4">
-            <div className="flex h-28 w-20 shrink-0 flex-col justify-between rounded-r-md rounded-l-sm bg-accent p-3 text-surface shadow-paper">
-              <span className="text-[9px] uppercase tracking-[0.2em] opacity-70">MY CHAPTER</span>
-              <span className="font-serif text-sm font-bold leading-snug">{project.title}</span>
-              <span className="text-[9px] opacity-70">{typeLabel}</span>
-            </div>
-            <div className="min-w-0 flex-1 pt-1">
-              <p className="text-xs text-sage">{typeLabel}</p>
-              <h2 className="mt-1 truncate font-serif text-lg font-bold">{project.title}</h2>
-              <div className="mt-5 flex items-end justify-between">
-                <span className="text-xs text-ink-muted">이야기 준비도</span>
-                <span className="font-serif text-2xl font-bold">{recordCount === 0 ? '첫 페이지' : `${progress}%`}</span>
-              </div>
-              {recordCount > 0 && <ProgressBar value={progress} className="mt-2" />}
-              <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">{recordCount === 0 ? '첫 기록을 남기면 나의 책이 시작됩니다.' : readiness.message}</p>
-            </div>
+      <main className="pb-8">
+        <section className="bg-ink px-5 py-7 text-surface">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-semibold tracking-[0.22em] text-surface/55">CURRENT BOOK</p>
+            <button className="text-xs text-surface/70" onClick={() => navigate('/library')}>내 서재 →</button>
           </div>
 
-          <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
-            {steps.map((step, index) => (
-              <div key={step} className="flex flex-col items-center gap-1">
-                <span className={['h-2 w-2 rounded-full', index <= activeStep ? 'bg-sage' : 'bg-surface-alt'].join(' ')} />
-                <span className={['text-[10px]', index <= activeStep ? 'font-semibold text-ink' : 'text-ink-faint'].join(' ')}>{step}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <button type="button" className="mt-5 w-full rounded-btn bg-accent px-5 py-4 text-center text-[15px] font-semibold text-white shadow-paper" onClick={() => navigate('/record/mode')}>
-          오늘 기록하기
-          <span className="mt-1 block text-[11px] font-normal text-white/70">AI 질문으로 또는 자유롭게 기록해보세요</span>
-        </button>
-
-        <section className="mt-8 border-t border-border pt-5">
-          <div className="flex gap-3">
-              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] border border-[#D8CCB9] bg-[#FFF9EE] shadow-sm">
-                <span className="absolute -top-1 left-5 h-2 w-1 rotate-[-28deg] rounded-full bg-sage" />
-                <span className="absolute -top-1 right-3 h-1.5 w-2 rotate-[25deg] rounded-full bg-sage" />
-                <span className="font-serif text-[10px] font-bold tracking-[0.12em] text-ink">PAGE</span>
-              </div>
+          <div className="mt-6 flex gap-5">
+            <div className="flex h-36 w-24 shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-[#F2E6D4] p-3.5 text-ink shadow-[8px_10px_0_rgba(0,0,0,.12)]">
+              <span className="text-[7px] tracking-[0.18em] text-ink/45">MY CHAPTER</span>
               <div>
-                <p className="text-sm font-semibold">PAGE가 기다리고 있어요.</p>
-                <p className="mt-1 text-xs leading-relaxed text-ink-muted">{readiness.isReady ? '이야기가 충분히 모였어요. 내 서재에서 책 만들기를 시작할 수 있어요.' : `완벽하게 쓰지 않아도 괜찮아요. 기록 ${readiness.recordsRemaining > 0 ? `${readiness.recordsRemaining}개` : '조건 충족'}${readiness.daysRemaining > 0 ? ` · ${readiness.daysRemaining}일` : ''}이 더 쌓이면 책 만들기가 열려요.`}</p>
+                <span className="mb-3 block h-px w-7 bg-sage" />
+                <p className="line-clamp-4 font-serif text-[13px] font-bold leading-[1.45]">{project.title}</p>
               </div>
+              <span className="text-[7px] text-ink/45">{typeLabel}</span>
+            </div>
+
+            <div className="min-w-0 flex-1 pt-1">
+              <p className="text-xs text-surface/55">{typeLabel}</p>
+              <h2 className="mt-2 line-clamp-2 font-serif text-xl font-bold leading-snug">{project.title}</h2>
+              <div className="mt-6">
+                <div className="flex items-end justify-between">
+                  <span className="text-[11px] text-surface/55">이야기 준비도</span>
+                  <span className="font-serif text-3xl font-bold">
+                    {recordCount === 0 ? '첫 장' : `${readiness.score}%`}
+                  </span>
+                </div>
+                {recordCount > 0 && <ProgressBar value={readiness.score} className="mt-2 [&>div]:bg-sage" />}
+                <p className="mt-2 text-[11px] leading-5 text-surface/55">
+                  {recordCount === 0 ? '첫 기록을 남기면 책이 시작됩니다.' : readiness.message}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="mt-7 flex min-h-[52px] w-full items-center justify-between border-t border-surface/20 pt-4 text-left"
+            onClick={() => navigate('/record/mode')}
+          >
+            <span>
+              <span className="block font-serif text-base font-bold">오늘 한 페이지 쓰기</span>
+              <span className="mt-1 block text-[11px] text-surface/55">AI 질문 · 자유 기록 · 사진 기록</span>
+            </span>
+            <span className="text-xl">→</span>
+          </button>
+        </section>
+
+        <section className="px-5 pt-8">
+          <div className="flex items-end justify-between border-b border-ink pb-3">
+            <div>
+              <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">PAGE'S NOTE</p>
+              <h2 className="mt-1 font-serif text-lg font-bold">작은 편집 메모</h2>
+            </div>
+            <FlatIcon name="book" size={22} className="text-sage" />
+          </div>
+
+          <div className="py-5">
+            <p className="font-serif text-[16px] font-semibold leading-7">
+              {readiness.isReady
+                ? '이제 기록을 한 권의 이야기로 묶을 수 있어요.'
+                : '지금은 잘 쓰는 것보다, 계속 남기는 것이 더 중요해요.'}
+            </p>
+            <p className="mt-2 text-xs leading-6 text-ink-muted">
+              {readiness.isReady
+                ? '책 작업실에서 PAGE와 함께 챕터의 연결점을 찾고 원고를 만들어보세요.'
+                : `책 만들기까지 ${readiness.recordsRemaining > 0 ? `기록 ${readiness.recordsRemaining}개` : '기록 조건 충족'}${readiness.daysRemaining > 0 ? ` · ${readiness.daysRemaining}일` : ''}. 평범한 하루도 나중에는 책의 재료가 됩니다.`}
+            </p>
+            {readiness.isReady && (
+              <button
+                type="button"
+                className="mt-4 min-h-11 border-b border-ink text-sm font-semibold"
+                onClick={() => navigate('/project/workspace')}
+              >
+                책 작업실 열기 →
+              </button>
+            )}
           </div>
         </section>
 
-        {projects.length > 1 && (
-          <button className="mt-4 w-full text-center text-xs text-ink-muted" onClick={() => navigate('/library')}>
-            다른 책 {projects.length - 1}권 보기
-          </button>
-        )}
+        <section className="px-5 pt-4">
+          <div className="border-y border-border py-4">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-ink-muted">현재 기록</span>
+              <span className="font-semibold">{recordCount} pages</span>
+            </div>
+            <div className="mt-3 flex items-center justify-between text-xs">
+              <span className="text-ink-muted">책 상태</span>
+              <span className="font-semibold">{readiness.isReady ? '책 만들기 가능' : '기록 중'}</span>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   )
