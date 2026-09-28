@@ -104,10 +104,22 @@ Deno.serve(async (req) => {
       .maybeSingle()
 
     if (subscription?.plan !== 'pro') {
-      return new Response(JSON.stringify({ code: 'PDF_PRO_ONLY', error: 'PDF 출판은 Pro 플랜이 필요해요.' }), {
-        status: 402,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      const { count: publishedCount, error: countError } = await admin
+        .from('published_books')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
+      if (countError) throw countError
+
+      if ((publishedCount ?? 0) >= 1) {
+        return new Response(JSON.stringify({
+          code: 'PUBLICATION_LIMIT',
+          error: 'Free 플랜의 첫 책 발행을 이미 사용했어요.',
+        }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
     }
 
     const { data: project } = await admin
