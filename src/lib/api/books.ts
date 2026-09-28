@@ -67,6 +67,19 @@ export async function listPublishedBooks(userId: string): Promise<PublishedBookW
   }))
 }
 
+export async function canPublishBook(userId: string): Promise<boolean> {
+  const plan = await getSubscriptionPlan(userId)
+  if (plan === 'pro') return true
+
+  const { count, error } = await supabase
+    .from('published_books')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+
+  if (error) throw error
+  return (count ?? 0) < 1
+}
+
 export async function prepareBookExport(
   userId: string,
   project: Project,
@@ -74,9 +87,9 @@ export async function prepareBookExport(
   authorName: string,
   coverTemplateId: string,
 ): Promise<BookExportData> {
-  const plan = await getSubscriptionPlan(userId)
-  if (plan !== 'pro') {
-    throw new BookApiError('PDF_PRO_ONLY', 'PDF 출판은 Pro 플랜이 필요해요.')
+  const allowed = await canPublishBook(userId)
+  if (!allowed) {
+    throw new BookApiError('PUBLICATION_LIMIT', 'Free 플랜의 첫 책 발행을 이미 사용했어요.')
   }
 
   return { project, chapters, authorName, coverTemplateId }
@@ -191,8 +204,8 @@ export async function generateBookPdf(
     error?: string
   } | null
 
-  if (body?.code === 'PDF_PRO_ONLY') {
-    throw new BookApiError('PDF_PRO_ONLY', body.error ?? 'PDF 출판은 Pro 플랜이 필요해요.')
+  if (body?.code === 'PUBLICATION_LIMIT' || body?.code === 'PDF_PRO_ONLY') {
+    throw new BookApiError('PUBLICATION_LIMIT', body.error ?? 'Free 플랜의 첫 책 발행을 이미 사용했어요.')
   }
 
   if (response.error || body?.error || !body?.pdf_url) {
