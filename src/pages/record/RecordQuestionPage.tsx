@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, Textarea } from '@/components/common'
+import { Textarea } from '@/components/common'
 import { EmotionTagPicker } from '@/components/features/record/EmotionTagPicker'
 import { ExitConfirmModal } from '@/components/features/record/ExitConfirmModal'
 import { NavBar } from '@/components/layout/NavBar'
@@ -130,33 +130,37 @@ export function RecordQuestionPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
       <NavBar
-        title={`오늘의 기록 #${recordNumber}`}
+        title={`PAGE ${String(recordNumber).padStart(2, '0')}`}
         leftLabel="✕"
         onLeftClick={handleClose}
         rightLabel={saving ? '...' : '저장'}
         rightAccent
         onRightClick={() => void handleSave()}
       />
-      <div className="flex-1 overflow-y-auto p-5">
-        <Card accent className="mb-5 p-4">
-          <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-accent">
-            💬 오늘의 질문
+      <div className="flex-1 overflow-y-auto px-5 pb-8 pt-6">
+        <section className="border-y border-ink py-6">
+          <p className="text-[10px] font-semibold tracking-[0.2em] text-sage">PAGE'S QUESTION</p>
+          <p className="mt-3 font-serif text-[21px] font-bold leading-8 tracking-[-0.02em]">
+            {question || '질문을 불러오는 중...'}
           </p>
-          <p className="text-[15px] font-medium leading-relaxed">
-            &quot;{question || '질문을 불러오는 중...'}&quot;
+          <p className="mt-4 text-[11px] leading-5 text-ink-muted">
+            정답처럼 쓰지 않아도 괜찮아요. 떠오르는 장면부터 시작해보세요.
           </p>
-        </Card>
+        </section>
 
+        <div className="mt-7">
+          <p className="mb-2 text-[10px] font-semibold tracking-[0.16em] text-ink-faint">YOUR PAGE</p>
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="오늘의 이야기를 적어보세요"
-          className="min-h-[200px]"
+          className="min-h-[280px] border-0 bg-transparent px-0 font-serif text-[16px] leading-8 shadow-none focus:ring-0"
           maxLength={2000}
         />
-        <p className="mb-5 mt-1.5 text-right text-[11px] text-ink-faint">
+        </div>
+        <p className="mb-7 mt-1.5 border-t border-border pt-2 text-right text-[11px] text-ink-faint">
           {content.length}자
         </p>
 
