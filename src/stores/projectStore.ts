@@ -55,6 +55,13 @@ export const useProjectStore = create<ProjectState>()(
     }),
     {
       name: 'mychapter-project-store',
+      version: 2,
+      migrate: (persistedState) => {
+        const persisted = persistedState as { activeProjectId?: string | null; activeProject?: Project | null } | undefined
+        return {
+          activeProjectId: persisted?.activeProjectId ?? persisted?.activeProject?.id ?? null,
+        } as Partial<ProjectState>
+      },
       partialize: (state) => ({ activeProjectId: state.activeProjectId }),
     },
   ),
