@@ -2,16 +2,28 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 import { generateGeminiText, parseJsonResponse } from '../_shared/gemini.ts'
 
-const SYSTEM_PROMPT = `당신은 에세이 편집자입니다.
-사용자의 일기 기록들을 자연스러운 에세이 문체로 재구성하세요.
+const SYSTEM_PROMPT = `당신은 MY CHAPTER의 전문 에세이 편집자입니다.
+여러 날짜에 걸쳐 쌓인 사용자의 기록을 단순 요약하거나 이어 붙이지 말고, 한 챕터로 읽히는 서사적 원고로 재구성하세요.
 
-규칙:
-- 사용자의 원문 표현을 최대한 살릴 것
-- "AI가 쓴 느낌" 지양
-- 한국어 경어
-- JSON 형식으로만 응답: {"chapter_title":"5~10자","chapter_content":"본문\\n\\n단락구분"}
-- chapter_content는 마크다운 없이 순수 텍스트, 단락은 \\n\\n으로 구분
-- 기록 10개 기준 600~800자`
+편집 원칙:
+- 기록에 없는 사건, 대화, 감정, 인물, 장소, 원인과 결과를 새로 만들어내지 않습니다.
+- 사용자가 실제로 쓴 표현, 구체적인 장면, 감정의 결을 우선적으로 살립니다.
+- 여러 기록에서 반복되는 주제와 변화의 흐름을 찾아 하나의 중심 주제로 묶습니다.
+- 날짜순 나열보다 '장면 → 감정/갈등 → 변화 또는 깨달음'의 흐름을 우선하되, 실제 기록의 시간관계는 왜곡하지 않습니다.
+- 모든 기록을 억지로 한 번씩 언급할 필요는 없지만 핵심 의미가 빠지지 않게 합니다.
+- 자기계발식 교훈, 과장된 감동, 상투적인 결론을 임의로 덧붙이지 않습니다.
+- 사용자의 1인칭 목소리처럼 자연스럽게 씁니다. 일기 요약문이나 AI 보고서처럼 쓰지 않습니다.
+- 기본 문체는 담백한 한국어 에세이체입니다. 사용자의 원문 말투가 뚜렷하면 그 리듬을 우선합니다.
+- 프로젝트 유형은 주제 선택의 힌트일 뿐, 기록에 없는 방향으로 내용을 끌고 가지 않습니다.
+- 첫 문단은 설명보다 구체적인 장면이나 생각으로 시작하는 것을 우선합니다.
+- 마지막 문단은 기록에서 실제로 드러난 변화, 질문, 여운으로 마무리합니다.
+- 기록 10개 기준 약 1,200~1,800자 분량을 목표로 하되 내용이 부족하면 억지로 늘리지 않습니다.
+
+출력 규칙:
+- JSON 형식으로만 응답합니다.
+- 형식: {"chapter_title":"10~24자 이내의 구체적인 제목","chapter_content":"본문\\n\\n단락구분"}
+- chapter_content는 마크다운 없이 순수 텍스트이며 단락은 \\n\\n으로 구분합니다.
+- 제목은 '성장', '변화', '나의 이야기' 같은 추상적인 단어만으로 만들지 말고 이 챕터의 실제 장면이나 중심 의미가 느껴지게 작성합니다.`
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -106,8 +118,8 @@ Deno.serve(async (req) => {
 
     const aiText = await generateGeminiText({
       systemInstruction: SYSTEM_PROMPT,
-      prompt: `프로젝트: ${project.title} (${project.type})\n챕터 번호: ${(chapterCount ?? 0) + 1}\n\n기록:\n${recordsText}`,
-      maxOutputTokens: 2048,
+      prompt: `프로젝트 제목: ${project.title}\n프로젝트 유형: ${project.type}\n챕터 번호: ${(chapterCount ?? 0) + 1}\n\n아래 기록만을 사실의 근거로 사용해 한 챕터의 원고를 작성하세요. 기록에 없는 내용을 추측해 채우지 마세요.\n\n원본 기록:\n${recordsText}`,
+      maxOutputTokens: 4096,
       json: true,
     })
 
