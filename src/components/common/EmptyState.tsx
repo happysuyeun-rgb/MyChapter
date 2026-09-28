@@ -15,9 +15,9 @@ const config: Record<
 > = {
   home: {
     icon: 'book',
-    title: '아직 프로젝트가 없어요',
-    description: '첫 번째 책 프로젝트를 시작해보세요.\nAI가 루틴을 설계해드릴게요.',
-    cta: '첫 프로젝트 시작하기',
+    title: '아직 만들어진 책이 없어요',
+    description: '당신의 이야기가 한 권의 책이 됩니다.\n첫 번째 책의 페이지를 열어보세요.',
+    cta: '첫 번째 책 만들기',
     to: '/project/new',
   },
   records: {
@@ -30,7 +30,7 @@ const config: Record<
   book: {
     icon: 'books',
     title: '완성한 책이 아직 없어요',
-    description: '기록을 쌓아 나만의 책을 완성해보세요.',
+    description: '기록이 충분히 쌓이면 챕터와 원고를 만들고\n한 권의 책으로 발행할 수 있어요.',
     cta: '홈으로',
     to: '/home',
   },
