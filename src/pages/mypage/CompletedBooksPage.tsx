@@ -29,7 +29,7 @@ export function CompletedBooksPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
       <NavBar title="완성한 책" leftLabel="‹ 뒤로" />
 
       {books.length === 0 ? (
@@ -47,7 +47,7 @@ export function CompletedBooksPage() {
                     cover?.textClass ?? 'text-white',
                   ].join(' ')}
                 >
-                  {cover?.emoji ?? '📖'}
+                  <span className={['h-px w-6', cover?.accentClass ?? 'bg-sage'].join(' ')} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{book.project_title}</p>
