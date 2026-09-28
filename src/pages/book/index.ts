@@ -7,3 +7,5 @@ export { PublishCompletePage } from './PublishCompletePage'
 export { FinalReviewPage } from './FinalReviewPage'
 
 export { ManuscriptPage } from './ManuscriptPage'
+
+export { PublishedBookPage } from './PublishedBookPage'
