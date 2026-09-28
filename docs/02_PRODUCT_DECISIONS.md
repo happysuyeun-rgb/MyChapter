@@ -42,21 +42,19 @@ MVP gate:
 
 ## PD-004 · One readiness source of truth
 
-**Status: PROPOSED**
+**Status: CONFIRMED**
 
-현재 프로젝트 생성 시 계산하는 target_count/target_date와 Book Readiness 규칙이 중복된다.
+Book Readiness를 책 만들기 unlock과 사용자-facing 진행도의 유일한 기준으로 사용한다.
 
-DB v2 전 정리 방향:
-
-- Book Readiness를 책 만들기 unlock의 유일한 기준으로 사용
-- period/frequency는 기록 루틴 목표로 유지할지 제거할지 최종 확정
-- 동일 화면에서 서로 다른 “완성률”을 노출하지 않음
+- 프로젝트 생성 화면에서 period/frequency/target_date 기반의 완성 예측을 제거했다.
+- legacy `target_count`, `frequency`, `target_date`, project-level `notification_time`은 DB v2 cutover 전까지 호환 필드로만 남긴다.
+- 사용자에게 서로 다른 두 개의 완성률을 노출하지 않는다.
 
 ## PD-005 · No automatic chapter at every 10 records
 
 **Status: CONFIRMED**
 
-기록 저장 시 `recordCount % 10 === 0`으로 챕터를 자동 생성하는 현재 구현은 제거 대상이다.
+기록 저장 시 `recordCount % 10 === 0`으로 챕터를 자동 생성하던 구현을 제거했다.
 
 원하는 흐름:
 
@@ -72,9 +70,9 @@ DB v2 전 정리 방향:
 
 **Status: CONFIRMED**
 
-AI는 기록을 시간순 10개 묶음으로만 나누지 않는다.
+AI는 기록을 시간순 고정 묶음으로 나누지 않는다.
 
-반복 주제, 사건, 관계, 변화 흐름을 바탕으로 챕터를 구성한다.
+반복 주제, 사건, 관계, 변화 흐름을 바탕으로 관련 기록을 선택해 한 챕터를 구성한다. 현재 Edge Function source는 semantic clustering 방식으로 전환했으며 DB v2 migration/deploy 후 활성화한다.
 
 ## PD-007 · Manuscript is a workflow stage
 
@@ -106,7 +104,7 @@ Free 사용자는 첫 책에서:
 
 까지 완료할 수 있어야 한다.
 
-현재 Free chapter 3개 제한은 이 원칙과 충돌 가능성이 있어 수정 대상이다.
+Free chapter 3개 제한은 제거했다. 첫 책의 챕터 수 자체는 과금 지점으로 사용하지 않는다.
 
 ## PD-010 · Paid conversion after first-book success
 
@@ -123,7 +121,7 @@ Free 사용자는 첫 책에서:
 
 ## PD-011 · Publication is versioned snapshot
 
-**Status: PROPOSED**
+**Status: CONFIRMED**
 
 발행된 책은 당시의 제목/원고/목차/표지를 보존하는 immutable snapshot으로 설계한다.
 
@@ -131,7 +129,7 @@ Free 사용자는 첫 책에서:
 
 ## PD-012 · Record analysis should be persisted
 
-**Status: PROPOSED**
+**Status: CONFIRMED**
 
 장기 개인화와 Story Graph를 위해 record-level structured analysis를 저장한다.
 
@@ -139,7 +137,7 @@ readiness v1은 이를 필수 조건으로 사용하지 않는다.
 
 ## PD-013 · Chapter-record relation should be normalized
 
-**Status: PROPOSED**
+**Status: CONFIRMED**
 
 현재 중복 관계:
 
@@ -186,5 +184,4 @@ MY CHAPTER의 고유 Paper × Editorial 시스템이 우선한다.
 - Free AI edit quota: 총 3회 vs 월 3회
 - Pro AI edit quota/fair-use
 - Pro AI cover fair-use quota
-- 프로젝트 생성 시 frequency/period를 유지할지 완전히 제거할지
 - EPUB를 어느 milestone에 포함할지
