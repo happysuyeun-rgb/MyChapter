@@ -1,5 +1,5 @@
 import { isDevBypass } from '@/lib/devBypass'
-import { mockGenerateQuestion, mockGetTodayQuestion } from '@/mocks'
+import { mockGenerateQuestion } from '@/mocks'
 import { supabase } from '@/lib/supabase'
 import type { ProjectType } from '@/types/database'
 
@@ -63,16 +63,3 @@ export async function generateQuestion(projectId: string): Promise<string> {
   return FALLBACK_QUESTIONS.emotion
 }
 
-export async function getTodayQuestion(projectId: string): Promise<string | null> {
-  if (isDevBypass()) return mockGetTodayQuestion()
-
-  const today = new Date().toISOString().slice(0, 10)
-  const { data } = await supabase
-    .from('daily_questions')
-    .select('question')
-    .eq('project_id', projectId)
-    .eq('question_date', today)
-    .maybeSingle()
-
-  return data?.question ?? null
-}
