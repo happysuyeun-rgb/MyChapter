@@ -1,7 +1,8 @@
 import type { NewProjectDraft } from '@/stores/projectStore'
 import { mockNowIso, mockStore, newMockId } from '@/mocks/state'
-import type { Project } from '@/types/database'
+import type { Project, ProjectType } from '@/types/database'
 import { calculateRoutine } from '@/utils/calculateRoutine'
+import { BOOK_READINESS_RULES } from '@/utils/bookReadiness'
 
 export function mockGetProjects(): Project[] {
   return [...mockStore.projects]
@@ -40,4 +41,32 @@ export function mockCreateProject(userId: string, draft: NewProjectDraft): Proje
 
   mockStore.projects.unshift(project)
   return project
+}
+
+
+export function mockUpdateProjectSettings(
+  projectId: string,
+  userId: string,
+  input: { title: string; type: ProjectType },
+): Project {
+  const index = mockStore.projects.findIndex((p) => p.id === projectId && p.user_id === userId)
+  if (index < 0) throw new Error('책을 찾을 수 없어요.')
+
+  const rule = BOOK_READINESS_RULES[input.type]
+  if (!rule) throw new Error('지원하지 않는 책 유형입니다.')
+
+  const updated: Project = {
+    ...mockStore.projects[index],
+    title: input.title.trim(),
+    type: input.type,
+    readiness_min_days: rule.minDays,
+    readiness_min_records: rule.minRecords,
+    readiness_target_days: rule.targetDays,
+    readiness_target_records: rule.targetRecords,
+    readiness_policy_version: 1,
+    updated_at: mockNowIso(),
+  }
+
+  mockStore.projects[index] = updated
+  return updated
 }
