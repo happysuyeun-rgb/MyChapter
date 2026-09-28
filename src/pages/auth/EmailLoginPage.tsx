@@ -16,7 +16,7 @@ export function EmailLoginPage() {
     const { error: submitError } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: `${window.location.origin}/home`,
+        emailRedirectTo: `${window.location.origin}/splash`,
       },
     })
     setLoading(false)
