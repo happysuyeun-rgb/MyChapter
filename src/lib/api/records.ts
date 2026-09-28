@@ -44,6 +44,15 @@ export interface SaveRecordResult {
   badgeTitles: string[]
 }
 
+
+function analyzeRecordInBackground(recordId: string): void {
+  void supabase.functions
+    .invoke('analyze-record', { body: { record_id: recordId } })
+    .catch(() => {
+      // Analysis is derived data. A failure must never block or undo the user's saved record.
+    })
+}
+
 export async function getNextRecordNumber(projectId: string): Promise<number> {
   if (isDevBypass()) return mockGetNextRecordNumber(projectId)
 
@@ -142,6 +151,7 @@ export async function createRecord(
 
   if (error) throw error
 
+  analyzeRecordInBackground(data.id)
   return finalizeSave(input.userId, input.projectId, data, targetCount)
 }
 
@@ -171,6 +181,8 @@ export async function updateRecord(
     .single()
 
   if (error) throw error
+
+  analyzeRecordInBackground(data.id)
   return finalizeSave(userId, projectId, data, targetCount)
 }
 
