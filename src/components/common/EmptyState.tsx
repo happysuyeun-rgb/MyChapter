@@ -17,8 +17,7 @@ const config: Record<
     icon: 'book',
     eyebrow: 'FIRST BOOK',
     title: '아직 펼쳐진 책이 없어요',
-    description: '오늘 한 페이지를 남기면
-당신의 첫 번째 책이 시작됩니다.',
+    description: '오늘 한 페이지를 남기면\n당신의 첫 번째 책이 시작됩니다.',
     cta: '첫 번째 책 시작하기',
     to: '/project/new',
   },
@@ -26,8 +25,7 @@ const config: Record<
     icon: 'pen',
     eyebrow: 'FIRST PAGE',
     title: '아직 기록한 페이지가 없어요',
-    description: '잘 쓰는 것보다 남기는 것이 먼저예요.
-오늘의 장면 하나부터 시작해보세요.',
+    description: '잘 쓰는 것보다 남기는 것이 먼저예요.\n오늘의 장면 하나부터 시작해보세요.',
     cta: '첫 페이지 쓰기',
     to: '/record/mode',
   },
@@ -35,8 +33,7 @@ const config: Record<
     icon: 'books',
     eyebrow: 'PUBLISHED BOOKS',
     title: '아직 완성한 책이 없어요',
-    description: '기록이 충분히 쌓이면 PAGE와 함께
-챕터와 원고를 한 권으로 엮을 수 있어요.',
+    description: '기록이 충분히 쌓이면 PAGE와 함께\n챕터와 원고를 한 권으로 엮을 수 있어요.',
     cta: '홈으로 돌아가기',
     to: '/home',
   },
