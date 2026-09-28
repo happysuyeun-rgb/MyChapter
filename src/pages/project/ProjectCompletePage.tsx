@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { AppLottie, Button, Card } from '@/components/common'
 import bookOpenAnimation from '@/assets/animations/book-open.json'
 import { useProjectStore } from '@/stores/projectStore'
-import { formatDateKo } from '@/utils/calculateRoutine'
 
 export function ProjectCompletePage() {
   const navigate = useNavigate()
@@ -14,10 +13,6 @@ export function ProjectCompletePage() {
   }, [createdProject, navigate])
 
   if (!createdProject) return null
-
-  const targetDate = createdProject.target_date
-    ? formatDateKo(new Date(createdProject.target_date))
-    : ''
 
   const handleWrite = () => {
     resetDraft()
@@ -37,7 +32,7 @@ export function ProjectCompletePage() {
       <p className="mb-8 mt-3 text-sm leading-relaxed text-ink-muted">
         <strong className="text-ink">{createdProject.title}</strong>
         <br />
-        {targetDate ? targetDate + '까지 ' : ''}기록을 차곡차곡 모아
+        오늘부터 기록을 차곡차곡 모아
         <br />
         한 권의 이야기로 만들어가요.
       </p>
