@@ -167,6 +167,7 @@ Deno.serve(async (req) => {
       .from('publications')
       .select('version')
       .eq('project_id', project_id)
+      .eq('status', 'published')
       .order('version', { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -179,24 +180,56 @@ Deno.serve(async (req) => {
       title: chapter.title,
     }))
 
-    const { data: publication, error: publicationError } = await admin
+    const { data: retryPublication, error: retryLookupError } = await admin
       .from('publications')
-      .insert({
-        project_id,
-        user_id: user.id,
-        version,
-        status: 'processing',
-        title_snapshot: project.title,
-        subtitle_snapshot: project.subtitle,
-        author_snapshot: authorName,
-        cover_snapshot: { template_id: cover_template_id },
-        toc_snapshot: tocSnapshot,
-      })
       .select('id')
-      .single()
+      .eq('project_id', project_id)
+      .eq('version', version)
+      .eq('status', 'failed')
+      .maybeSingle()
 
-    if (publicationError) throw publicationError
-    publicationId = publication.id
+    if (retryLookupError) throw retryLookupError
+
+    if (retryPublication) {
+      publicationId = retryPublication.id
+      const { error: retryUpdateError } = await admin
+        .from('publications')
+        .update({
+          status: 'processing',
+          title_snapshot: project.title,
+          subtitle_snapshot: project.subtitle,
+          author_snapshot: authorName,
+          cover_snapshot: { template_id: cover_template_id },
+          toc_snapshot: tocSnapshot,
+          pdf_path: null,
+          page_count: null,
+          error_code: null,
+          error_message: null,
+          published_at: null,
+        })
+        .eq('id', publicationId)
+
+      if (retryUpdateError) throw retryUpdateError
+    } else {
+      const { data: publication, error: publicationError } = await admin
+        .from('publications')
+        .insert({
+          project_id,
+          user_id: user.id,
+          version,
+          status: 'processing',
+          title_snapshot: project.title,
+          subtitle_snapshot: project.subtitle,
+          author_snapshot: authorName,
+          cover_snapshot: { template_id: cover_template_id },
+          toc_snapshot: tocSnapshot,
+        })
+        .select('id')
+        .single()
+
+      if (publicationError) throw publicationError
+      publicationId = publication.id
+    }
 
     const coverTagline = await generateGeminiText({
       systemInstruction: '전자책 표지용 한 줄 태그라인을 생성하세요. 25자 이내, 한국어, 따옴표 없이.',
@@ -288,7 +321,7 @@ Deno.serve(async (req) => {
       .from('published-pdfs')
       .upload(storagePath, pdfBytes, {
         contentType: 'application/pdf',
-        upsert: false,
+        upsert: true,
       })
 
     if (uploadError) throw uploadError
