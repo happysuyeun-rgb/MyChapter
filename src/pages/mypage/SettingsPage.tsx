@@ -61,33 +61,35 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-white">
-      <NavBar title="설정" leftLabel="‹ 뒤로" />
+    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+      <NavBar title="설정" leftLabel="←" />
 
-      <div className="flex-1 overflow-y-auto">
-        <Section title="알림">
+      <main className="flex-1 overflow-y-auto px-5 pb-10 pt-6">
+        <header className="border-b border-ink pb-5">
+          <p className="text-[10px] font-semibold tracking-[0.2em] text-sage">ACCOUNT & APP</p>
+          <h1 className="mt-2 font-serif text-[26px] font-bold tracking-[-0.03em]">설정</h1>
+          <p className="mt-2 text-xs leading-5 text-ink-muted">기록 리듬과 계정 정보를 조용히 관리해요.</p>
+        </header>
+
+        <Section index="01" title="알림">
           <Row
             label="기록 알림"
             value={profile?.notification_enabled ? 'ON' : 'OFF'}
             onClick={() => void handleNotificationToggle()}
           />
-          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+          <div className="flex min-h-[58px] items-center justify-between border-b border-border py-3">
             <span className="text-sm">알림 시간</span>
             <select
-              className="rounded-lg border border-border bg-surface-alt px-3 py-1.5 text-sm text-ink-muted"
+              className="border-0 border-b border-border bg-transparent px-1 py-2 text-sm text-ink outline-none"
               value={notificationTime}
               onChange={(e) => void handleTimeChange(e.target.value)}
             >
-              {TIME_OPTIONS.map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
-              ))}
+              {TIME_OPTIONS.map((time) => <option key={time} value={time}>{time}</option>)}
             </select>
           </div>
         </Section>
 
-        <Section title="계정">
+        <Section index="02" title="작가 정보">
           <Row
             label="닉네임"
             value={profile?.nickname ?? '-'}
@@ -97,76 +99,59 @@ export function SettingsPage() {
             }}
           />
           <Row
-            label="프로필 이모지"
-            value={profile?.profile_emoji ?? '🌿'}
+            label="프로필 표시"
+            value={profile?.profile_emoji ?? '선택 안 함'}
             onClick={() => setEmojiOpen(true)}
           />
         </Section>
 
-        <Section title="구독">
-          <Row
-            label="현재 플랜"
-            value={isPro ? 'Pro' : 'Free'}
-            onClick={() => navigate('/mypage/subscription')}
-          />
+        <Section index="03" title="구독">
+          <Row label="현재 플랜" value={isPro ? 'Pro' : 'Free'} onClick={() => navigate('/mypage/subscription')} />
           {!isPro && (
             <button
               type="button"
-              className="w-full border-b border-border px-5 py-4 text-left text-sm text-accent"
+              className="flex min-h-[58px] w-full items-center justify-between border-b border-border py-3 text-left text-sm font-semibold"
               onClick={() => showPaywall()}
             >
-              Pro 업그레이드 ({PRO_PRICE_LABEL})
+              <span>Pro 업그레이드</span><span className="text-terracotta">{PRO_PRICE_LABEL} →</span>
             </button>
           )}
         </Section>
 
-        <Section title="앱 정보">
-          <Row label="이용약관" value="›" onClick={() => navigate('/mypage/terms-of-service')} />
-          <Row
-            label="개인정보처리방침"
-            value="›"
-            onClick={() => navigate('/mypage/privacy-policy')}
-          />
+        <Section index="04" title="앱 정보">
+          <Row label="이용약관" value="열기 →" onClick={() => navigate('/mypage/terms-of-service')} />
+          <Row label="개인정보처리방침" value="열기 →" onClick={() => navigate('/mypage/privacy-policy')} />
           <Row label="버전" value="1.0.0" />
         </Section>
-      </div>
 
-      <div className="space-y-2 p-5">
-        <button
-          type="button"
-          className="w-full py-3 text-sm text-ink-muted"
-          onClick={() => void signOut()}
-        >
-          로그아웃
-        </button>
-        <button
-          type="button"
-          className="w-full py-3 text-sm text-danger"
-          onClick={() => navigate('/mypage/delete-account')}
-        >
-          계정 삭제
-        </button>
-      </div>
+        <section className="mt-10 border-t border-border pt-5">
+          <button type="button" className="min-h-11 text-sm text-ink-muted" onClick={() => void signOut()}>
+            로그아웃
+          </button>
+          <button type="button" className="ml-6 min-h-11 text-sm text-danger" onClick={() => navigate('/mypage/delete-account')}>
+            계정 삭제
+          </button>
+        </section>
+      </main>
 
       <Modal open={nicknameOpen} onClose={() => setNicknameOpen(false)} title="닉네임 변경">
         <Input
+          active
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           maxLength={10}
           placeholder="2~10자"
         />
-        <Button className="mt-4" disabled={saving} onClick={() => void handleNicknameSave()}>
-          저장
-        </Button>
+        <Button className="mt-5" disabled={saving} onClick={() => void handleNicknameSave()}>저장</Button>
       </Modal>
 
-      <Modal open={emojiOpen} onClose={() => setEmojiOpen(false)} title="이모지 선택">
-        <div className="grid grid-cols-4 gap-3">
+      <Modal open={emojiOpen} onClose={() => setEmojiOpen(false)} title="프로필 표시 선택">
+        <div className="grid grid-cols-4 border-l border-t border-border">
           {EMOJI_OPTIONS.map((emoji) => (
             <button
               key={emoji}
               type="button"
-              className="flex h-12 items-center justify-center rounded-xl bg-surface-alt text-2xl"
+              className="flex h-14 items-center justify-center border-b border-r border-border text-xl"
               onClick={() => void handleEmojiSelect(emoji)}
             >
               {emoji}
@@ -178,33 +163,28 @@ export function SettingsPage() {
   )
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({ index, title, children }: { index: string; title: string; children: ReactNode }) {
   return (
-    <div className="mb-2">
-      <p className="px-5 pb-2 pt-4 text-xs font-semibold text-ink-muted">{title}</p>
+    <section className="mt-8">
+      <div className="flex items-center justify-between border-b border-ink pb-2">
+        <h2 className="font-serif text-base font-bold">{title}</h2>
+        <span className="font-serif text-xs text-ink-faint">{index}</span>
+      </div>
       {children}
-    </div>
+    </section>
   )
 }
 
-function Row({
-  label,
-  value,
-  onClick,
-}: {
-  label: string
-  value: string
-  onClick?: () => void
-}) {
+function Row({ label, value, onClick }: { label: string; value: string; onClick?: () => void }) {
   return (
     <button
       type="button"
-      className="flex w-full items-center justify-between border-b border-border px-5 py-4 text-left"
+      className="flex min-h-[58px] w-full items-center justify-between border-b border-border py-3 text-left"
       onClick={onClick}
       disabled={!onClick}
     >
       <span className="text-sm">{label}</span>
-      <span className="text-sm text-ink-muted">{value}</span>
+      <span className="max-w-[190px] truncate text-xs text-ink-muted">{value}</span>
     </button>
   )
 }
