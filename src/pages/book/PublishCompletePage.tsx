@@ -16,7 +16,7 @@ export function PublishCompletePage() {
 
   if (!publishResult) return null
 
-  const { project, recordCount, pageCount, coverTemplateId } = publishResult
+  const { project, recordCount, pageCount, coverTemplateId, publicationId, version } = publishResult
   const cover = COVER_TEMPLATES.find((t) => t.id === coverTemplateId)
 
   const handleHome = () => {
@@ -29,9 +29,9 @@ export function PublishCompletePage() {
     navigate('/project/workspace')
   }
 
-  const handleLibrary = () => {
+  const handlePublication = () => {
     clearPublishResult()
-    navigate('/library')
+    navigate(`/publication/${publicationId}`)
   }
 
   return (
@@ -74,13 +74,16 @@ export function PublishCompletePage() {
             <span className="text-ink-muted">책 제목</span><span className="max-w-[220px] truncate font-semibold">{project.title}</span>
           </div>
           <div className="mt-3 flex items-center justify-between text-xs">
+            <span className="text-ink-muted">발행 버전</span><span className="font-semibold">v{version}</span>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-xs">
             <span className="text-ink-muted">표지</span><span className="font-semibold">{cover?.name ?? coverTemplateId}</span>
           </div>
         </div>
       </main>
 
       <div>
-        <Button className="mb-2" onClick={handleLibrary}>내 서재에서 보기</Button>
+        <Button className="mb-2" onClick={handlePublication}>방금 발행한 책 열기</Button>
         <Button variant="secondary" className="mb-2" onClick={handleWorkspace}>책 작업실로 돌아가기</Button>
         <Button variant="ghost" onClick={handleHome}>홈으로</Button>
       </div>
