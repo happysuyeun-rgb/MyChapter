@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, ProgressBar } from '@/components/common'
+import { ProgressBar } from '@/components/common'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { listChapters } from '@/lib/api/chapters'
