@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FlatIcon } from '@/components/common'
 import { getDevBypassEnv, isDevBypass } from '@/lib/devBypass'
 import { useAuthStore } from '@/stores/authStore'
 import { supabase } from '@/lib/supabase'
@@ -57,35 +58,50 @@ export function SplashPage() {
         return
       }
 
-      const { count } = await supabase
+      await supabase
         .from('projects')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', session.user.id)
 
-      navigate(count && count > 0 ? '/home' : '/home', { replace: true })
-    }, 1500)
+      navigate('/home', { replace: true })
+    }, 1200)
 
     return () => clearTimeout(timer)
   }, [initialized, session, profile, navigate])
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-ink px-7 text-center text-white">
+    <div className="flex min-h-dvh flex-col bg-ink px-7 py-10 text-surface">
       <div
         className={[
-          'transition-opacity duration-300',
+          'flex flex-1 flex-col justify-between transition-opacity duration-500',
           fadeIn ? 'opacity-100' : 'opacity-0',
         ].join(' ')}
       >
-        <div className="mb-2 text-[52px]">📖</div>
-        <h1 className="mb-4 text-[40px] font-extrabold tracking-tight">
-          My<span className="text-accent-mid">Chapter</span>
-        </h1>
-        <p className="text-base leading-relaxed text-white/60">
-          오늘 한 줄이
-          <br />
-          언젠가 당신의 한 챕터가 됩니다
-        </p>
-        <div className="mx-auto mt-10 h-1 w-10 rounded-sm bg-accent-mid" />
+        <div className="flex items-center justify-between border-b border-surface/20 pb-5">
+          <span className="text-[10px] font-semibold tracking-[0.24em] text-surface/50">MY CHAPTER</span>
+          <FlatIcon name="book" size={22} className="text-sage" />
+        </div>
+
+        <div className="py-12">
+          <p className="text-[11px] font-semibold tracking-[0.22em] text-sage">A BOOK OF ME</p>
+          <h1 className="mt-5 font-serif text-[42px] font-bold leading-[1.08] tracking-[-0.04em]">
+            하루를 기록하고,
+            <br />
+            삶을 한 권으로.
+          </h1>
+          <p className="mt-6 max-w-[300px] text-sm leading-7 text-surface/60">
+            오늘의 작은 장면들이 모여
+            <br />
+            언젠가 당신만의 한 권이 됩니다.
+          </p>
+        </div>
+
+        <div className="border-t border-surface/20 pt-5">
+          <div className="flex items-center justify-between text-[10px] tracking-[0.15em] text-surface/40">
+            <span>RECORD · EDIT · PUBLISH</span>
+            <span>PAGE 01</span>
+          </div>
+        </div>
       </div>
     </div>
   )
