@@ -7,6 +7,7 @@ MY CHAPTER는 사용자가 자신의 이야기를 **책(Project)** 단위로 기
 ## Product status
 
 - MVP UI/IA skeleton: 1차 구현 완료
+- Design v1 sweep: 전체 사용자 화면 Editorial Book Desk 스타일 반영
 - Current focus: design v1 completion → legacy/source-of-truth cleanup → DB v2 cutover → E2E
 - Working branch: `audit/mychapter-sept-2026`
 - External bookstore / POD / community / multilingual: MVP 제외
