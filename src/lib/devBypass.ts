@@ -17,6 +17,9 @@ export function getDevBypassEnv(): string | undefined {
 
 /** Vite inlines VITE_* at build time — Vercel env changes require a redeploy. */
 export function isDevBypass(): boolean {
+  // Production must never use mock data, even if a stale Vercel variable remains.
+  if (import.meta.env.PROD) return false
+
   const raw = getDevBypassEnv()
   if (!raw) return false
   const normalized = raw.toLowerCase()
