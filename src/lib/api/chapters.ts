@@ -46,18 +46,63 @@ export async function getChapter(id: string): Promise<Chapter | null> {
   return data
 }
 
+export async function getChapterRecordCountMap(projectId: string): Promise<Record<string, number>> {
+  if (isDevBypass()) {
+    const chapters = mockListChapters(projectId)
+    return Object.fromEntries(chapters.map((chapter) => [chapter.id, chapter.record_ids.length]))
+  }
+
+  const { data: chapters, error: chapterError } = await supabase
+    .from('chapters')
+    .select('id')
+    .eq('project_id', projectId)
+
+  if (chapterError) throw chapterError
+  if (!chapters?.length) return {}
+
+  const chapterIds = chapters.map((chapter) => chapter.id)
+  const { data: relations, error: relationError } = await supabase
+    .from('chapter_records')
+    .select('chapter_id')
+    .in('chapter_id', chapterIds)
+
+  if (relationError) throw relationError
+
+  return (relations ?? []).reduce<Record<string, number>>((counts, relation) => {
+    counts[relation.chapter_id] = (counts[relation.chapter_id] ?? 0) + 1
+    return counts
+  }, {})
+}
+
 export async function getUnassignedRecordCount(projectId: string): Promise<number> {
   if (isDevBypass()) return mockGetUnassignedRecordCount(projectId)
 
-  const { count, error } = await supabase
-    .from('records')
-    .select('*', { count: 'exact', head: true })
-    .eq('project_id', projectId)
-    .is('chapter_id', null)
-    .eq('is_draft', false)
+  const [{ data: records, error: recordError }, { data: chapters, error: chapterError }] = await Promise.all([
+    supabase
+      .from('records')
+      .select('id')
+      .eq('project_id', projectId)
+      .eq('is_draft', false),
+    supabase
+      .from('chapters')
+      .select('id')
+      .eq('project_id', projectId),
+  ])
 
-  if (error) throw error
-  return count ?? 0
+  if (recordError) throw recordError
+  if (chapterError) throw chapterError
+  if (!records?.length) return 0
+  if (!chapters?.length) return records.length
+
+  const { data: relations, error: relationError } = await supabase
+    .from('chapter_records')
+    .select('record_id')
+    .in('chapter_id', chapters.map((chapter) => chapter.id))
+
+  if (relationError) throw relationError
+
+  const assigned = new Set((relations ?? []).map((relation) => relation.record_id))
+  return records.reduce((count, record) => count + (assigned.has(record.id) ? 0 : 1), 0)
 }
 
 export async function updateChapterContent(
