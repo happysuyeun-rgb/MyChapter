@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card, Chip, Input } from '@/components/common'
+import { Button, Input } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
-import { FREQUENCY_OPTIONS, NOTIFICATION_TIME_OPTIONS, PERIOD_OPTIONS } from '@/constants/projectOptions'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { createProject } from '@/lib/api/projects'
 import { useAuthStore } from '@/stores/authStore'
 import { useProjectStore } from '@/stores/projectStore'
-import { calculateRoutine, formatDateKo } from '@/utils/calculateRoutine'
+import { BOOK_READINESS_RULES } from '@/utils/bookReadiness'
 
 export function ProjectSetupPage() {
   const navigate = useNavigate()
@@ -21,67 +20,75 @@ export function ProjectSetupPage() {
     if (!draft.type) navigate('/project/new', { replace: true })
   }, [draft.type, navigate])
 
-  const routine = useMemo(
-    () => calculateRoutine(draft.periodDays, draft.frequency),
-    [draft.periodDays, draft.frequency],
-  )
-
   if (!draft.type || !typeMeta) return null
+
+  const readiness = BOOK_READINESS_RULES[draft.type]
 
   const handleStart = async () => {
     if (!user || !draft.title.trim()) return
     setLoading(true)
     setError('')
     try {
+      // period/frequency/recordMode remain compatibility fields until DB v2 migration.
       const project = await createProject(user.id, { ...draft, recordMode: 'daily' })
       setDraft({ recordMode: 'daily' })
       setCreatedProject(project)
       setActiveProject(project)
       navigate('/project/new/complete')
     } catch {
-      setError('프로젝트 생성에 실패했어요. 다시 시도해주세요.')
+      setError('책을 시작하지 못했어요. 다시 시도해주세요.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
       <NavBar title={typeMeta.label} leftLabel="←" />
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-5">
-          <label className="mb-2 block text-[11px] font-medium uppercase tracking-wider text-ink-faint">책 제목</label>
-          <Input active value={draft.title} onChange={(e) => setDraft({ title: e.target.value })} placeholder="책 제목을 입력해주세요" className="mb-5" />
+      <main className="flex-1 overflow-y-auto px-5 pb-8 pt-6">
+        <p className="text-xs font-semibold tracking-[0.18em] text-sage">NEW BOOK</p>
+        <h1 className="mt-2 font-serif text-2xl font-bold">이 책의 제목을 정해주세요</h1>
+        <p className="mt-2 text-sm leading-relaxed text-ink-muted">제목은 나중에 바꿀 수 있어요. 지금은 기록을 시작할 수 있을 만큼만 정하면 됩니다.</p>
 
-          <label className="mb-2 block text-[11px] font-medium uppercase tracking-wider text-ink-faint">완성 목표 기간</label>
-          <div className="mb-5 flex flex-wrap">
-            {PERIOD_OPTIONS.map((opt) => <Chip key={opt.value} active={draft.periodDays === opt.value} onClick={() => setDraft({ periodDays: opt.value })}>{opt.label}</Chip>)}
-          </div>
-
-          <label className="mb-2 block text-[11px] font-medium uppercase tracking-wider text-ink-faint">기록 주기</label>
-          <div className="mb-5 flex flex-wrap">
-            {FREQUENCY_OPTIONS.map((opt) => <Chip key={opt.value} active={draft.frequency === opt.value} onClick={() => setDraft({ frequency: opt.value })}>{opt.label}</Chip>)}
-          </div>
-
-          <label className="mb-2 block text-[11px] font-medium uppercase tracking-wider text-ink-faint">알림 시간</label>
-          <div className="mb-6 flex flex-wrap">
-            {NOTIFICATION_TIME_OPTIONS.map((opt) => <Chip key={opt.value} active={draft.notificationTime === opt.value} onClick={() => setDraft({ notificationTime: opt.value })}>{opt.label}</Chip>)}
-          </div>
-
-          <Card accent className="p-4">
-            <p className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-accent">AI 루틴 예측</p>
-            <div className="flex justify-between py-1 text-sm"><span className="text-ink-muted">필요한 기록 수</span><span className="font-bold text-accent">{routine.targetCount}개</span></div>
-            <div className="flex justify-between py-1 text-sm"><span className="text-ink-muted">예상 페이지</span><span className="font-bold">약 {routine.estimatedPages}p</span></div>
-            <div className="flex justify-between py-1 text-sm"><span className="text-ink-muted">예상 완성일</span><span className="font-bold">{formatDateKo(routine.targetDate)}</span></div>
-          </Card>
-          <p className="mt-4 text-xs leading-relaxed text-ink-muted">기록할 때마다 AI 질문, 사진 기록, 자유 기록 중 원하는 방식을 선택할 수 있어요.</p>
-          {error && <p className="mt-3 text-sm text-danger">{error}</p>}
+        <div className="mt-7">
+          <label className="mb-2 block text-xs font-semibold text-ink-muted">책 제목</label>
+          <Input
+            active
+            value={draft.title}
+            onChange={(e) => setDraft({ title: e.target.value })}
+            placeholder="책 제목을 입력해주세요"
+            maxLength={50}
+          />
         </div>
-      </div>
 
-      <div className="p-5">
+        <section className="mt-8 border-y border-border py-5">
+          <p className="font-serif text-base font-bold">책 만들기는 이야기가 충분히 쌓이면 열려요</p>
+          {readiness ? (
+            <>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+                {typeMeta.label}는 최소 <strong className="text-ink">{readiness.minDays}일</strong> 동안
+                <strong className="text-ink"> {readiness.minRecords}개의 기록</strong>이 쌓이면 챕터와 원고 만들기를 시작할 수 있어요.
+              </p>
+              <p className="mt-3 text-xs leading-relaxed text-ink-faint">
+                매일 쓰지 않아도 괜찮아요. MY CHAPTER는 기록 횟수와 시간이 함께 쌓이는 과정을 봅니다.
+              </p>
+            </>
+          ) : (
+            <p className="mt-2 text-sm text-ink-muted">기록이 충분히 쌓이면 PAGE가 책 만들기를 안내해드려요.</p>
+          )}
+        </section>
+
+        <section className="mt-8">
+          <p className="font-serif text-base font-bold">기록 방식은 매번 선택해요</p>
+          <p className="mt-2 text-sm leading-relaxed text-ink-muted">AI 질문으로 시작하거나, 자유롭게 쓰거나, 사진과 함께 남길 수 있어요. 한 가지 방식으로 고정되지 않습니다.</p>
+        </section>
+
+        {error && <p className="mt-5 text-sm text-danger">{error}</p>}
+      </main>
+
+      <div className="border-t border-border bg-surface px-5 py-4 safe-bottom">
         <Button disabled={!draft.title.trim() || loading} onClick={() => void handleStart()}>
-          {loading ? '생성 중...' : '프로젝트 시작하기'}
+          {loading ? '책 만드는 중...' : '이 책 시작하기'}
         </Button>
       </div>
     </div>
