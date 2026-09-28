@@ -57,7 +57,7 @@ function SortableChapterRow({
       ref={setNodeRef}
       style={style}
       className={[
-        'flex items-stretch gap-2 rounded-card border border-border bg-white',
+        'flex items-stretch gap-2 rounded-card border border-border bg-surface-card shadow-paper',
         editMode ? 'border-accent/40' : '',
       ].join(' ')}
     >
@@ -202,7 +202,7 @@ export function BookPage() {
   const progress = Math.min(100, Math.round((totalRecords / project.target_count) * 100))
 
   return (
-    <div className="flex flex-1 flex-col overflow-y-auto">
+    <div className="flex flex-1 flex-col overflow-y-auto bg-surface">
       <div className="border-b border-border px-5 py-4">
         <h1 className="text-lg font-bold">{project.title}</h1>
         <p className="mt-1 text-xs text-ink-muted">
@@ -294,7 +294,7 @@ export function BookPage() {
 
       {chapters.length > 0 && !editMode && (
         <div className="border-t border-border px-5 py-4">
-          <Button onClick={() => navigate('/book/cover')}>책 출판하기</Button>
+          <Button onClick={() => navigate('/book/cover')}>표지 선택하고 책 완성하기</Button>
         </div>
       )}
     </div>
