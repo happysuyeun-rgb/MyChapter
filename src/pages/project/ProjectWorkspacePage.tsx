@@ -51,17 +51,17 @@ export function ProjectWorkspacePage() {
         <p className="mt-1 text-sm text-ink-muted">{typeLabel}</p>
       </header>
       <main className="px-5 pb-8">
-        <Card className="paper-card p-5">
+        <section className="border-y border-border py-5">
           <div className="flex items-end justify-between"><div><p className="text-xs text-ink-muted">이야기 준비도</p><p className="mt-1 text-sm font-semibold">{readiness.message}</p></div><p className="font-serif text-3xl font-bold">{progress}%</p></div>
           <ProgressBar value={progress} className="mt-3" />
           <p className="mt-2 text-[11px] leading-relaxed text-ink-muted">{readiness.isReady ? `기록 ${recordCount}개 · ${readiness.elapsedDays}일 동안 이야기를 모았어요.` : `기록 ${recordCount}/${readiness.rule.minRecords}개 · ${readiness.elapsedDays}/${readiness.rule.minDays}일 · 책 만들기까지 ${readiness.recordsRemaining > 0 ? `기록 ${readiness.recordsRemaining}개` : ''}${readiness.recordsRemaining > 0 && readiness.daysRemaining > 0 ? ' · ' : ''}${readiness.daysRemaining > 0 ? `${readiness.daysRemaining}일` : ''}`}</p>
           <button className="mt-5 w-full rounded-btn bg-accent px-4 py-3.5 text-sm font-semibold text-white" onClick={() => navigate('/record/mode')}>+ 오늘 기록하기</button>
-        </Card>
-        <section className="mt-6">
+        </section>
+        <section className="mt-8">
           <p className="mb-3 font-serif text-base font-bold">이 책을 완성하는 과정</p>
-          <div className="space-y-2">
+          <div className="border-t border-border">
             {stages.map((stage, index) => (
-              <button key={stage.label} disabled={!stage.ready} onClick={() => navigate(stage.to)} className={['flex w-full items-center gap-4 rounded-card border p-4 text-left', stage.ready ? 'border-border bg-surface-card shadow-paper' : 'border-border bg-surface-alt/50 opacity-55'].join(' ')}>
+              <button key={stage.label} disabled={!stage.ready} onClick={() => navigate(stage.to)} className={['flex w-full items-center gap-4 border-b border-border py-4 text-left', stage.ready ? 'bg-transparent' : 'opacity-45'].join(' ')}>
                 <span className={['flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold', stage.ready ? 'bg-accent text-white' : 'bg-surface-alt text-ink-faint'].join(' ')}>{index + 1}</span>
                 <div className="min-w-0 flex-1"><p className="font-serif text-sm font-bold">{stage.label}</p><p className="mt-1 text-[11px] text-ink-muted">{stage.description}</p></div>
                 <span className="text-ink-faint">›</span>
@@ -69,9 +69,9 @@ export function ProjectWorkspacePage() {
             ))}
           </div>
         </section>
-        <Card className="mt-6 p-4">
+        <section className="mt-8 border-t border-border pt-5">
           <div className="flex gap-3"><div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border border-[#D8CCB9] bg-[#FFF9EE] shadow-sm"><span className="absolute -top-1 left-4 h-2 w-1 rotate-[-28deg] rounded-full bg-sage" /><span className="absolute -top-1 right-2 h-1.5 w-2 rotate-[25deg] rounded-full bg-sage" /><span className="font-serif text-[9px] font-bold tracking-[0.1em]">PAGE</span></div><div><p className="text-sm font-semibold">PAGE의 편집 메모</p><p className="mt-1 text-xs leading-relaxed text-ink-muted">{readiness.isReady ? '이제 기록을 챕터와 원고로 발전시킬 수 있어요.' : '지금은 완성보다 재료를 모으는 시간이에요. 기간과 기록이 함께 쌓이면 책 만들기가 열려요.'}</p></div></div>
-        </Card>
+        </section>
       </main>
     </div>
   )
