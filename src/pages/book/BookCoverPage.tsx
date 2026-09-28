@@ -3,13 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { Button, Card } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { COVER_TEMPLATES } from '@/constants/coverTemplates'
-import { listChapters } from '@/lib/api/chapters'
-import {
-  BookApiError,
-  downloadPdfFromUrl,
-  generateBookPdf,
-} from '@/lib/api/books'
-import { listRecords } from '@/lib/api/records'
 import { getSubscriptionPlan } from '@/lib/api/subscriptions'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { useAuthStore } from '@/stores/authStore'
@@ -20,11 +13,10 @@ export function BookCoverPage() {
   const navigate = useNavigate()
   const { user, profile } = useAuthStore()
   const { project, loading: projectLoading } = useActiveProject()
-  const { selectedCoverId, setSelectedCoverId, setPublishResult } = useBookStore()
+  const { selectedCoverId, setSelectedCoverId } = useBookStore()
   const { showPaywall } = usePaywallStore()
 
   const [isPro, setIsPro] = useState(false)
-  const [publishing, setPublishing] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -39,49 +31,7 @@ export function BookCoverPage() {
     setSelectedCoverId(id)
   }
 
-  const handlePublish = async () => {
-    if (!user || !project) return
-
-    if (!isPro) {
-      showPaywall()
-      return
-    }
-
-    setPublishing(true)
-    try {
-      const chapters = await listChapters(project.id)
-      if (chapters.length === 0) {
-        navigate('/book', { replace: true })
-        return
-      }
-
-      const records = await listRecords(user.id, { projectId: project.id })
-
-      const { pdfUrl, pageCount } = await generateBookPdf(
-        project.id,
-        selectedCoverId,
-      )
-
-      downloadPdfFromUrl(pdfUrl, `${project.title}.pdf`)
-
-      setPublishResult({
-        project,
-        recordCount: records.length,
-        pageCount,
-        coverTemplateId: selectedCoverId,
-      })
-
-      navigate('/book/publish/complete')
-    } catch (err) {
-      if (err instanceof BookApiError && err.code === 'PDF_PRO_ONLY') {
-        showPaywall()
-      } else if (err instanceof BookApiError && err.code === 'PDF_GENERATE_FAILED') {
-        console.error(err.message)
-      }
-    } finally {
-      setPublishing(false)
-    }
-  }
+  const handleContinue = () => navigate('/book/review')
 
   if (projectLoading || !project) {
     return (
@@ -149,19 +99,13 @@ export function BookCoverPage() {
           <Card className="p-4">
             <p className="text-sm font-semibold">선택한 표지</p>
             <p className="mt-1 text-xs text-ink-muted">{selectedTemplate.name}</p>
-            {!isPro && (
-              <p className="mt-3 text-xs leading-relaxed text-ink-muted">
-                PDF 출판은 Pro 플랜이 필요해요.
-              </p>
-            )}
+            {!isPro && <p className="mt-3 text-xs leading-relaxed text-ink-muted">기본 표지로 첫 책까지 무료 발행할 수 있어요.</p>}
           </Card>
         )}
       </div>
 
       <div className="border-t border-border px-5 py-4">
-        <Button disabled={publishing} onClick={() => void handlePublish()}>
-          {publishing ? '출판 준비 중...' : isPro ? 'PDF 출판하기' : 'Pro로 출판하기'}
-        </Button>
+        <Button onClick={handleContinue}>목차 · 최종 원고 확인하기</Button>
       </div>
     </div>
   )
