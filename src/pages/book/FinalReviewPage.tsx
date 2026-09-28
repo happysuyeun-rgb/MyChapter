@@ -39,14 +39,22 @@ export function FinalReviewPage() {
       setRecordCount(records.length)
       setIsPro(plan === 'pro')
       setAllowed(canPublish)
-      if (!getBookReadiness(project, records.length).isReady) navigate('/project/workspace', { replace: true })
+      if (!getBookReadiness(project, records.length).isReady) {
+        navigate('/project/workspace', { replace: true })
+        return
+      }
+      if (!(project.selected_cover_id ?? project.cover_template_id)) {
+        navigate('/book/cover', { replace: true })
+        return
+      }
       setReadinessChecked(true)
     })
   }, [user, project, navigate])
 
   if (projectLoading || !project || !readinessChecked) return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
 
-  const cover = COVER_TEMPLATES.find((item) => item.id === selectedCoverId)
+  const effectiveCoverId = project.selected_cover_id ?? project.cover_template_id ?? selectedCoverId
+  const cover = COVER_TEMPLATES.find((item) => item.id === effectiveCoverId)
   const ready = checks.cover && checks.toc && checks.manuscript && chapters.length > 0
 
   const publish = async () => {
@@ -58,9 +66,9 @@ export function FinalReviewPage() {
       setPublishStage('toc')
       setPublishStage('body')
       setPublishStage('pdf')
-      const result = await generateBookPdf(project.id, selectedCoverId)
+      const result = await generateBookPdf(project.id, effectiveCoverId)
       downloadPdfFromUrl(result.pdfUrl, project.title + '.pdf')
-      setPublishResult({ project, recordCount, pageCount: result.pageCount, coverTemplateId: selectedCoverId })
+      setPublishResult({ project, recordCount, pageCount: result.pageCount, coverTemplateId: effectiveCoverId })
       setPublishStage('done')
       navigate('/book/publish/complete')
     } catch (error) {
