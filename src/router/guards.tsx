@@ -48,7 +48,7 @@ export function GuestGuard() {
   }
 
   if (session) {
-    return <Navigate to="/home" replace />
+    return <Navigate to="/splash" replace />
   }
 
   return <Outlet />
