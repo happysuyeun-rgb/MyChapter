@@ -89,8 +89,7 @@ export function RecordPhotoPage() {
             editingRecord.id,
             user.id,
             project.id,
-            { content: caption.trim(), emotionTags: emotions, photoUrl: photoUrl ?? undefined },
-            project.target_count,
+            { content: caption.trim(), emotionTags: emotions, photoUrl: photoUrl ?? undefined }
           )
         : await createRecord(
             {
@@ -100,8 +99,7 @@ export function RecordPhotoPage() {
               content: caption.trim(),
               photoUrl: photoUrl!,
               emotionTags: emotions,
-            },
-            project.target_count,
+            }
           )
 
       await deleteDraft(user.id, project.id, 'photo')
