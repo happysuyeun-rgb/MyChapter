@@ -20,15 +20,12 @@ import { CSS } from '@dnd-kit/utilities'
 import { Button, Card, EmptyState, ProgressBar } from '@/components/common'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import {
-  ChapterApiError,
   generateChapter,
   getUnassignedRecordCount,
   listChapters,
   reorderChapters,
 } from '@/lib/api/chapters'
-import { getSubscriptionPlan } from '@/lib/api/subscriptions'
 import { useAuthStore } from '@/stores/authStore'
-import { usePaywallStore } from '@/stores/paywallStore'
 import type { Chapter } from '@/types/database'
 import { estimateChapterPages } from '@/utils/chapterContent'
 import { getBookReadiness } from '@/utils/bookReadiness'
@@ -98,11 +95,9 @@ export function BookPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const { project, loading: projectLoading } = useActiveProject()
-  const { showPaywall } = usePaywallStore()
 
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [unassignedCount, setUnassignedCount] = useState(0)
-  const [isPro, setIsPro] = useState(false)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [editMode, setEditMode] = useState(false)
@@ -116,15 +111,13 @@ export function BookPage() {
   const load = async () => {
     if (!user || !project) return
 
-    const [chapterData, pending, plan] = await Promise.all([
+    const [chapterData, pending] = await Promise.all([
       listChapters(project.id),
       getUnassignedRecordCount(project.id),
-      getSubscriptionPlan(user.id),
     ])
 
     setChapters(chapterData)
     setUnassignedCount(pending)
-    setIsPro(plan === 'pro')
     setLoading(false)
   }
 
@@ -148,10 +141,8 @@ export function BookPage() {
       if (chapter) {
         await load()
       }
-    } catch (err) {
-      if (err instanceof ChapterApiError && err.code === 'CHAPTER_LIMIT') {
-        showPaywall()
-      }
+    } catch {
+      // Generation errors leave existing chapters untouched; user can retry.
     } finally {
       setGenerating(false)
     }
@@ -218,7 +209,6 @@ export function BookPage() {
   }
 
   const canGenerate = unassignedCount >= 10
-  const chapterLimitReached = !isPro && chapters.length >= 3 && unassignedCount >= 10
   const progress = readiness.score
 
   return (
@@ -250,25 +240,13 @@ export function BookPage() {
               className="mt-4"
               disabled={generating}
               onClick={() => {
-                if (chapterLimitReached) {
-                  showPaywall()
-                  return
-                }
                 void handleGenerate()
               }}
             >
-              {generating
-                ? '챕터 생성 중...'
-                : chapterLimitReached
-                  ? 'Pro로 챕터 더 만들기'
-                  : '챕터 생성하기'}
+              {generating ? '챕터 생성 중...' : '챕터 생성하기'}
             </Button>
           )}
-          {chapterLimitReached && (
-            <p className="mt-2 text-center text-xs text-ink-muted">
-              Free 플랜은 챕터 3개까지예요
-            </p>
-          )}
+
         </section>
       )}
 
