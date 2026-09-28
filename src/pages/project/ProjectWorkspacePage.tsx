@@ -7,6 +7,7 @@ import { listChapters } from '@/lib/api/chapters'
 import { listRecords } from '@/lib/api/records'
 import { useAuthStore } from '@/stores/authStore'
 import { getBookReadiness } from '@/utils/bookReadiness'
+import { getChapterDisplayContent } from '@/utils/chapterContent'
 
 export function ProjectWorkspacePage() {
   const navigate = useNavigate()
@@ -14,6 +15,7 @@ export function ProjectWorkspacePage() {
   const { project, loading: projectLoading } = useActiveProject()
   const [recordCount, setRecordCount] = useState(0)
   const [chapterCount, setChapterCount] = useState(0)
+  const [manuscriptComplete, setManuscriptComplete] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -24,6 +26,10 @@ export function ProjectWorkspacePage() {
     ]).then(([records, chapters]) => {
       setRecordCount(records.length)
       setChapterCount(chapters.length)
+      setManuscriptComplete(
+        chapters.length > 0 &&
+          chapters.every((chapter) => getChapterDisplayContent(chapter).trim().length > 0),
+      )
       setLoading(false)
     })
   }, [user, project])
@@ -33,7 +39,7 @@ export function ProjectWorkspacePage() {
   const readiness = getBookReadiness(project, recordCount)
   const progress = readiness.score
   const typeLabel = PROJECT_TYPES.find((item) => item.type === project.type)?.label ?? '나의 이야기'
-  const manuscriptReady = chapterCount > 0
+  const manuscriptReady = manuscriptComplete
   const coverSelected = Boolean(project.selected_cover_id ?? project.cover_template_id)
   const published = project.is_completed
 
