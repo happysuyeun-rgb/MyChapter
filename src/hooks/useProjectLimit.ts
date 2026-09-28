@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { getProjectCount } from '@/lib/api/projects'
 import { getSubscriptionPlan } from '@/lib/api/subscriptions'
 import { useAuthStore } from '@/stores/authStore'
-import { usePaywallStore } from '@/stores/paywallStore'
 
 interface ProjectLimitState {
   loading: boolean
@@ -13,7 +12,6 @@ interface ProjectLimitState {
 
 export function useProjectLimit(): ProjectLimitState {
   const { user } = useAuthStore()
-  const { showPaywall } = usePaywallStore()
   const [state, setState] = useState<ProjectLimitState>({
     loading: true,
     canCreate: true,
@@ -39,14 +37,10 @@ export function useProjectLimit(): ProjectLimitState {
         projectCount: count,
         isPro,
       })
-
-      if (!canCreate) {
-        showPaywall()
-      }
     }
 
     void check()
-  }, [user, showPaywall])
+  }, [user])
 
   return state
 }
