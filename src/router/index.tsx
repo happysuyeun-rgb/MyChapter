@@ -26,7 +26,7 @@ import { RecordModePage } from '@/pages/record/RecordModePage'
 import { RecordPhotoPage } from '@/pages/record/RecordPhotoPage'
 import { RecordQuestionPage } from '@/pages/record/RecordQuestionPage'
 import { RecordsListPage } from '@/pages/record/RecordsListPage'
-import { BookCoverPage, BookPage, ChapterEditPage, ChapterPreviewPage, PublishCompletePage } from '@/pages/book'
+import { BookCoverPage, BookPage, ChapterEditPage, ChapterPreviewPage, FinalReviewPage, PublishCompletePage } from '@/pages/book'
 import { SplashPage } from '@/pages/splash/SplashPage'
 import { AuthGuard, GuestGuard, OnboardingGuard } from './guards'
 
@@ -68,6 +68,7 @@ export const router = createBrowserRouter([
           { path: '/book/chapter/:id', element: <ChapterPreviewPage /> },
           { path: '/book/chapter/:id/edit', element: <ChapterEditPage /> },
           { path: '/book/cover', element: <BookCoverPage /> },
+          { path: '/book/review', element: <FinalReviewPage /> },
           { path: '/book/publish/complete', element: <PublishCompletePage /> },
 
           { path: '/mypage/settings', element: <SettingsPage /> },
