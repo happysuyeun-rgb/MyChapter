@@ -7,7 +7,7 @@ import { NavBar } from '@/components/layout/NavBar'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { deleteDraft, loadDraft, saveDraft } from '@/lib/api/drafts'
 import { createRecord, getRecordCount, updateRecord } from '@/lib/api/records'
-import { ApiError, generateQuestion, getFallbackQuestion, getTodayQuestion } from '@/lib/api/questions'
+import { ApiError, generateQuestion, getFallbackQuestion } from '@/lib/api/questions'
 import { useAuthStore } from '@/stores/authStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { useRecordStore } from '@/stores/recordStore'
@@ -43,25 +43,24 @@ export function RecordQuestionPage() {
       const count = await getRecordCount(project.id)
       setRecordNumber(count + 1)
 
-      const cached = await getTodayQuestion(project.id)
-      if (cached) {
-        setQuestion(cached)
-      } else {
-        try {
-          const q = await generateQuestion(project.id)
-          setQuestion(q)
-        } catch (err) {
-          if (err instanceof ApiError && err.code === 'AI_LIMIT') {
-            showPaywall()
-          }
-          setQuestion(getFallbackQuestion(project.type))
-        }
-      }
-
       const draft = await loadDraft(user.id, project.id, 'question')
       if (draft?.content) setContent(draft.content)
       if (draft?.emotionTags) setEmotions(draft.emotionTags)
-      if (draft?.questionText) setQuestion(draft.questionText)
+
+      if (draft?.questionText) {
+        setQuestion(draft.questionText)
+        return
+      }
+
+      try {
+        const q = await generateQuestion(project.id)
+        setQuestion(q)
+      } catch (err) {
+        if (err instanceof ApiError && err.code === 'AI_LIMIT') {
+          showPaywall()
+        }
+        setQuestion(getFallbackQuestion(project.type))
+      }
     }
 
     void init()
