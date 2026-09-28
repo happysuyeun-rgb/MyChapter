@@ -14,9 +14,9 @@ import { NotificationsPage } from '@/pages/notifications/NotificationsPage'
 import { NicknamePage } from '@/pages/onboarding/NicknamePage'
 import { NotificationPage } from '@/pages/onboarding/NotificationPage'
 import { ProjectCompletePage } from '@/pages/project/ProjectCompletePage'
-import { ProjectModePage } from '@/pages/project/ProjectModePage'
 import { ProjectSetupPage } from '@/pages/project/ProjectSetupPage'
 import { ProjectTypePage } from '@/pages/project/ProjectTypePage'
+import { ProjectsListPage } from '@/pages/project/ProjectsListPage'
 import { RecordCompletePage } from '@/pages/record/RecordCompletePage'
 import { RecordDetailPage } from '@/pages/record/RecordDetailPage'
 import { RecordEditPage } from '@/pages/record/RecordEditPage'
@@ -25,14 +25,7 @@ import { RecordModePage } from '@/pages/record/RecordModePage'
 import { RecordPhotoPage } from '@/pages/record/RecordPhotoPage'
 import { RecordQuestionPage } from '@/pages/record/RecordQuestionPage'
 import { RecordsListPage } from '@/pages/record/RecordsListPage'
-import {
-  BookCoverPage,
-  BookPage,
-  ChapterEditPage,
-  ChapterPreviewPage,
-  PublishCompletePage,
-} from '@/pages/book'
-import { ProjectsListPage } from '@/pages/project/ProjectsListPage'
+import { BookCoverPage, BookPage, ChapterEditPage, ChapterPreviewPage, PublishCompletePage } from '@/pages/book'
 import { SplashPage } from '@/pages/splash/SplashPage'
 import { AuthGuard, GuestGuard, OnboardingGuard } from './guards'
 
@@ -42,7 +35,6 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <Navigate to="/splash" replace /> },
       { path: '/splash', element: <SplashPage /> },
-
       {
         element: <GuestGuard />,
         children: [
@@ -50,7 +42,6 @@ export const router = createBrowserRouter([
           { path: '/login/email', element: <EmailLoginPage /> },
         ],
       },
-
       {
         element: <AuthGuard />,
         children: [
@@ -59,18 +50,16 @@ export const router = createBrowserRouter([
 
           { path: '/project/new', element: <ProjectTypePage /> },
           { path: '/project/new/setup', element: <ProjectSetupPage /> },
-          { path: '/project/new/mode', element: <ProjectModePage /> },
           { path: '/project/new/complete', element: <ProjectCompletePage /> },
 
           { path: '/notifications', element: <NotificationsPage /> },
-          { path: '/projects', element: <ProjectsListPage /> },
+          { path: '/projects', element: <Navigate to="/library" replace /> },
 
           { path: '/record/mode', element: <RecordModePage /> },
           { path: '/record/write/question', element: <RecordQuestionPage /> },
           { path: '/record/write/photo', element: <RecordPhotoPage /> },
           { path: '/record/write/free', element: <RecordFreePage /> },
           { path: '/record/complete', element: <RecordCompletePage /> },
-
           { path: '/records/:id', element: <RecordDetailPage /> },
           { path: '/records/:id/edit', element: <RecordEditPage /> },
 
@@ -83,42 +72,24 @@ export const router = createBrowserRouter([
           { path: '/mypage/subscription', element: <SubscriptionPage /> },
           { path: '/mypage/completed-books', element: <CompletedBooksPage /> },
           { path: '/mypage/delete-account', element: <DeleteAccountPage /> },
-          {
-            path: '/mypage/privacy-policy',
-            element: (
-              <LegalPage
-                title="개인정보처리방침"
-                url={import.meta.env.VITE_PRIVACY_POLICY_URL || '/legal/privacy.html'}
-              />
-            ),
-          },
-          {
-            path: '/mypage/terms-of-service',
-            element: (
-              <LegalPage
-                title="이용약관"
-                url={import.meta.env.VITE_TERMS_URL || '/legal/terms.html'}
-              />
-            ),
-          },
+          { path: '/mypage/privacy-policy', element: <LegalPage title="개인정보처리방침" url={import.meta.env.VITE_PRIVACY_POLICY_URL || '/legal/privacy.html'} /> },
+          { path: '/mypage/terms-of-service', element: <LegalPage title="이용약관" url={import.meta.env.VITE_TERMS_URL || '/legal/terms.html'} /> },
 
           {
             element: <OnboardingGuard />,
-            children: [
-              {
-                element: <AppLayout />,
-                children: [
-                  { path: '/home', element: <HomePage /> },
-                  { path: '/records', element: <RecordsListPage /> },
-                  { path: '/book', element: <BookPage /> },
-                  { path: '/mypage', element: <MyPage /> },
-                ],
-              },
-            ],
+            children: [{
+              element: <AppLayout />,
+              children: [
+                { path: '/home', element: <HomePage /> },
+                { path: '/library', element: <ProjectsListPage /> },
+                { path: '/mypage', element: <MyPage /> },
+                { path: '/records', element: <RecordsListPage /> },
+                { path: '/book', element: <BookPage /> },
+              ],
+            }],
           },
         ],
       },
-
       { path: '*', element: <Navigate to="/splash" replace /> },
     ],
   },
