@@ -20,6 +20,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { Button, Card, EmptyState, ProgressBar } from '@/components/common'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import {
+  ChapterApiError,
   generateChapter,
   getUnassignedRecordCount,
   listChapters,
@@ -102,6 +103,7 @@ export function BookPage() {
   const [generating, setGenerating] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [reordering, setReordering] = useState(false)
+  const [generationError, setGenerationError] = useState('')
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -135,14 +137,19 @@ export function BookPage() {
   const handleGenerate = async () => {
     if (!project) return
     setGenerating(true)
+    setGenerationError('')
 
     try {
       const chapter = await generateChapter(project.id)
       if (chapter) {
         await load()
       }
-    } catch {
-      // Generation errors leave existing chapters untouched; user can retry.
+    } catch (error) {
+      setGenerationError(
+        error instanceof ChapterApiError
+          ? error.message
+          : '챕터를 만들지 못했어요. 잠시 후 다시 시도해주세요.',
+      )
     } finally {
       setGenerating(false)
     }
@@ -208,7 +215,7 @@ export function BookPage() {
     return <EmptyState variant="book" />
   }
 
-  const canGenerate = unassignedCount >= 10
+  const canGenerate = unassignedCount >= 3
   const progress = readiness.score
 
   return (
@@ -225,16 +232,10 @@ export function BookPage() {
 
       {unassignedCount > 0 && (
         <section className="mx-5 mt-5 border-y border-border py-4">
-          <p className="text-sm font-semibold">진행 중인 챕터</p>
-          <p className="mt-1 text-xs text-ink-muted">
-            미할당 기록 {unassignedCount}/10개
+          <p className="text-sm font-semibold">{chapters.length === 0 ? 'PAGE가 첫 챕터의 연결점을 찾을 준비가 됐어요' : '아직 챕터에 담지 않은 기록이 있어요'}</p>
+          <p className="mt-1 text-xs leading-relaxed text-ink-muted">
+            남은 기록 {unassignedCount}개를 날짜순으로 자르지 않고, 반복되는 주제와 변화의 흐름을 찾아 서로 연결되는 기록끼리 묶어요.
           </p>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-alt">
-            <div
-              className="h-full rounded-full bg-accent transition-all"
-              style={{ width: `${Math.min(100, (unassignedCount / 10) * 100)}%` }}
-            />
-          </div>
           {canGenerate && (
             <Button
               className="mt-4"
@@ -243,10 +244,13 @@ export function BookPage() {
                 void handleGenerate()
               }}
             >
-              {generating ? '챕터 생성 중...' : '챕터 생성하기'}
+              {generating ? '기록의 연결점을 찾고 있어요...' : chapters.length === 0 ? 'AI로 첫 챕터 구성하기' : 'AI로 다음 챕터 구성하기'}
             </Button>
           )}
-
+          {!canGenerate && (
+            <p className="mt-3 text-xs text-ink-faint">관련 기록이 3개 이상 모이면 다음 챕터를 구성할 수 있어요.</p>
+          )}
+          {generationError && <p className="mt-3 text-xs text-danger">{generationError}</p>}
         </section>
       )}
 
