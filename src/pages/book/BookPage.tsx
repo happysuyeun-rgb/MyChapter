@@ -314,7 +314,7 @@ export function BookPage() {
 
       {chapters.length > 0 && !editMode && (
         <div className="border-t border-border px-5 py-4">
-          <Button onClick={() => navigate('/book/cover')}>표지 선택하고 책 완성하기</Button>
+          <Button onClick={() => navigate('/book/manuscript')}>원고 전체 확인하기</Button>
         </div>
       )}
     </div>
