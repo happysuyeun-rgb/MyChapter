@@ -16,30 +16,66 @@ export function ProjectTypePage() {
       showPaywall()
       return
     }
-    setDraft({ type: meta.type, title: meta.defaultTitle, periodDays: meta.defaultPeriodDays, frequency: meta.defaultFrequency })
+    setDraft({
+      type: meta.type,
+      title: meta.defaultTitle,
+      periodDays: meta.defaultPeriodDays,
+      frequency: meta.defaultFrequency,
+    })
     navigate('/project/new/setup')
   }
 
-  if (loading) return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
+  if (loading) {
+    return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
+  }
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
-      <header className="px-5 pb-4 pt-6">
-        <button type="button" className="mb-5 text-sm text-ink-muted" onClick={() => navigate(-1)}>← 돌아가기</button>
-        <p className="text-xs font-semibold tracking-[0.18em] text-sage">NEW BOOK</p>
-        <h1 className="mt-2 font-serif text-2xl font-bold">어떤 이야기를<br />한 권으로 만들까요?</h1>
-        <p className="mt-2 text-sm leading-relaxed text-ink-muted">주제는 시작을 돕는 가이드예요. 나중에 바꿔도 기록은 그대로 남아요.</p>
+      <header className="px-5 pb-7 pt-6">
+        <button type="button" className="flex min-h-11 items-center text-sm text-ink-muted" onClick={() => navigate(-1)}>
+          ← 내 서재
+        </button>
+        <div className="mt-7 border-b border-ink pb-6">
+          <p className="text-[11px] font-semibold tracking-[0.22em] text-sage">NEW BOOK · 01</p>
+          <h1 className="mt-3 font-serif text-[30px] font-bold leading-[1.32] tracking-[-0.03em]">
+            어떤 이야기를
+            <br />
+            한 권으로 남길까요?
+          </h1>
+          <p className="mt-4 max-w-[330px] text-sm leading-6 text-ink-muted">
+            책의 주제는 PAGE가 질문과 이야기의 방향을 잡는 기준이에요. 나중에 바꿔도 기록은 그대로 남습니다.
+          </p>
+        </div>
       </header>
 
-      <div className="grid grid-cols-2 gap-3 px-5 pb-8">
-        {PROJECT_TYPES.map((meta) => (
-          <button key={meta.type} type="button" onClick={() => handleSelect(meta)} className="min-h-36 rounded-card border border-border bg-surface-card p-4 text-left shadow-paper transition-transform active:scale-[.98]">
-            <span className="text-2xl">{meta.emoji}</span>
-            <p className="mt-3 font-serif text-[15px] font-bold">{meta.label}</p>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-ink-muted">{meta.description}</p>
-          </button>
-        ))}
-      </div>
+      <main className="flex-1 px-5 pb-10">
+        <div className="border-t border-border">
+          {PROJECT_TYPES.map((meta, index) => (
+            <button
+              key={meta.type}
+              type="button"
+              onClick={() => handleSelect(meta)}
+              className="group flex min-h-[88px] w-full items-center gap-4 border-b border-border py-4 text-left active:bg-accent-light/40"
+            >
+              <span className="w-7 shrink-0 font-serif text-xs text-ink-faint">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-serif text-[17px] font-bold tracking-[-0.02em] text-ink">
+                  {meta.label}
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-ink-muted">
+                  {meta.description}
+                </span>
+              </span>
+              <span className="shrink-0 text-lg text-ink-faint transition-transform group-active:translate-x-1">→</span>
+            </button>
+          ))}
+        </div>
+        <p className="mt-6 text-[11px] leading-5 text-ink-faint">
+          선택한 주제는 글의 방향을 돕는 편집 기준일 뿐, 기록할 내용을 제한하지 않아요.
+        </p>
+      </main>
     </div>
   )
 }
