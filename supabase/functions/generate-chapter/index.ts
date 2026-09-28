@@ -78,19 +78,6 @@ Deno.serve(async (req) => {
       .eq('project_id', project_id)
       .eq('is_complete', true)
 
-    const { data: subscription } = await admin
-      .from('subscriptions')
-      .select('plan')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    const isPro = subscription?.plan === 'pro'
-    if (!isPro && (chapterCount ?? 0) >= 3) {
-      return new Response(JSON.stringify({ code: 'CHAPTER_LIMIT' }), {
-        status: 402,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
 
     const { data: unassigned } = await admin
       .from('records')
