@@ -87,8 +87,7 @@ export function RecordFreePage() {
             editingRecord.id,
             user.id,
             project.id,
-            { content: content.trim(), title: recordTitle, emotionTags: emotions },
-            project.target_count,
+            { content: content.trim(), title: recordTitle, emotionTags: emotions }
           )
         : await createRecord(
             {
@@ -98,8 +97,7 @@ export function RecordFreePage() {
               content: content.trim(),
               title: recordTitle,
               emotionTags: emotions,
-            },
-            project.target_count,
+            }
           )
 
       await deleteDraft(user.id, project.id, 'free')
