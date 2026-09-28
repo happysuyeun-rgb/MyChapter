@@ -3,7 +3,7 @@ import { TabBar } from './TabBar'
 
 export function AppLayout() {
   return (
-    <div className="mx-auto flex h-full min-h-dvh w-full max-w-phone flex-col bg-white">
+    <div className="mx-auto flex h-full min-h-dvh w-full max-w-phone flex-col bg-surface">
       <main className="flex flex-1 flex-col overflow-hidden">
         <Outlet />
       </main>
