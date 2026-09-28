@@ -12,6 +12,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { useProjectStore } from '@/stores/projectStore'
 import type { Project } from '@/types/database'
+import { getBookReadiness } from '@/utils/bookReadiness'
 
 export function HomePage() {
   const navigate = useNavigate()
@@ -46,10 +47,11 @@ export function HomePage() {
 
   const project = projects[0]
   const typeLabel = PROJECT_TYPES.find((p) => p.type === project.type)?.label ?? '나의 이야기'
-  const progress = Math.min(100, Math.round((recordCount / project.target_count) * 100))
+  const readiness = getBookReadiness(project, recordCount)
+  const progress = readiness.score
   const today = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' })
   const steps = ['기록', '챕터', '원고', '표지', '발행']
-  const activeStep = progress >= 100 ? 1 : 0
+  const activeStep = readiness.isReady ? 1 : 0
 
   return (
     <div className="flex flex-1 flex-col overflow-y-auto bg-surface">
@@ -84,11 +86,11 @@ export function HomePage() {
               <p className="text-xs text-sage">{typeLabel}</p>
               <h2 className="mt-1 truncate font-serif text-lg font-bold">{project.title}</h2>
               <div className="mt-5 flex items-end justify-between">
-                <span className="text-xs text-ink-muted">책 완성도</span>
+                <span className="text-xs text-ink-muted">이야기 준비도</span>
                 <span className="font-serif text-2xl font-bold">{progress}%</span>
               </div>
               <ProgressBar value={progress} className="mt-2" />
-              <p className="mt-2 text-[11px] text-ink-faint">{recordCount}개의 이야기가 쌓였어요</p>
+              <p className="mt-2 text-[11px] text-ink-faint">{readiness.message}</p>
             </div>
           </div>
 
@@ -114,7 +116,7 @@ export function HomePage() {
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-light font-serif text-sm font-bold text-accent">P</div>
               <div>
                 <p className="text-sm font-semibold">PAGE가 기다리고 있어요.</p>
-                <p className="mt-1 text-xs leading-relaxed text-ink-muted">완벽하게 쓰지 않아도 괜찮아요. 오늘 기억하고 싶은 장면 하나면 충분해요.</p>
+                <p className="mt-1 text-xs leading-relaxed text-ink-muted">{readiness.isReady ? '이야기가 충분히 모였어요. 내 서재에서 책 만들기를 시작할 수 있어요.' : `완벽하게 쓰지 않아도 괜찮아요. 기록 ${readiness.recordsRemaining > 0 ? `${readiness.recordsRemaining}개` : '조건 충족'}${readiness.daysRemaining > 0 ? ` · ${readiness.daysRemaining}일` : ''}이 더 쌓이면 책 만들기가 열려요.`}</p>
               </div>
             </div>
           </Card>
