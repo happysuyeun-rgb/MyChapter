@@ -15,6 +15,7 @@ export interface NewProjectDraft {
 interface ProjectState {
   projects: Project[]
   activeProject: Project | null
+  activeProjectId: string | null
   createdProject: Project | null
   firstQuestion: string | null
   draft: NewProjectDraft
@@ -40,6 +41,7 @@ export const useProjectStore = create<ProjectState>()(
     (set) => ({
       projects: [],
       activeProject: null,
+      activeProjectId: null,
       createdProject: null,
       firstQuestion: null,
       draft: { ...defaultDraft },
@@ -47,13 +49,13 @@ export const useProjectStore = create<ProjectState>()(
       setDraft: (patch) => set((state) => ({ draft: { ...state.draft, ...patch } })),
       resetDraft: () => set({ draft: { ...defaultDraft } }),
       setProjects: (projects) => set({ projects }),
-      setActiveProject: (project) => set({ activeProject: project }),
+      setActiveProject: (project) => set({ activeProject: project, activeProjectId: project?.id ?? null }),
       setCreatedProject: (project) => set({ createdProject: project }),
       setFirstQuestion: (question) => set({ firstQuestion: question }),
     }),
     {
       name: 'mychapter-project-store',
-      partialize: (state) => ({ activeProject: state.activeProject }),
+      partialize: (state) => ({ activeProjectId: state.activeProjectId }),
     },
   ),
 )
