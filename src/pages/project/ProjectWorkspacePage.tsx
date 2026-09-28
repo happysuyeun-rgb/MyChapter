@@ -44,11 +44,20 @@ export function ProjectWorkspacePage() {
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-phone overflow-y-auto bg-surface">
-      <header className="px-5 pb-4 pt-6">
-        <button className="text-sm text-ink-muted" onClick={() => navigate('/library')}>← 내 서재</button>
-        <p className="mt-6 text-xs font-semibold tracking-[0.18em] text-sage">BOOK WORKSPACE</p>
-        <h1 className="mt-1 font-serif text-2xl font-bold">{project.title}</h1>
-        <p className="mt-1 text-sm text-ink-muted">{typeLabel}</p>
+      <header className="px-5 pb-6 pt-6">
+        <button className="flex min-h-11 items-center text-sm text-ink-muted" onClick={() => navigate('/library')}>← 내 서재</button>
+        <div className="mt-6 flex gap-5 border-b border-ink pb-6">
+          <div className="flex h-28 w-[74px] shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-ink p-3 text-surface shadow-[7px_8px_0_rgba(59,53,45,.10)]">
+            <span className="text-[6px] tracking-[0.18em] opacity-55">MY CHAPTER</span>
+            <span className="line-clamp-4 font-serif text-[10px] font-bold leading-[1.5]">{project.title}</span>
+            <span className="h-px w-5 bg-sage" />
+          </div>
+          <div className="min-w-0 flex-1 pt-1">
+            <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">BOOK WORKSPACE</p>
+            <h1 className="mt-2 line-clamp-2 font-serif text-[24px] font-bold leading-snug tracking-[-0.03em]">{project.title}</h1>
+            <p className="mt-2 text-xs text-ink-muted">{typeLabel} · 기록 {recordCount}개</p>
+          </div>
+        </div>
       </header>
       <main className="px-5 pb-8">
         <section className="border-y border-border py-5">
@@ -58,7 +67,7 @@ export function ProjectWorkspacePage() {
           <button className="mt-5 w-full rounded-btn bg-accent px-4 py-3.5 text-sm font-semibold text-white" onClick={() => navigate('/record/mode')}>+ 오늘 기록하기</button>
         </section>
         <section className="mt-8">
-          <p className="mb-3 font-serif text-base font-bold">이 책을 완성하는 과정</p>
+          <div className="mb-4 flex items-end justify-between"><div><p className="text-[10px] font-semibold tracking-[0.16em] text-sage">PRODUCTION</p><p className="mt-1 font-serif text-base font-bold">이 책을 완성하는 과정</p></div><span className="font-serif text-xs text-ink-faint">01 — 06</span></div>
           <div className="border-t border-border">
             {stages.map((stage, index) => (
               <button key={stage.label} disabled={!stage.ready} onClick={() => navigate(stage.to)} className={['flex w-full items-center gap-4 border-b border-border py-4 text-left', stage.ready ? 'bg-transparent' : 'opacity-45'].join(' ')}>
