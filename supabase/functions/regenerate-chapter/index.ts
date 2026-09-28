@@ -63,12 +63,30 @@ Deno.serve(async (req) => {
       })
     }
 
-    const { data: records } = await admin
-      .from('records')
-      .select('content, emotion_tags, created_at')
-      .in('id', chapter.record_ids)
+    const { data: relations, error: relationError } = await admin
+      .from('chapter_records')
+      .select('record_id, position')
+      .eq('chapter_id', chapter_id)
+      .order('position', { ascending: true })
 
-    const recordsText = (records ?? [])
+    if (relationError) throw relationError
+
+    const recordIds = (relations ?? []).map((relation) => relation.record_id)
+    const { data: sourceRecords, error: recordsError } = recordIds.length
+      ? await admin
+          .from('records')
+          .select('id, content, emotion_tags, created_at')
+          .in('id', recordIds)
+      : { data: [], error: null }
+
+    if (recordsError) throw recordsError
+
+    const recordMap = new Map((sourceRecords ?? []).map((record) => [record.id, record]))
+    const records = recordIds
+      .map((recordId) => recordMap.get(recordId))
+      .filter((record): record is NonNullable<typeof record> => Boolean(record))
+
+    const recordsText = records
       .map((r, i) => `[${i + 1}] (${r.created_at}) [${(r.emotion_tags ?? []).join(', ')}] ${r.content}`)
       .join('\n')
 
