@@ -8,9 +8,9 @@ import { usePaywallStore } from '@/stores/paywallStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 
 const features = [
-  { icon: 'pdf' as const, label: 'PDF 출판 무제한' },
-  { icon: 'chapters' as const, label: 'AI 챕터 구성' },
-  { icon: 'projects' as const, label: '프로젝트 무제한' },
+  { icon: 'projects' as const, label: '여러 권의 책 만들기' },
+  { icon: 'pdf' as const, label: '책 재발행과 추가 발행' },
+  { icon: 'chapters' as const, label: '확장 AI 기능과 Pro 표지' },
 ]
 
 export function PaywallModal() {
@@ -73,7 +73,7 @@ export function PaywallModal() {
             <FlatIcon name="sparkle" size={28} />
           </div>
           <h2 className="mb-1.5 font-serif text-xl font-bold text-ink">Pro로 업그레이드</h2>
-          <p className="text-sm text-ink-muted">첫 책을 PDF로 받아보세요</p>
+          <p className="text-sm text-ink-muted">첫 책 다음의 이야기도 계속 만들어보세요</p>
         </div>
         <div className="mb-5 rounded-card bg-surface-alt p-4">
           <ul className="space-y-3">
