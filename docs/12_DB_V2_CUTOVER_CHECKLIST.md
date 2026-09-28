@@ -1,6 +1,6 @@
 # 12. DB v2 Cutover Checklist
 
-**Status:** READY FOR DEPLOYMENT REVIEW  
+**Status:** DB V2 APPLIED / PRODUCTION E2E PENDING  
 **Updated:** 2026-09-28
 
 이 문서는 DB v2를 실제 Supabase 환경에 적용할 때의 순서를 고정한다.
@@ -17,7 +17,9 @@ Before deployment:
 
 ## 1. Apply additive migrations
 
-Apply in this order:
+**Completed on MyChapter Supabase.**
+
+Applied in this order:
 
 ```text
 009_db_v2_foundation.sql
@@ -49,7 +51,9 @@ Check:
 
 ## 3. Deploy Edge Functions
 
-Deploy after migrations exist:
+**Completed for current v2 functions.**
+
+Deployed after migrations:
 
 ```text
 analyze-record
@@ -89,7 +93,9 @@ After `analyze-record` is deployed:
 
 ## 6. Cut publication API to `publications`
 
-Change application publication reads/writes from legacy `published_books` to versioned `publications`.
+**Implemented in source and Edge Function; Production E2E pending.**
+
+Application publication reads/writes now use versioned `publications`.
 
 Required behavior:
 
@@ -106,6 +112,12 @@ Free entitlement:
 
 Published book viewer must open a specific publication ID/version.
 
+Current PDF version path:
+
+```text
+published-pdfs/{user_id}/{project_id}/v{version}.pdf
+```
+
 ## 7. Storage verification
 
 Verify:
@@ -120,6 +132,8 @@ published-pdfs/{user_id}/{project_id}/v{version}.pdf
 ```
 
 ## 8. E2E regression
+
+**Pending until the latest Production build is available without DEV mock data.**
 
 Test these flows:
 
