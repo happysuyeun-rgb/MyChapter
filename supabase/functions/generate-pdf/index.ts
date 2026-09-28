@@ -62,6 +62,9 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  let publicationId: string | null = null
+  let adminForFailure: ReturnType<typeof createClient> | null = null
+
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
@@ -96,6 +99,7 @@ Deno.serve(async (req) => {
     }
 
     const admin = createClient(supabaseUrl, serviceRoleKey)
+    adminForFailure = admin
 
     const { data: subscription } = await admin
       .from('subscriptions')
@@ -105,9 +109,10 @@ Deno.serve(async (req) => {
 
     if (subscription?.plan !== 'pro') {
       const { count: publishedCount, error: countError } = await admin
-        .from('published_books')
+        .from('publications')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
+        .eq('status', 'published')
 
       if (countError) throw countError
 
@@ -155,8 +160,43 @@ Deno.serve(async (req) => {
       .eq('id', user.id)
       .single()
 
-    const authorName = profile?.nickname ?? '작가'
+    const authorName = project.author_name ?? profile?.nickname ?? '작가'
     const coverStyle = COVER_STYLES[cover_template_id] ?? COVER_STYLES.cover_01
+
+    const { data: latestPublication, error: latestError } = await admin
+      .from('publications')
+      .select('version')
+      .eq('project_id', project_id)
+      .order('version', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (latestError) throw latestError
+
+    const version = (latestPublication?.version ?? 0) + 1
+    const tocSnapshot = chapters.map((chapter) => ({
+      chapter_number: chapter.chapter_number,
+      title: chapter.title,
+    }))
+
+    const { data: publication, error: publicationError } = await admin
+      .from('publications')
+      .insert({
+        project_id,
+        user_id: user.id,
+        version,
+        status: 'processing',
+        title_snapshot: project.title,
+        subtitle_snapshot: project.subtitle,
+        author_snapshot: authorName,
+        cover_snapshot: { template_id: cover_template_id },
+        toc_snapshot: tocSnapshot,
+      })
+      .select('id')
+      .single()
+
+    if (publicationError) throw publicationError
+    publicationId = publication.id
 
     const coverTagline = await generateGeminiText({
       systemInstruction: '전자책 표지용 한 줄 태그라인을 생성하세요. 25자 이내, 한국어, 따옴표 없이.',
@@ -242,13 +282,13 @@ Deno.serve(async (req) => {
     }
 
     const pdfBytes = await pdfDoc.save()
-    const storagePath = `${user.id}/${project_id}.pdf`
+    const storagePath = `${user.id}/${project_id}/v${version}.pdf`
 
     const { error: uploadError } = await admin.storage
       .from('published-pdfs')
       .upload(storagePath, pdfBytes, {
         contentType: 'application/pdf',
-        upsert: true,
+        upsert: false,
       })
 
     if (uploadError) throw uploadError
@@ -259,21 +299,36 @@ Deno.serve(async (req) => {
 
     if (signedError) throw signedError
 
-    await admin.from('published_books').upsert({
-      project_id,
-      user_id: user.id,
-      pdf_url: storagePath,
-      cover_template_id,
-      page_count: pageCount,
-    })
+    const { error: finalizeError } = await admin
+      .from('publications')
+      .update({
+        status: 'published',
+        pdf_path: storagePath,
+        page_count: pageCount,
+        cover_snapshot: { template_id: cover_template_id, tagline },
+        published_at: new Date().toISOString(),
+        error_code: null,
+        error_message: null,
+      })
+      .eq('id', publicationId)
 
+    if (finalizeError) throw finalizeError
+
+    // Transitional project flags remain until all UI status reads use publications.
     await admin
       .from('projects')
-      .update({ cover_template_id, is_completed: true })
+      .update({
+        cover_template_id,
+        selected_cover_id: cover_template_id,
+        is_completed: true,
+      })
       .eq('id', project_id)
+      .eq('user_id', user.id)
 
     return new Response(
       JSON.stringify({
+        publication_id: publicationId,
+        version,
         pdf_url: signedUrlData.signedUrl,
         storage_path: storagePath,
         page_count: pageCount,
@@ -282,6 +337,18 @@ Deno.serve(async (req) => {
     )
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
+
+    if (publicationId && adminForFailure) {
+      await adminForFailure
+        .from('publications')
+        .update({
+          status: 'failed',
+          error_code: 'PDF_GENERATE_FAILED',
+          error_message: message,
+        })
+        .eq('id', publicationId)
+    }
+
     return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
