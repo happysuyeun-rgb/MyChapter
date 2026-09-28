@@ -62,7 +62,7 @@ export function PublishCompletePage() {
               cover?.textClass ?? 'text-white',
             ].join(' ')}
           >
-            {cover?.emoji && <span className="text-lg">{cover.emoji}</span>}
+            <span className={['h-px w-7', cover?.accentClass ?? 'bg-sage'].join(' ')} />
           </div>
           <div className="text-sm">
             <p className="font-semibold">{project.title}</p>
