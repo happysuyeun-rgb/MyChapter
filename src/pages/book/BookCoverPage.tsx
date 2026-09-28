@@ -21,6 +21,7 @@ export function BookCoverPage() {
   const { setActiveProject } = useProjectStore()
   const { showPaywall } = usePaywallStore()
   const [isPro, setIsPro] = useState(false)
+  const [coverConfirmed, setCoverConfirmed] = useState(false)
   const [readinessChecked, setReadinessChecked] = useState(false)
 
   useEffect(() => {
@@ -29,7 +30,10 @@ export function BookCoverPage() {
       setIsPro(plan === 'pro')
       if (!getBookReadiness(project, records.length).isReady) navigate('/project/workspace', { replace: true })
       const persistedCover = project.selected_cover_id ?? project.cover_template_id
-      if (persistedCover) setSelectedCoverId(persistedCover)
+      if (persistedCover) {
+        setSelectedCoverId(persistedCover)
+        setCoverConfirmed(true)
+      }
       setReadinessChecked(true)
     })
   }, [user, project, navigate])
@@ -43,6 +47,7 @@ export function BookCoverPage() {
     try {
       const updated = await updateProjectCoverSelection(project.id, user.id, id)
       setActiveProject(updated)
+      setCoverConfirmed(true)
     } catch {
       // Keep the preview responsive; persistence will be retried on the next selection.
     }
@@ -100,7 +105,9 @@ export function BookCoverPage() {
         </section>
       </main>
       <div className="border-t border-border bg-surface px-5 py-4 safe-bottom">
-        <Button onClick={() => navigate('/book/review')}>이 표지로 최종 검수하기</Button>
+        <Button disabled={!coverConfirmed} onClick={() => navigate('/book/review')}>
+          {coverConfirmed ? '이 표지로 최종 검수하기' : '표지를 하나 선택해주세요'}
+        </Button>
       </div>
     </div>
   )
