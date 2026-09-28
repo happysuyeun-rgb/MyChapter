@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { getSubscriptionPlan } from './subscriptions'
-import type { Chapter, Project } from '@/types/database'
+import type { Chapter, Database, Project } from '@/types/database'
 import { getChapterDisplayContent } from '@/utils/chapterContent'
 
 export class BookApiError extends Error {
@@ -15,8 +15,13 @@ export class BookApiError extends Error {
 export interface PublishedBook {
   id: string
   project_id: string
-  pdf_url: string
+  version: number
+  status: 'processing' | 'published' | 'failed'
+  title_snapshot: string
+  subtitle_snapshot: string | null
+  author_snapshot: string
   cover_template_id: string
+  pdf_url: string
   page_count: number | null
   published_at: string
 }
@@ -30,70 +35,94 @@ export interface BookExportData {
 
 export async function getPublishedBook(projectId: string): Promise<PublishedBook | null> {
   const { data, error } = await supabase
-    .from('published_books')
+    .from('publications')
     .select('*')
     .eq('project_id', projectId)
+    .eq('status', 'published')
+    .order('version', { ascending: false })
+    .limit(1)
     .maybeSingle()
 
   if (error) throw error
-  return data
+  return data ? mapPublication(data) : null
 }
 
 export interface PublishedBookWithProject extends PublishedBook {
   project_title: string
 }
 
+function getCoverTemplateId(coverSnapshot: unknown): string {
+  if (
+    coverSnapshot &&
+    typeof coverSnapshot === 'object' &&
+    'template_id' in coverSnapshot &&
+    typeof (coverSnapshot as { template_id?: unknown }).template_id === 'string'
+  ) {
+    return (coverSnapshot as { template_id: string }).template_id
+  }
+  return 'cover_01'
+}
+
+function mapPublication(row: Database['public']['Tables']['publications']['Row']): PublishedBook {
+  return {
+    id: row.id,
+    project_id: row.project_id,
+    version: row.version,
+    status: row.status,
+    title_snapshot: row.title_snapshot,
+    subtitle_snapshot: row.subtitle_snapshot,
+    author_snapshot: row.author_snapshot,
+    cover_template_id: getCoverTemplateId(row.cover_snapshot),
+    pdf_url: row.pdf_path ?? '',
+    page_count: row.page_count,
+    published_at: row.published_at ?? row.created_at,
+  }
+}
+
 export async function listPublishedBooks(userId: string): Promise<PublishedBookWithProject[]> {
-  const { data: books, error } = await supabase
-    .from('published_books')
+  const { data, error } = await supabase
+    .from('publications')
     .select('*')
     .eq('user_id', userId)
+    .eq('status', 'published')
     .order('published_at', { ascending: false })
 
   if (error) throw error
-  if (!books?.length) return []
 
-  const projectIds = books.map((b) => b.project_id)
-  const { data: projects } = await supabase
-    .from('projects')
-    .select('id, title')
-    .in('id', projectIds)
-
-  const titleMap = new Map((projects ?? []).map((p) => [p.id, p.title]))
-
-  return books.map((book) => ({
-    ...book,
-    project_title: titleMap.get(book.project_id) ?? '나의 책',
-  }))
+  return (data ?? []).map((row) => {
+    const publication = mapPublication(row)
+    return {
+      ...publication,
+      project_title: publication.title_snapshot,
+    }
+  })
 }
 
 export async function getPublishedBookById(
   userId: string,
-  bookId: string,
+  publicationId: string,
 ): Promise<PublishedBookWithProject | null> {
-  const { data: book, error } = await supabase
-    .from('published_books')
+  const { data, error } = await supabase
+    .from('publications')
     .select('*')
-    .eq('id', bookId)
+    .eq('id', publicationId)
     .eq('user_id', userId)
+    .eq('status', 'published')
     .maybeSingle()
 
   if (error) throw error
-  if (!book) return null
+  if (!data) return null
 
-  const { data: project } = await supabase
-    .from('projects')
-    .select('title')
-    .eq('id', book.project_id)
-    .maybeSingle()
-
+  const publication = mapPublication(data)
   return {
-    ...book,
-    project_title: project?.title ?? '나의 책',
+    ...publication,
+    project_title: publication.title_snapshot,
   }
 }
 
 export async function getPublishedBookSignedUrl(storagePath: string): Promise<string> {
+  if (!storagePath) throw new Error('PDF 경로가 없어요.')
+
   const { data, error } = await supabase.storage
     .from('published-pdfs')
     .createSignedUrl(storagePath, 3600)
@@ -110,9 +139,10 @@ export async function canPublishBook(userId: string): Promise<boolean> {
   if (plan === 'pro') return true
 
   const { count, error } = await supabase
-    .from('published_books')
+    .from('publications')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
+    .eq('status', 'published')
 
   if (error) throw error
   return (count ?? 0) < 1
@@ -131,27 +161,6 @@ export async function prepareBookExport(
   }
 
   return { project, chapters, authorName, coverTemplateId }
-}
-
-export async function savePublishedBook(
-  userId: string,
-  projectId: string,
-  coverTemplateId: string,
-  pageCount: number,
-  storagePath: string,
-): Promise<void> {
-  await supabase.from('published_books').upsert({
-    project_id: projectId,
-    user_id: userId,
-    pdf_url: storagePath,
-    cover_template_id: coverTemplateId,
-    page_count: pageCount,
-  })
-
-  await supabase
-    .from('projects')
-    .update({ cover_template_id: coverTemplateId, is_completed: true })
-    .eq('id', projectId)
 }
 
 export function buildBookHtml(data: BookExportData): string {
@@ -229,7 +238,7 @@ export async function downloadBookHtml(data: BookExportData): Promise<{ pageCoun
 export async function generateBookPdf(
   projectId: string,
   coverTemplateId: string,
-): Promise<{ pdfUrl: string; storagePath: string; pageCount: number }> {
+): Promise<{ publicationId: string; version: number; pdfUrl: string; storagePath: string; pageCount: number }> {
   const response = await supabase.functions.invoke('generate-pdf', {
     body: { project_id: projectId, cover_template_id: coverTemplateId },
   })
@@ -238,6 +247,8 @@ export async function generateBookPdf(
     pdf_url?: string
     storage_path?: string
     page_count?: number
+    publication_id?: string
+    version?: number
     code?: string
     error?: string
   } | null
@@ -246,13 +257,15 @@ export async function generateBookPdf(
     throw new BookApiError('PUBLICATION_LIMIT', body.error ?? 'Free 플랜의 첫 책 발행을 이미 사용했어요.')
   }
 
-  if (response.error || body?.error || !body?.pdf_url) {
+  if (response.error || body?.error || !body?.pdf_url || !body?.publication_id || !body?.version) {
     throw new BookApiError('PDF_GENERATE_FAILED', body?.error ?? 'PDF 생성에 실패했어요.')
   }
 
   return {
+    publicationId: body.publication_id,
+    version: body.version,
     pdfUrl: body.pdf_url,
-    storagePath: body.storage_path ?? `${projectId}.pdf`,
+    storagePath: body.storage_path ?? `${projectId}/v${body.version}.pdf`,
     pageCount: body.page_count ?? 1,
   }
 }
