@@ -22,6 +22,7 @@ import { useActiveProject } from '@/hooks/useActiveProject'
 import {
   ChapterApiError,
   generateChapter,
+  getChapterRecordCountMap,
   getUnassignedRecordCount,
   listChapters,
   reorderChapters,
@@ -34,10 +35,12 @@ import { getBookReadiness } from '@/utils/bookReadiness'
 function SortableChapterRow({
   chapter,
   editMode,
+  recordCount,
   onOpen,
 }: {
   chapter: Chapter
   editMode: boolean
+  recordCount: number
   onOpen: () => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -82,7 +85,7 @@ function SortableChapterRow({
             <p className="text-xs text-ink-faint">Chapter {chapter.chapter_number}</p>
             <p className="mt-1 font-semibold">{chapter.title}</p>
             <p className="mt-1 text-xs text-ink-muted">
-              기록 {chapter.record_ids.length}개 · 약 {estimateChapterPages(chapter.record_ids.length)}페이지
+              기록 {recordCount}개 · 약 {estimateChapterPages(recordCount)}페이지
             </p>
           </div>
           {!editMode && <span className="text-ink-faint">›</span>}
@@ -99,6 +102,7 @@ export function BookPage() {
 
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [unassignedCount, setUnassignedCount] = useState(0)
+  const [chapterRecordCounts, setChapterRecordCounts] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [editMode, setEditMode] = useState(false)
@@ -113,13 +117,15 @@ export function BookPage() {
   const load = async () => {
     if (!user || !project) return
 
-    const [chapterData, pending] = await Promise.all([
+    const [chapterData, pending, relationCounts] = await Promise.all([
       listChapters(project.id),
       getUnassignedRecordCount(project.id),
+      getChapterRecordCountMap(project.id),
     ])
 
     setChapters(chapterData)
     setUnassignedCount(pending)
+    setChapterRecordCounts(relationCounts)
     setLoading(false)
   }
 
@@ -191,7 +197,7 @@ export function BookPage() {
     return <EmptyState variant="book" />
   }
 
-  const totalRecords = chapters.reduce((sum, ch) => sum + ch.record_ids.length, 0) + unassignedCount
+  const totalRecords = chapters.reduce((sum, ch) => sum + (chapterRecordCounts[ch.id] ?? 0), 0) + unassignedCount
   const readiness = getBookReadiness(project, totalRecords)
 
   if (!readiness.isReady) {
@@ -290,6 +296,7 @@ export function BookPage() {
                     key={chapter.id}
                     chapter={chapter}
                     editMode={editMode}
+                    recordCount={chapterRecordCounts[chapter.id] ?? 0}
                     onOpen={() => navigate(`/book/chapter/${chapter.id}`)}
                   />
                 ))}
