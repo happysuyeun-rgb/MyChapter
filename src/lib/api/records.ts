@@ -180,6 +180,15 @@ export async function deleteRecord(id: string, userId: string): Promise<void> {
     return
   }
 
+  const { data: record, error: readError } = await supabase
+    .from('records')
+    .select('photo_url')
+    .eq('id', id)
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (readError) throw readError
+
   const { error } = await supabase
     .from('records')
     .delete()
@@ -187,6 +196,10 @@ export async function deleteRecord(id: string, userId: string): Promise<void> {
     .eq('user_id', userId)
 
   if (error) throw error
+
+  if (record?.photo_url) {
+    await supabase.storage.from('record-photos').remove([record.photo_url])
+  }
 }
 
 async function finalizeSave(
