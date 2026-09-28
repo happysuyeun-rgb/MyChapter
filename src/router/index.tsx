@@ -14,6 +14,7 @@ import { NotificationsPage } from '@/pages/notifications/NotificationsPage'
 import { NicknamePage } from '@/pages/onboarding/NicknamePage'
 import { NotificationPage } from '@/pages/onboarding/NotificationPage'
 import { ProjectCompletePage } from '@/pages/project/ProjectCompletePage'
+import { ProjectWorkspacePage } from '@/pages/project/ProjectWorkspacePage'
 import { ProjectSetupPage } from '@/pages/project/ProjectSetupPage'
 import { ProjectTypePage } from '@/pages/project/ProjectTypePage'
 import { ProjectsListPage } from '@/pages/project/ProjectsListPage'
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
           { path: '/project/new', element: <ProjectTypePage /> },
           { path: '/project/new/setup', element: <ProjectSetupPage /> },
           { path: '/project/new/complete', element: <ProjectCompletePage /> },
+          { path: '/project/workspace', element: <ProjectWorkspacePage /> },
 
           { path: '/notifications', element: <NotificationsPage /> },
           { path: '/projects', element: <Navigate to="/library" replace /> },
