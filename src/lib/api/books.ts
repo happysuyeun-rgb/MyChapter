@@ -67,6 +67,44 @@ export async function listPublishedBooks(userId: string): Promise<PublishedBookW
   }))
 }
 
+export async function getPublishedBookById(
+  userId: string,
+  bookId: string,
+): Promise<PublishedBookWithProject | null> {
+  const { data: book, error } = await supabase
+    .from('published_books')
+    .select('*')
+    .eq('id', bookId)
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (error) throw error
+  if (!book) return null
+
+  const { data: project } = await supabase
+    .from('projects')
+    .select('title')
+    .eq('id', book.project_id)
+    .maybeSingle()
+
+  return {
+    ...book,
+    project_title: project?.title ?? '나의 책',
+  }
+}
+
+export async function getPublishedBookSignedUrl(storagePath: string): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from('published-pdfs')
+    .createSignedUrl(storagePath, 3600)
+
+  if (error || !data?.signedUrl) {
+    throw error ?? new Error('PDF를 열 수 없어요.')
+  }
+
+  return data.signedUrl
+}
+
 export async function canPublishBook(userId: string): Promise<boolean> {
   const plan = await getSubscriptionPlan(userId)
   if (plan === 'pro') return true
