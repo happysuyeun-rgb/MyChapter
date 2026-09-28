@@ -82,9 +82,10 @@ Deno.serve(async (req) => {
     if (recordsError) throw recordsError
 
     const recordMap = new Map((sourceRecords ?? []).map((record) => [record.id, record]))
-    const records = recordIds
-      .map((recordId) => recordMap.get(recordId))
-      .filter((record): record is NonNullable<typeof record> => Boolean(record))
+    const records = recordIds.flatMap((recordId) => {
+      const record = recordMap.get(recordId)
+      return record ? [record] : []
+    })
 
     const recordsText = records
       .map((r, i) => `[${i + 1}] (${r.created_at}) [${(r.emotion_tags ?? []).join(', ')}] ${r.content}`)
