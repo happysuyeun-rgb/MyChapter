@@ -53,7 +53,16 @@ export function ProjectWorkspacePage() {
             <span className="h-px w-5 bg-sage" />
           </div>
           <div className="min-w-0 flex-1 pt-1">
-            <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">BOOK WORKSPACE</p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">BOOK WORKSPACE</p>
+              <button
+                type="button"
+                className="min-h-9 text-[11px] font-semibold text-ink-muted"
+                onClick={() => navigate('/project/settings')}
+              >
+                책 설정
+              </button>
+            </div>
             <h1 className="mt-2 line-clamp-2 font-serif text-[24px] font-bold leading-snug tracking-[-0.03em]">{project.title}</h1>
             <p className="mt-2 text-xs text-ink-muted">{typeLabel} · 기록 {recordCount}개</p>
           </div>
