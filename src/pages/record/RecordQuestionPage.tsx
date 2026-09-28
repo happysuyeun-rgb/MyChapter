@@ -94,8 +94,7 @@ export function RecordQuestionPage() {
             editingRecord.id,
             user.id,
             project.id,
-            { content: content.trim(), emotionTags: emotions, questionText: question },
-            project.target_count,
+            { content: content.trim(), emotionTags: emotions, questionText: question }
           )
         : await createRecord(
             {
@@ -105,8 +104,7 @@ export function RecordQuestionPage() {
               content: content.trim(),
               questionText: question,
               emotionTags: emotions,
-            },
-            project.target_count,
+            }
           )
 
       await deleteDraft(user.id, project.id, 'question')
