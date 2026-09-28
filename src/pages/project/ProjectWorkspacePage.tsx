@@ -33,13 +33,68 @@ export function ProjectWorkspacePage() {
   const readiness = getBookReadiness(project, recordCount)
   const progress = readiness.score
   const typeLabel = PROJECT_TYPES.find((item) => item.type === project.type)?.label ?? '나의 이야기'
-  const stages = [
-    { label: '기록', description: recordCount + '개의 이야기가 쌓였어요', to: '/records', ready: true },
-    { label: '챕터', description: readiness.isReady ? (chapterCount > 0 ? chapterCount + '개의 챕터를 다듬고 있어요' : '이야기가 충분히 모였어요. 챕터를 만들어보세요') : '이야기 준비도가 채워지면 열려요', to: '/book', ready: readiness.isReady },
-    { label: '원고', description: '챕터를 하나의 책 흐름으로 다듬어요', to: '/book/manuscript', ready: readiness.isReady && chapterCount > 0 },
-    { label: '표지', description: '책의 첫인상을 완성해요', to: '/book/cover', ready: readiness.isReady && chapterCount > 0 },
-    { label: '최종 검수', description: '제목·목차·원고를 마지막으로 확인해요', to: '/book/review', ready: readiness.isReady && chapterCount > 0 },
-    { label: '발행', description: '완성된 책을 PDF로 간직해요', to: '/book/review', ready: readiness.isReady && chapterCount > 0 },
+  const manuscriptReady = chapterCount > 0
+  const coverSelected = Boolean(project.selected_cover_id ?? project.cover_template_id)
+  const published = project.is_completed
+
+  type StageState = 'done' | 'active' | 'pending'
+
+  const stages: Array<{
+    label: string
+    description: string
+    statusLabel: string
+    to: string
+    ready: boolean
+    state: StageState
+  }> = [
+    {
+      label: '기록',
+      description: readiness.isReady ? `기록 ${recordCount}개 · 책 만들기 기준을 충족했어요` : `기록 ${recordCount}개를 모으고 있어요`,
+      statusLabel: readiness.isReady ? '완료' : '진행 중',
+      to: '/records',
+      ready: true,
+      state: readiness.isReady ? 'done' : 'active',
+    },
+    {
+      label: '챕터',
+      description: chapterCount > 0 ? `${chapterCount}개의 챕터가 만들어졌어요` : readiness.isReady ? '이야기가 충분히 모였어요. 챕터를 만들어보세요' : '이야기 준비도가 채워지면 열려요',
+      statusLabel: chapterCount > 0 ? '완료' : readiness.isReady ? '시작 가능' : '대기',
+      to: '/book',
+      ready: readiness.isReady,
+      state: chapterCount > 0 ? 'done' : readiness.isReady ? 'active' : 'pending',
+    },
+    {
+      label: '원고',
+      description: manuscriptReady ? '챕터 원고가 준비되어 있어요' : '챕터를 먼저 만든 뒤 원고를 확인해요',
+      statusLabel: manuscriptReady ? '완료' : '대기',
+      to: '/book/manuscript',
+      ready: readiness.isReady && chapterCount > 0,
+      state: manuscriptReady ? 'done' : 'pending',
+    },
+    {
+      label: '표지',
+      description: coverSelected ? '표지 선택이 저장되어 있어요' : '아직 표지를 선택하지 않았어요',
+      statusLabel: coverSelected ? '완료' : manuscriptReady ? '선택 필요' : '대기',
+      to: '/book/cover',
+      ready: readiness.isReady && chapterCount > 0,
+      state: coverSelected ? 'done' : manuscriptReady ? 'active' : 'pending',
+    },
+    {
+      label: '최종 검수',
+      description: published ? '발행 전 검수를 완료했어요' : coverSelected ? '표지·목차·원고를 마지막으로 확인해주세요' : '표지 선택 후 진행할 수 있어요',
+      statusLabel: published ? '완료' : coverSelected ? '확인 필요' : '대기',
+      to: '/book/review',
+      ready: readiness.isReady && chapterCount > 0 && coverSelected,
+      state: published ? 'done' : coverSelected ? 'active' : 'pending',
+    },
+    {
+      label: '발행',
+      description: published ? 'PDF 발행이 완료되었어요' : '아직 발행되지 않았어요',
+      statusLabel: published ? '완료' : '미발행',
+      to: '/book/review',
+      ready: readiness.isReady && chapterCount > 0 && coverSelected,
+      state: published ? 'done' : coverSelected ? 'active' : 'pending',
+    },
   ]
 
   return (
@@ -79,10 +134,46 @@ export function ProjectWorkspacePage() {
           <div className="mb-4 flex items-end justify-between"><div><p className="text-[10px] font-semibold tracking-[0.16em] text-sage">PRODUCTION</p><p className="mt-1 font-serif text-base font-bold">이 책을 완성하는 과정</p></div><span className="font-serif text-xs text-ink-faint">01 — 06</span></div>
           <div className="border-t border-border">
             {stages.map((stage, index) => (
-              <button key={stage.label} disabled={!stage.ready} onClick={() => navigate(stage.to)} className={['flex w-full items-center gap-4 border-b border-border py-4 text-left', stage.ready ? 'bg-transparent' : 'opacity-45'].join(' ')}>
-                <span className={['flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold', stage.ready ? 'bg-accent text-white' : 'bg-surface-alt text-ink-faint'].join(' ')}>{index + 1}</span>
-                <div className="min-w-0 flex-1"><p className="font-serif text-sm font-bold">{stage.label}</p><p className="mt-1 text-[11px] text-ink-muted">{stage.description}</p></div>
-                <span className="text-ink-faint">›</span>
+              <button
+                key={stage.label}
+                disabled={!stage.ready}
+                onClick={() => navigate(stage.to)}
+                className={[
+                  'flex w-full items-center gap-4 border-b border-border py-4 text-left',
+                  stage.state === 'pending' ? 'opacity-45' : 'bg-transparent',
+                ].join(' ')}
+              >
+                <span
+                  className={[
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-bold',
+                    stage.state === 'done'
+                      ? 'border-ink bg-ink text-surface'
+                      : stage.state === 'active'
+                        ? 'border-sage bg-transparent text-sage'
+                        : 'border-border bg-surface-alt text-ink-faint',
+                  ].join(' ')}
+                >
+                  {stage.state === 'done' ? '✓' : index + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-serif text-sm font-bold">{stage.label}</p>
+                    <span
+                      className={[
+                        'shrink-0 text-[10px] font-semibold tracking-[0.08em]',
+                        stage.state === 'done'
+                          ? 'text-ink'
+                          : stage.state === 'active'
+                            ? 'text-sage'
+                            : 'text-ink-faint',
+                      ].join(' ')}
+                    >
+                      {stage.statusLabel}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[11px] text-ink-muted">{stage.description}</p>
+                </div>
+                {stage.ready && stage.state !== 'done' && <span className="text-ink-faint">›</span>}
               </button>
             ))}
           </div>
