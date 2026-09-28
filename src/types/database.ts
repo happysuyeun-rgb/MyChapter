@@ -1,6 +1,6 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
-export type ProjectType = 'emotion' | 'parenting' | 'yearly' | 'career' | 'custom'
+export type ProjectType = 'emotion' | 'parenting' | 'yearly' | 'career' | 'custom' | 'growth' | 'life_story' | 'relationships' | 'travel' | 'hobby' | 'learning'
 export type RecordFrequency = 'daily' | 'week5' | 'week3' | 'week1'
 export type RecordMode = 'question' | 'photo' | 'free' | 'daily'
 export type RecordModeInstance = 'question' | 'photo' | 'free'
