@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import type { Project, ProjectType, RecordFrequency, RecordMode } from '@/types/database'
 import type { PeriodDays } from '@/utils/calculateRoutine'
 
@@ -34,23 +35,25 @@ const defaultDraft: NewProjectDraft = {
   recordMode: 'question',
 }
 
-export const useProjectStore = create<ProjectState>((set) => ({
-  projects: [],
-  activeProject: null,
-  createdProject: null,
-  firstQuestion: null,
-  draft: { ...defaultDraft },
+export const useProjectStore = create<ProjectState>()(
+  persist(
+    (set) => ({
+      projects: [],
+      activeProject: null,
+      createdProject: null,
+      firstQuestion: null,
+      draft: { ...defaultDraft },
 
-  setDraft: (patch) =>
-    set((state) => ({ draft: { ...state.draft, ...patch } })),
-
-  resetDraft: () => set({ draft: { ...defaultDraft } }),
-
-  setProjects: (projects) => set({ projects }),
-
-  setActiveProject: (project) => set({ activeProject: project }),
-
-  setCreatedProject: (project) => set({ createdProject: project }),
-
-  setFirstQuestion: (question) => set({ firstQuestion: question }),
-}))
+      setDraft: (patch) => set((state) => ({ draft: { ...state.draft, ...patch } })),
+      resetDraft: () => set({ draft: { ...defaultDraft } }),
+      setProjects: (projects) => set({ projects }),
+      setActiveProject: (project) => set({ activeProject: project }),
+      setCreatedProject: (project) => set({ createdProject: project }),
+      setFirstQuestion: (question) => set({ firstQuestion: question }),
+    }),
+    {
+      name: 'mychapter-project-store',
+      partialize: (state) => ({ activeProject: state.activeProject }),
+    },
+  ),
+)
