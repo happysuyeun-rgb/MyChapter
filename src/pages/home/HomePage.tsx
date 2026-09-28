@@ -71,11 +71,11 @@ export function HomePage() {
 
       <main className="px-5 pb-6 pt-3">
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-xs font-semibold text-ink-muted">지금 쓰고 있는 책</p>
+          <h2 className="font-serif text-base font-bold">지금 쓰고 있는 책</h2>
           <button className="text-xs font-semibold text-sage" onClick={() => navigate('/library')}>내 서재 →</button>
         </div>
 
-        <Card className="paper-card p-5">
+        <section className="border-y border-border py-5">
           <div className="flex items-start gap-4">
             <div className="flex h-28 w-20 shrink-0 flex-col justify-between rounded-r-md rounded-l-sm bg-accent p-3 text-surface shadow-paper">
               <span className="text-[9px] uppercase tracking-[0.2em] opacity-70">MY CHAPTER</span>
@@ -102,17 +102,15 @@ export function HomePage() {
               </div>
             ))}
           </div>
-        </Card>
+        </section>
 
-        <button type="button" className="mt-4 w-full rounded-btn bg-accent px-5 py-4 text-center text-[15px] font-semibold text-white shadow-paper" onClick={() => navigate('/record/mode')}>
+        <button type="button" className="mt-5 w-full rounded-btn bg-accent px-5 py-4 text-center text-[15px] font-semibold text-white shadow-paper" onClick={() => navigate('/record/mode')}>
           오늘 기록하기
           <span className="mt-1 block text-[11px] font-normal text-white/70">AI 질문으로 또는 자유롭게 기록해보세요</span>
         </button>
 
-        <section className="mt-6">
-          <p className="font-serif text-base font-bold">오늘의 작은 안내</p>
-          <Card className="mt-2 p-4">
-            <div className="flex gap-3">
+        <section className="mt-8 border-t border-border pt-5">
+          <div className="flex gap-3">
               <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] border border-[#D8CCB9] bg-[#FFF9EE] shadow-sm">
                 <span className="absolute -top-1 left-5 h-2 w-1 rotate-[-28deg] rounded-full bg-sage" />
                 <span className="absolute -top-1 right-3 h-1.5 w-2 rotate-[25deg] rounded-full bg-sage" />
@@ -122,8 +120,7 @@ export function HomePage() {
                 <p className="text-sm font-semibold">PAGE가 기다리고 있어요.</p>
                 <p className="mt-1 text-xs leading-relaxed text-ink-muted">{readiness.isReady ? '이야기가 충분히 모였어요. 내 서재에서 책 만들기를 시작할 수 있어요.' : `완벽하게 쓰지 않아도 괜찮아요. 기록 ${readiness.recordsRemaining > 0 ? `${readiness.recordsRemaining}개` : '조건 충족'}${readiness.daysRemaining > 0 ? ` · ${readiness.daysRemaining}일` : ''}이 더 쌓이면 책 만들기가 열려요.`}</p>
               </div>
-            </div>
-          </Card>
+          </div>
         </section>
 
         {projects.length > 1 && (
