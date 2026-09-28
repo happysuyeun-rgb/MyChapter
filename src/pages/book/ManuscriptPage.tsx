@@ -55,21 +55,21 @@ export function ManuscriptPage() {
       </header>
 
       <main className="px-5 pb-8">
-        <Card className="paper-card p-5">
+        <section className="border-y border-border py-5">
           <div className="flex items-end justify-between">
             <div><p className="text-xs text-ink-muted">원고 상태</p><p className="mt-1 font-serif text-lg font-bold">{completedChapters}/{chapters.length} 챕터 확인</p></div>
             <p className="text-xs text-ink-muted">약 {manuscriptChars.toLocaleString()}자</p>
           </div>
           <p className="mt-3 text-xs leading-relaxed text-ink-muted">기록 {recordCount}개에서 만들어진 원고예요. 원본 기록은 그대로 보존됩니다.</p>
-        </Card>
+        </section>
 
-        <section className="mt-6">
+        <section className="mt-8">
           <p className="mb-3 font-serif text-base font-bold">원고 목차</p>
-          <div className="space-y-3">
+          <div className="border-t border-border">
             {chapters.map((chapter) => {
               const content = getChapterDisplayContent(chapter)
               return (
-                <Card key={chapter.id} className="p-4">
+                <article key={chapter.id} className="border-b border-border py-4">
                   <div className="flex items-start gap-3">
                     <span className="text-xs text-ink-faint">{String(chapter.chapter_number).padStart(2, '0')}</span>
                     <div className="min-w-0 flex-1">
@@ -81,7 +81,7 @@ export function ManuscriptPage() {
                       </div>
                     </div>
                   </div>
-                </Card>
+                </article>
               )
             })}
           </div>
