@@ -40,7 +40,11 @@ export function PublishedBookPage() {
     setError('')
     try {
       const url = await getPublishedBookSignedUrl(book.pdf_url)
-      window.open(url, '_blank', 'noopener,noreferrer')
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.target = '_blank'
+      anchor.rel = 'noopener'
+      anchor.click()
     } catch {
       setError('PDF를 열지 못했어요. 잠시 후 다시 시도해주세요.')
     } finally {
