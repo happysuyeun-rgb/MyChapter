@@ -122,22 +122,21 @@ export function RecordFreePage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
       <NavBar
-        title={`자유 일기 #${recordNumber}`}
+        title={`PAGE ${String(recordNumber).padStart(2, '0')}`}
         leftLabel="✕"
         onLeftClick={() => (isDirty ? setShowExit(true) : navigate(-1))}
         rightLabel={saving ? '...' : '저장'}
         rightAccent
         onRightClick={() => void handleSave()}
       />
-      <div className="flex-1 overflow-y-auto p-5">
+      <div className="flex-1 overflow-y-auto px-5 pb-8 pt-6">
         {showHint && hint && !editingRecord && (
-          <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-surface-alt p-3.5">
-            <span className="text-base">✨</span>
+          <div className="mb-7 border-l-2 border-sage pl-4">
             <div className="flex-1">
-              <p className="mb-1 text-[11px] font-bold text-accent">AI 글감 제안 (선택)</p>
-              <p className="text-[13px] leading-relaxed text-ink-muted">{hint}</p>
+              <p className="mb-1 text-[10px] font-semibold tracking-[0.16em] text-sage">PAGE'S NOTE · OPTIONAL</p>
+              <p className="font-serif text-[14px] leading-6 text-ink-muted">{hint}</p>
             </div>
             <button
               type="button"
@@ -149,13 +148,13 @@ export function RecordFreePage() {
           </div>
         )}
 
-        <div className="mb-3 border-b border-border pb-2">
+        <div className="mb-4 border-b border-ink pb-3">
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="제목을 입력해주세요"
-            className="w-full text-lg font-bold text-ink outline-none placeholder:text-ink-faint"
+            className="w-full bg-transparent font-serif text-[22px] font-bold tracking-[-0.02em] text-ink outline-none placeholder:text-ink-faint"
           />
         </div>
 
@@ -163,10 +162,10 @@ export function RecordFreePage() {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="자유롭게 써보세요"
-          className="min-h-[280px] leading-loose"
+          className="min-h-[360px] border-0 bg-transparent px-0 font-serif text-[16px] leading-8 shadow-none focus:ring-0"
           maxLength={5000}
         />
-        <p className="mb-5 mt-2 text-right text-[11px] text-ink-faint">
+        <p className="mb-7 mt-2 border-t border-border pt-2 text-right text-[11px] text-ink-faint">
           {content.length}자
         </p>
 
