@@ -55,14 +55,22 @@ Deno.serve(async (req) => {
       await admin.storage.from('record-photos').remove(photoPaths)
     }
 
-    const { data: publications } = await admin
-      .from('published_books')
-      .select('pdf_url')
-      .eq('user_id', user.id)
+    const [{ data: publications }, { data: legacyPublications }] = await Promise.all([
+      admin
+        .from('publications')
+        .select('pdf_path')
+        .eq('user_id', user.id)
+        .not('pdf_path', 'is', null),
+      admin
+        .from('published_books')
+        .select('pdf_url')
+        .eq('user_id', user.id),
+    ])
 
-    const pdfPaths = (publications ?? [])
-      .map((book) => book.pdf_url)
-      .filter((path): path is string => Boolean(path))
+    const pdfPaths = Array.from(new Set([
+      ...(publications ?? []).map((book) => book.pdf_path),
+      ...(legacyPublications ?? []).map((book) => book.pdf_url),
+    ].filter((path): path is string => Boolean(path))))
 
     if (pdfPaths.length > 0) {
       await admin.storage.from('published-pdfs').remove(pdfPaths)
