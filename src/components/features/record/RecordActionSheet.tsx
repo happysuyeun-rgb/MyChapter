@@ -7,36 +7,30 @@ interface RecordActionSheetProps {
   onDelete: () => void
 }
 
-export function RecordActionSheet({
-  open,
-  onClose,
-  onEdit,
-  onDelete,
-}: RecordActionSheetProps) {
+export function RecordActionSheet({ open, onClose, onEdit, onDelete }: RecordActionSheetProps) {
   return (
     <BottomSheet open={open} onClose={onClose}>
       <button
         type="button"
-        className="flex w-full items-center gap-3 px-6 py-3.5 text-left"
+        className="flex min-h-[56px] w-full items-center justify-between border-b border-border px-6 text-left"
         onClick={() => {
           onClose()
           onEdit()
         }}
       >
-        <span className="text-xl">✏️</span>
-        <span className="text-[15px] font-medium">기록 수정하기</span>
+        <span className="text-sm font-semibold">기록 수정하기</span>
+        <span className="text-ink-faint">→</span>
       </button>
-      <div className="mx-6 h-px bg-border" />
       <button
         type="button"
-        className="flex w-full items-center gap-3 px-6 py-3.5 text-left"
+        className="flex min-h-[56px] w-full items-center justify-between px-6 text-left"
         onClick={() => {
           onClose()
           onDelete()
         }}
       >
-        <span className="text-xl">🗑</span>
-        <span className="text-[15px] font-medium text-danger">기록 삭제</span>
+        <span className="text-sm font-semibold text-danger">기록 삭제</span>
+        <span className="text-danger">→</span>
       </button>
     </BottomSheet>
   )
