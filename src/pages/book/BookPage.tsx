@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Button, Card, EmptyState, ProgressBar } from '@/components/common'
+import { Button, EmptyState, ProgressBar } from '@/components/common'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import {
   ChapterApiError,
@@ -57,7 +57,7 @@ function SortableChapterRow({
       style={style}
       className={[
         'flex items-stretch gap-2 border-b border-border bg-transparent',
-        editMode ? 'bg-accent-light/30' : '',
+        editMode ? 'border-l-2 border-l-sage' : '',
       ].join(' ')}
     >
       {editMode && (
@@ -198,15 +198,18 @@ export function BookPage() {
     return (
       <div className="flex flex-1 flex-col bg-surface px-5 py-6">
         <button className="self-start text-sm text-ink-muted" onClick={() => navigate('/project/workspace')}>← 책 작업실</button>
-        <Card className="mt-8 paper-card p-5">
-          <p className="text-xs font-semibold tracking-[0.16em] text-sage">STORY READINESS</p>
-          <h1 className="mt-2 font-serif text-xl font-bold">아직 이야기를 모으고 있어요</h1>
-          <p className="mt-2 text-sm leading-relaxed text-ink-muted">{readiness.message}</p>
-          <div className="mt-5 flex items-end justify-between"><span className="text-xs text-ink-muted">이야기 준비도</span><span className="font-serif text-3xl font-bold">{readiness.score}%</span></div>
+        <section className="mt-8 border-y border-ink py-7">
+          <p className="text-[10px] font-semibold tracking-[0.2em] text-sage">STORY READINESS</p>
+          <h1 className="mt-3 font-serif text-[25px] font-bold leading-snug">아직 이야기를 모으고 있어요</h1>
+          <p className="mt-3 text-sm leading-6 text-ink-muted">{readiness.message}</p>
+          <div className="mt-6 flex items-end justify-between">
+            <span className="text-[10px] tracking-[0.12em] text-ink-faint">READINESS</span>
+            <span className="font-serif text-[34px] font-bold">{readiness.score}%</span>
+          </div>
           <ProgressBar value={readiness.score} className="mt-2" />
-          <p className="mt-3 text-xs leading-relaxed text-ink-muted">기록 {totalRecords}/{readiness.rule.minRecords}개 · {readiness.elapsedDays}/{readiness.rule.minDays}일</p>
-          <Button className="mt-5" onClick={() => navigate('/record/mode')}>오늘 기록 이어가기</Button>
-        </Card>
+          <p className="mt-3 text-[11px] leading-5 text-ink-muted">기록 {totalRecords}/{readiness.rule.minRecords}개 · {readiness.elapsedDays}/{readiness.rule.minDays}일</p>
+          <Button className="mt-6" onClick={() => navigate('/record/mode')}>오늘 한 페이지 이어가기</Button>
+        </section>
       </div>
     )
   }
@@ -220,15 +223,17 @@ export function BookPage() {
 
   return (
     <div className="flex flex-1 flex-col overflow-y-auto bg-surface">
-      <div className="border-b border-border px-5 py-4">
-        <h1 className="text-lg font-bold">{project.title}</h1>
-        <p className="mt-1 text-xs text-ink-muted">
-          챕터 {chapters.length}개 · 기록 {totalRecords}개
-        </p>
-        <div className="mt-3">
-          <ProgressBar value={progress} />
+      <header className="px-5 pb-5 pt-6">
+        <div className="border-b border-ink pb-5">
+          <p className="text-[10px] font-semibold tracking-[0.2em] text-sage">CHAPTER DESK</p>
+          <h1 className="mt-2 font-serif text-[25px] font-bold tracking-[-0.03em]">{project.title}</h1>
+          <div className="mt-3 flex items-center justify-between text-xs text-ink-muted">
+            <span>챕터 {chapters.length}개 · 기록 {totalRecords}개</span>
+            <span className="font-serif font-bold text-ink">{progress}%</span>
+          </div>
+          <ProgressBar value={progress} className="mt-3" />
         </div>
-      </div>
+      </header>
 
       {unassignedCount > 0 && (
         <section className="mx-5 mt-5 border-y border-border py-4">
