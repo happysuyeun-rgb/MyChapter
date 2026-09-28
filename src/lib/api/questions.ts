@@ -18,10 +18,16 @@ const FALLBACK_QUESTIONS: Record<ProjectType, string> = {
   yearly: '올해의 나에게 고마웠던 작은 순간은 무엇인가요?',
   career: '오늘 새로운 도전을 향해 내딛은 한 걸음이 있었나요?',
   custom: '오늘 하루를 돌아보며 가장 먼저 떠오르는 생각은 무엇인가요?',
+  growth: '요즘의 나를 이전과 조금 다르게 만든 순간이 있었나요?',
+  life_story: '지금 떠올리면 여전히 선명한 오래된 장면은 무엇인가요?',
+  relationships: '오늘 누군가의 말이나 행동이 마음에 남았다면 무엇인가요?',
+  travel: '오늘 여행에서 가장 오래 기억하고 싶은 장면은 무엇인가요?',
+  hobby: '오늘 좋아하는 일을 하며 발견한 작은 즐거움은 무엇인가요?',
+  learning: '오늘 배우거나 시도하며 새롭게 알게 된 것은 무엇인가요?',
 }
 
 export function getFallbackQuestion(projectType: ProjectType): string {
-  return FALLBACK_QUESTIONS[projectType]
+  return FALLBACK_QUESTIONS[projectType] ?? FALLBACK_QUESTIONS.custom
 }
 
 export async function generateQuestion(projectId: string): Promise<string> {
