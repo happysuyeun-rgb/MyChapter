@@ -82,15 +82,19 @@ export function PublishedBookPage() {
           </div>
           <h1 className="mt-6 font-serif text-2xl font-bold">{book.project_title}</h1>
           <p className="mt-2 text-xs text-ink-muted">
-            {new Date(book.published_at).toLocaleDateString('ko-KR')} 발행
+            v{book.version} · {new Date(book.published_at).toLocaleDateString('ko-KR')} 발행
             {book.page_count ? ` · 약 ${book.page_count}페이지` : ''}
           </p>
+          <p className="mt-1 text-[11px] text-ink-faint">{book.author_snapshot}</p>
         </section>
 
         <section className="mt-7">
           <h2 className="font-serif text-base font-bold">발행본</h2>
           <div className="mt-3 border-y border-border">
             <div className="flex items-center justify-between py-4 text-sm">
+              <span className="text-ink-muted">버전</span><span className="font-semibold">v{book.version}</span>
+            </div>
+            <div className="flex items-center justify-between border-t border-border py-4 text-sm">
               <span className="text-ink-muted">형식</span><span className="font-semibold">PDF</span>
             </div>
             <div className="flex items-center justify-between border-t border-border py-4 text-sm">
