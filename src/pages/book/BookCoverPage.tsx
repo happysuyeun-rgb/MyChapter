@@ -8,6 +8,8 @@ import { useActiveProject } from '@/hooks/useActiveProject'
 import { useAuthStore } from '@/stores/authStore'
 import { useBookStore } from '@/stores/bookStore'
 import { usePaywallStore } from '@/stores/paywallStore'
+import { listRecords } from '@/lib/api/records'
+import { getBookReadiness } from '@/utils/bookReadiness'
 
 export function BookCoverPage() {
   const navigate = useNavigate()
@@ -17,11 +19,16 @@ export function BookCoverPage() {
   const { showPaywall } = usePaywallStore()
 
   const [isPro, setIsPro] = useState(false)
+  const [readinessChecked, setReadinessChecked] = useState(false)
 
   useEffect(() => {
-    if (!user) return
-    void getSubscriptionPlan(user.id).then((plan) => setIsPro(plan === 'pro'))
-  }, [user])
+    if (!user || !project) return
+    void Promise.all([getSubscriptionPlan(user.id), listRecords(user.id, { projectId: project.id })]).then(([plan, records]) => {
+      setIsPro(plan === 'pro')
+      if (!getBookReadiness(project, records.length).isReady) navigate('/project/workspace', { replace: true })
+      setReadinessChecked(true)
+    })
+  }, [user, project, navigate])
 
   const handleSelect = (id: string, proOnly: boolean) => {
     if (proOnly && !isPro) {
@@ -33,7 +40,7 @@ export function BookCoverPage() {
 
   const handleContinue = () => navigate('/book/review')
 
-  if (projectLoading || !project) {
+  if (projectLoading || !project || !readinessChecked) {
     return (
       <div className="flex flex-1 items-center justify-center text-sm text-ink-muted">
         로딩 중...
