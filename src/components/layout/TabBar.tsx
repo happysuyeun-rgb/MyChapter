@@ -33,7 +33,7 @@ function TabIcon({ name }: { name: TabIconName }) {
 
 export function TabBar() {
   return (
-    <nav className="safe-bottom flex h-14 shrink-0 border-t border-border bg-white">
+    <nav className="safe-bottom flex h-14 shrink-0 border-t border-border bg-surface-card/95 backdrop-blur-sm">
       {tabs.map((tab) => (
         <NavLink
           key={tab.to}
