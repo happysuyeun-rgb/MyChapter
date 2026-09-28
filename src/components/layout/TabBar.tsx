@@ -39,12 +39,11 @@ export function TabBar() {
           key={tab.to}
           to={tab.to}
           className={({ isActive }) =>
-            ['relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 transition-colors', isActive ? 'text-ink' : 'text-ink-faint'].join(' ')
+            ['flex flex-1 flex-col items-center justify-center gap-0.5 border-t py-2 transition-colors', isActive ? 'border-ink text-ink' : 'border-transparent text-ink-faint'].join(' ')
           }
         >
           <TabIcon name={tab.icon} />
           <span className="text-[10px] font-medium">{tab.label}</span>
-          <span className="absolute top-0 h-px w-8 bg-current opacity-0 [a.active_&]:opacity-100" />
         </NavLink>
       ))}
     </nav>
