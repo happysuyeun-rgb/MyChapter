@@ -64,7 +64,7 @@ export function ProjectWorkspacePage() {
           <div className="flex items-end justify-between"><div><p className="text-xs text-ink-muted">이야기 준비도</p><p className="mt-1 text-sm font-semibold">{readiness.message}</p></div><p className="font-serif text-3xl font-bold">{progress}%</p></div>
           <ProgressBar value={progress} className="mt-3" />
           <p className="mt-2 text-[11px] leading-relaxed text-ink-muted">{readiness.isReady ? `기록 ${recordCount}개 · ${readiness.elapsedDays}일 동안 이야기를 모았어요.` : `기록 ${recordCount}/${readiness.rule.minRecords}개 · ${readiness.elapsedDays}/${readiness.rule.minDays}일 · 책 만들기까지 ${readiness.recordsRemaining > 0 ? `기록 ${readiness.recordsRemaining}개` : ''}${readiness.recordsRemaining > 0 && readiness.daysRemaining > 0 ? ' · ' : ''}${readiness.daysRemaining > 0 ? `${readiness.daysRemaining}일` : ''}`}</p>
-          <button className="mt-5 w-full rounded-btn bg-accent px-4 py-3.5 text-sm font-semibold text-white" onClick={() => navigate('/record/mode')}>+ 오늘 기록하기</button>
+          <button className="mt-5 min-h-[48px] w-full border border-ink bg-ink px-4 py-3.5 text-sm font-semibold text-surface" onClick={() => navigate('/record/mode')}>+ 오늘 기록하기</button>
         </section>
         <section className="mt-8">
           <div className="mb-4 flex items-end justify-between"><div><p className="text-[10px] font-semibold tracking-[0.16em] text-sage">PRODUCTION</p><p className="mt-1 font-serif text-base font-bold">이 책을 완성하는 과정</p></div><span className="font-serif text-xs text-ink-faint">01 — 06</span></div>
