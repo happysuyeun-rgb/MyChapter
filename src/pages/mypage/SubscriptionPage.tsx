@@ -37,9 +37,9 @@ export function SubscriptionPage() {
           <>
             <p className="mb-3 text-sm font-semibold">Pro 혜택</p>
             <Card className="mb-6 p-4 text-sm">
-              <p className="py-1.5">✓ PDF 출판 무제한</p>
-              <p className="py-1.5">✓ AI 챕터 무제한</p>
-              <p className="py-1.5">✓ 프로젝트 무제한</p>
+              <p className="py-1.5">✓ 여러 권의 책 만들기</p>
+              <p className="py-1.5">✓ 재발행과 추가 발행</p>
+              <p className="py-1.5">✓ 확장 AI 기능</p>
               <p className="py-1.5">✓ Pro 전용 표지</p>
             </Card>
             <Button onClick={() => showPaywall()}>{PRO_PRICE_LABEL}으로 시작</Button>
