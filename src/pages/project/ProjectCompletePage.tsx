@@ -47,7 +47,7 @@ export function ProjectCompletePage() {
 
   const handleWrite = () => {
     resetDraft()
-    navigate('/record/write/question')
+    navigate('/record/mode')
   }
 
   const handleHome = () => {
@@ -56,7 +56,7 @@ export function ProjectCompletePage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col items-center justify-center bg-white px-7 py-10 text-center">
+    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col items-center justify-center bg-surface px-7 py-10 text-center">
       <AppLottie
         animationData={bookOpenAnimation}
         width={100}
@@ -85,7 +85,7 @@ export function ProjectCompletePage() {
       </Card>
 
       <Button className="mb-2" disabled={loading} onClick={handleWrite}>
-        지금 첫 기록 쓰기
+        첫 기록 방식 선택하기
       </Button>
       <Button variant="ghost" onClick={handleHome}>
         홈으로
