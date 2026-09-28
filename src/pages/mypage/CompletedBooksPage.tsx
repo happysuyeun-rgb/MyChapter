@@ -59,7 +59,7 @@ export function CompletedBooksPage() {
                 <button
                   type="button"
                   className="text-xs font-medium text-accent"
-                  onClick={() => navigate('/book')}
+                  onClick={() => navigate(`/publication/${book.id}`)}
                 >
                   보기
                 </button>
