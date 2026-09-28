@@ -44,8 +44,7 @@ Shows:
 - PAGE guidance
 - notifications
 
-Known issue:
-- Home must respect persisted activeProject rather than always forcing the newest project.
+Active Book selection is persisted by ID and validated against the current user's books.
 
 ### H-03 · Ready Home
 
@@ -87,11 +86,9 @@ Publishing progress currently appears inside Final Review. Dedicated processing 
 
 ### L-05 · Project limit / Pro
 
-**Status:** Partial
+**Status:** Implemented
 
-Known issue:
-- current `useProjectLimit` can trigger paywall as a hook side effect when entering Library.
-- paywall should open only when user attempts a restricted action.
+Paywall opens only when the user attempts to create a restricted additional Book.
 
 ## Project
 
@@ -101,16 +98,13 @@ Known issue:
 
 ### P-03 · Basic info
 
-**Status:** Implemented, policy under review
+**Status:** Implemented
 
-Current fields:
+Current user-facing fields:
 - title
-- goal duration
-- frequency
-- notification time
+- Story Readiness guidance
 
-Known issue:
-- duration/frequency target model overlaps Story Readiness policy.
+Legacy duration/frequency fields remain backend compatibility data until DB v2 cutover but are no longer presented as a competing completion rule.
 
 ### P-04 · AI title
 
@@ -169,7 +163,9 @@ Modes:
 
 ### R-05 · Saved
 
-**Status:** Implemented but needs readiness-based progress copy cleanup
+**Status:** Implemented
+
+Saved-state progress now uses Story Readiness.
 
 ### R-06 · AI record edit result
 
@@ -191,17 +187,15 @@ Modes:
 
 ### B-01/B-02 · Chapter start/list
 
-**Status:** Implemented / logic revision required
+**Status:** Implemented / backend deployment pending
 
-Required future logic:
-- semantic chapter composition across the whole record set
-- no automatic 10-record batching
+The current source uses semantic clustering across unassigned records. Automatic 10-record chapter creation has been removed.
 
 ### B-03 · Generate
 
-**Status:** Partial
+**Status:** Implemented / backend deployment pending
 
-Current implementation uses 10 unassigned records.
+AI selects related source records by recurring themes and change flow, then generates the chapter from the selected originals.
 
 ### B-04 · Chapter edit
 
@@ -266,7 +260,9 @@ Progress state exists in Final Review.
 
 ### U-07 · Free publication limit
 
-**Status:** Implemented but policy copy needs cleanup
+**Status:** Implemented
+
+Free first publication copy is aligned with the first-book-free policy.
 
 ## My
 
@@ -275,7 +271,7 @@ Progress state exists in Final Review.
 | M-01 | My | Implemented |
 | M-02 | Subscription | Implemented |
 | M-03 | AI usage | Planned |
-| M-04 | Publication history | Partial |
+| M-04 | Publication history | Implemented |
 | M-05 | Notifications | Implemented |
 | M-06 | Settings | Implemented |
 
@@ -295,4 +291,4 @@ Routes requiring review:
 - `/book/manuscript`
 - `/book/cover`
 - `/book/review`
-- published book detail route once created
+- `/publication/:id`
