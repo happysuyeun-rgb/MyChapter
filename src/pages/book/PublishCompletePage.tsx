@@ -31,7 +31,7 @@ export function PublishCompletePage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col items-center justify-center bg-white px-7 py-10 text-center">
+    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col items-center justify-center bg-surface px-7 py-10 text-center">
       <div className="relative mb-6 flex h-[120px] w-full items-center justify-center">
         <AppLottie
           animationData={confettiAnimation}
@@ -41,11 +41,11 @@ export function PublishCompletePage() {
           className="pointer-events-none absolute"
         />
       </div>
-      <h1 className="mb-3 text-lg font-bold">책이 완성됐어요!</h1>
+      <h1 className="mb-3 font-serif text-2xl font-bold">당신의 이야기가 책이 되었어요.</h1>
       <p className="mb-8 text-sm leading-relaxed text-ink-muted">
         <strong className="text-ink">{project.title}</strong>
         <br />
-        나만의 첫 책이 세상에 나왔어요.
+        오늘까지 쌓아온 기록이 한 권의 책으로 완성됐어요.
       </p>
 
       <Card className="mb-8 w-full p-4 text-left">
