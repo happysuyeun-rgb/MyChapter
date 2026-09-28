@@ -3,20 +3,16 @@
 @tailwind utilities;
 
 @layer base {
-  html,
-  body,
-  #root {
-    @apply h-full;
-  }
-
+  html, body, #root { @apply h-full; }
   body {
     @apply bg-surface font-sans text-ink antialiased;
     -webkit-tap-highlight-color: transparent;
+    background-image: radial-gradient(rgba(59,53,45,.025) 0.7px, transparent 0.7px);
+    background-size: 7px 7px;
   }
 }
 
 @layer utilities {
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0);
-  }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
+  .paper-card { @apply border border-border bg-surface-card shadow-paper; }
 }
