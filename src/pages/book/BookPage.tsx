@@ -58,8 +58,8 @@ function SortableChapterRow({
       ref={setNodeRef}
       style={style}
       className={[
-        'flex items-stretch gap-2 rounded-card border border-border bg-surface-card shadow-paper',
-        editMode ? 'border-accent/40' : '',
+        'flex items-stretch gap-2 border-b border-border bg-transparent',
+        editMode ? 'bg-accent-light/30' : '',
       ].join(' ')}
     >
       {editMode && (
@@ -234,7 +234,7 @@ export function BookPage() {
       </div>
 
       {unassignedCount > 0 && (
-        <Card className="mx-5 mt-4 p-4">
+        <section className="mx-5 mt-5 border-y border-border py-4">
           <p className="text-sm font-semibold">진행 중인 챕터</p>
           <p className="mt-1 text-xs text-ink-muted">
             미할당 기록 {unassignedCount}/10개
@@ -269,7 +269,7 @@ export function BookPage() {
               Free 플랜은 챕터 3개까지예요
             </p>
           )}
-        </Card>
+        </section>
       )}
 
       <div className="flex-1 px-5 py-4">
@@ -297,7 +297,7 @@ export function BookPage() {
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => void handleDragEnd(e)}>
             <SortableContext items={chapters.map((ch) => ch.id)} strategy={verticalListSortingStrategy}>
-              <div className="space-y-3">
+              <div className="border-t border-border">
                 {chapters.map((chapter) => (
                   <SortableChapterRow
                     key={chapter.id}
