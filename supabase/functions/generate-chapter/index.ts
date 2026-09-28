@@ -127,17 +127,35 @@ Deno.serve(async (req) => {
       .eq('project_id', project_id)
       .eq('is_complete', true)
 
-    const { data: unassigned, error: recordsError } = await admin
+    const { data: projectRecords, error: recordsError } = await admin
       .from('records')
       .select('id, title, question_text, content, emotion_tags, created_at')
       .eq('project_id', project_id)
-      .is('chapter_id', null)
       .eq('is_draft', false)
       .order('created_at', { ascending: true })
 
     if (recordsError) throw recordsError
 
-    const records = (unassigned ?? []) as SourceRecord[]
+    const allRecords = (projectRecords ?? []) as SourceRecord[]
+    const { data: projectChapters, error: projectChaptersError } = await admin
+      .from('chapters')
+      .select('id')
+      .eq('project_id', project_id)
+
+    if (projectChaptersError) throw projectChaptersError
+
+    let assignedRecordIds = new Set<string>()
+    if (projectChapters?.length) {
+      const { data: relations, error: relationLookupError } = await admin
+        .from('chapter_records')
+        .select('record_id')
+        .in('chapter_id', projectChapters.map((chapter) => chapter.id))
+
+      if (relationLookupError) throw relationLookupError
+      assignedRecordIds = new Set((relations ?? []).map((relation) => relation.record_id))
+    }
+
+    const records = allRecords.filter((record) => !assignedRecordIds.has(record.id))
     if (records.length < MIN_RECORDS_FOR_CHAPTER) {
       return new Response(JSON.stringify({
         code: 'NOT_ENOUGH_MATERIAL',
@@ -275,6 +293,7 @@ Deno.serve(async (req) => {
       throw relationError
     }
 
+    // Transitional compatibility only. chapter_records is the source of truth.
     await admin
       .from('records')
       .update({ chapter_id: chapter.id })
