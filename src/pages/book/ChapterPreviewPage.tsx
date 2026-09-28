@@ -24,43 +24,42 @@ export function ChapterPreviewPage() {
   }, [id, navigate])
 
   if (!chapter) {
-    return (
-      <div className="flex flex-1 items-center justify-center text-sm text-ink-muted">
-        로딩 중...
-      </div>
-    )
+    return <div className="flex flex-1 items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
   }
 
   const content = getChapterDisplayContent(chapter)
   const paragraphs = content.split('\n\n').filter(Boolean)
 
   return (
-    <div className="flex min-h-dvh flex-col bg-white">
+    <div className="flex min-h-dvh flex-col bg-surface">
       <NavBar
-        title={`Chapter ${chapter.chapter_number}`}
-        leftLabel="‹ 뒤로"
+        title={`CHAPTER ${String(chapter.chapter_number).padStart(2, '0')}`}
+        leftLabel="←"
         rightLabel="편집"
         onRightClick={() => navigate(`/book/chapter/${chapter.id}/edit`)}
       />
 
-      <div className="flex-1 overflow-y-auto px-6 py-8">
-        <p className="mb-2 text-xs tracking-widest text-ink-faint">
-          CHAPTER {chapter.chapter_number}
-        </p>
-        <h1 className="mb-8 font-serif text-2xl font-semibold leading-snug text-ink">
-          {chapter.title}
-        </h1>
-        <div className="space-y-5 font-serif text-[16px] leading-[2] text-ink">
-          {paragraphs.map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
-          ))}
-        </div>
-      </div>
+      <main className="flex-1 overflow-y-auto px-5 pb-10 pt-7">
+        <header className="border-b border-ink pb-7">
+          <p className="text-[10px] font-semibold tracking-[0.2em] text-sage">MANUSCRIPT</p>
+          <h1 className="mt-4 font-serif text-[29px] font-bold leading-snug tracking-[-0.035em] text-ink">
+            {chapter.title}
+          </h1>
+        </header>
 
-      <div className="border-t border-border px-5 py-4">
-        <Button onClick={() => navigate(`/book/chapter/${chapter.id}/edit`)}>
-          원고 편집하기
-        </Button>
+        <article className="py-8 font-serif text-[16px] leading-8 text-ink">
+          {paragraphs.map((paragraph, index) => (
+            <p key={index} className={index === 0 ? '' : 'mt-6'}>{paragraph}</p>
+          ))}
+        </article>
+
+        <div className="border-y border-border py-4 text-[10px] tracking-[0.13em] text-ink-faint">
+          END OF CHAPTER {String(chapter.chapter_number).padStart(2, '0')}
+        </div>
+      </main>
+
+      <div className="border-t border-border bg-surface px-5 py-4 safe-bottom">
+        <Button onClick={() => navigate(`/book/chapter/${chapter.id}/edit`)}>원고 편집하기</Button>
       </div>
     </div>
   )
