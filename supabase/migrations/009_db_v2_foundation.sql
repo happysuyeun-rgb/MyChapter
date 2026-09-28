@@ -184,7 +184,6 @@ WHERE p.ready_at IS NULL
 CREATE OR REPLACE FUNCTION public.mark_project_ready_after_record()
 RETURNS TRIGGER
 LANGUAGE plpgsql
-SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
