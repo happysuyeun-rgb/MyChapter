@@ -44,7 +44,7 @@ export function BookCoverPage() {
   const selectedTemplate = COVER_TEMPLATES.find((t) => t.id === selectedCoverId)
 
   return (
-    <div className="flex min-h-dvh flex-col bg-white">
+    <div className="flex min-h-dvh flex-col bg-surface">
       <NavBar title="표지 선택" leftLabel="‹ 뒤로" />
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
