@@ -9,6 +9,8 @@ interface BookState {
     recordCount: number
     pageCount: number
     coverTemplateId: string
+    publicationId: string
+    version: number
   } | null
   selectedCoverId: string
   publishStage: PublishStage
