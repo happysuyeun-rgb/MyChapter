@@ -8,7 +8,7 @@ function getOAuthRedirectUrl(): string {
   if (Capacitor.isNativePlatform()) {
     return 'com.mychapter.app://home'
   }
-  return `${window.location.origin}/home`
+  return `${window.location.origin}/splash`
 }
 
 async function signInWithOAuth(provider: Provider) {
