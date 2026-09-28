@@ -48,7 +48,13 @@ function daysSince(dateString: string): number {
 }
 
 export function getBookReadiness(project: Project, recordCount: number): BookReadiness {
-  const rule = BOOK_READINESS_RULES[project.type] ?? DEFAULT_RULE
+  const fallbackRule = BOOK_READINESS_RULES[project.type] ?? DEFAULT_RULE
+  const rule: BookReadinessRule = {
+    minDays: project.readiness_min_days ?? fallbackRule.minDays,
+    minRecords: project.readiness_min_records ?? fallbackRule.minRecords,
+    targetDays: project.readiness_target_days ?? fallbackRule.targetDays,
+    targetRecords: project.readiness_target_records ?? fallbackRule.targetRecords,
+  }
   const elapsedDays = daysSince(project.started_at || project.created_at)
   const dayProgress = Math.min(1, elapsedDays / rule.targetDays)
   const recordProgress = Math.min(1, recordCount / rule.targetRecords)
@@ -58,7 +64,7 @@ export function getBookReadiness(project: Project, recordCount: number): BookRea
   const score = Math.min(100, Math.round((dayProgress * 0.35 + recordProgress * 0.65) * 100))
   const daysRemaining = Math.max(0, rule.minDays - elapsedDays)
   const recordsRemaining = Math.max(0, rule.minRecords - recordCount)
-  const isReady = daysRemaining === 0 && recordsRemaining === 0
+  const isReady = Boolean(project.ready_at) || (daysRemaining === 0 && recordsRemaining === 0)
 
   let message = '첫 페이지를 기다리고 있어요.'
   if (recordCount > 0 && !isReady) message = 'PAGE가 책이 될 이야기들을 모으고 있어요.'
