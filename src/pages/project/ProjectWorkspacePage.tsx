@@ -36,7 +36,7 @@ export function ProjectWorkspacePage() {
   const stages = [
     { label: '기록', description: recordCount + '개의 이야기가 쌓였어요', to: '/records', ready: true },
     { label: '챕터', description: readiness.isReady ? (chapterCount > 0 ? chapterCount + '개의 챕터를 다듬고 있어요' : '이야기가 충분히 모였어요. 챕터를 만들어보세요') : '이야기 준비도가 채워지면 열려요', to: '/book', ready: readiness.isReady },
-    { label: '원고', description: '챕터를 하나의 책 흐름으로 다듬어요', to: '/book', ready: readiness.isReady && chapterCount > 0 },
+    { label: '원고', description: '챕터를 하나의 책 흐름으로 다듬어요', to: '/book/manuscript', ready: readiness.isReady && chapterCount > 0 },
     { label: '표지', description: '책의 첫인상을 완성해요', to: '/book/cover', ready: readiness.isReady && chapterCount > 0 },
     { label: '최종 검수', description: '제목·목차·원고를 마지막으로 확인해요', to: '/book/review', ready: readiness.isReady && chapterCount > 0 },
     { label: '발행', description: '완성된 책을 PDF로 간직해요', to: '/book/review', ready: readiness.isReady && chapterCount > 0 },
