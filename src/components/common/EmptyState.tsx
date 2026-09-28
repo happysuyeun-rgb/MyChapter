@@ -11,48 +11,52 @@ interface EmptyStateProps {
 
 const config: Record<
   EmptyVariant,
-  { icon: FlatIconName; title: string; description: string; cta: string; to: string }
+  { icon: FlatIconName; eyebrow: string; title: string; description: string; cta: string; to: string }
 > = {
   home: {
     icon: 'book',
-    title: '아직 만들어진 책이 없어요',
-    description: '당신의 이야기가 한 권의 책이 됩니다.\n첫 번째 책의 페이지를 열어보세요.',
-    cta: '첫 번째 책 만들기',
+    eyebrow: 'FIRST BOOK',
+    title: '아직 펼쳐진 책이 없어요',
+    description: '오늘 한 페이지를 남기면
+당신의 첫 번째 책이 시작됩니다.',
+    cta: '첫 번째 책 시작하기',
     to: '/project/new',
   },
   records: {
     icon: 'pen',
-    title: '아직 기록이 없어요',
-    description: '오늘의 첫 기록을 남겨보세요.',
-    cta: '첫 기록 쓰기',
+    eyebrow: 'FIRST PAGE',
+    title: '아직 기록한 페이지가 없어요',
+    description: '잘 쓰는 것보다 남기는 것이 먼저예요.
+오늘의 장면 하나부터 시작해보세요.',
+    cta: '첫 페이지 쓰기',
     to: '/record/mode',
   },
   book: {
     icon: 'books',
-    title: '완성한 책이 아직 없어요',
-    description: '기록이 충분히 쌓이면 챕터와 원고를 만들고\n한 권의 책으로 발행할 수 있어요.',
-    cta: '홈으로',
+    eyebrow: 'PUBLISHED BOOKS',
+    title: '아직 완성한 책이 없어요',
+    description: '기록이 충분히 쌓이면 PAGE와 함께
+챕터와 원고를 한 권으로 엮을 수 있어요.',
+    cta: '홈으로 돌아가기',
     to: '/home',
   },
 }
 
 export function EmptyState({ variant }: EmptyStateProps) {
   const navigate = useNavigate()
-  const { icon, title, description, cta, to } = config[variant]
+  const { icon, eyebrow, title, description, cta, to } = config[variant]
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-8 py-12 text-center">
-      <div
-        className="mb-6 flex size-[72px] items-center justify-center rounded-full bg-surface-alt text-accent"
-        aria-hidden
-      >
-        <FlatIcon name={icon} size={30} />
+    <div className="flex flex-1 flex-col justify-center px-8 py-14">
+      <div className="border-y border-ink py-8 text-left">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-semibold tracking-[0.2em] text-sage">{eyebrow}</p>
+          <FlatIcon name={icon} size={28} className="text-sage" />
+        </div>
+        <h2 className="mt-5 font-serif text-[24px] font-bold leading-snug tracking-[-0.03em] text-ink">{title}</h2>
+        <p className="mt-4 whitespace-pre-line text-sm leading-6 text-ink-muted">{description}</p>
       </div>
-      <h2 className="mb-2.5 font-serif text-xl font-bold text-ink">{title}</h2>
-      <p className="mb-9 max-w-[260px] whitespace-pre-line text-sm leading-relaxed text-ink-muted">
-        {description}
-      </p>
-      <Button onClick={() => navigate(to)}>{cta}</Button>
+      <Button className="mt-7" onClick={() => navigate(to)}>{cta}</Button>
     </div>
   )
 }
