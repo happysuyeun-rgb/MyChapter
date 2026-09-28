@@ -1,50 +1,50 @@
 ---
 name: mychapter-ui
 description: >-
-  MyChapter UI 작업 시 DESIGN.md(Notion)와 프로젝트 토큰을 함께 적용합니다.
-  Empty State, Paywall, 온보딩, 카드·모달 폴리싱 요청 시 사용하세요.
-  docs/ 문서를 수정할 때는 상단 최종 갱신 날짜와 갱신 이력을 반드시 업데이트하세요.
+  MY CHAPTER UI 작업 시 현재 Editorial Book Desk 디자인 시스템과 제품 결정을 적용합니다.
+  docs/10_DESIGN_SYSTEM.md, docs/02_PRODUCT_DECISIONS.md, docs/05_SCREEN_SPEC.md가 기준입니다.
 ---
 
-# MyChapter UI 가이드
+# MY CHAPTER UI Guide
 
-## 참고 파일 (순서대로)
+## Canonical references
 
-1. **`DESIGN.md`** — Notion 기반 레이아웃·간격·empty-state·modal 패턴
-2. **`tailwind.config.js`** — MyChapter 브랜드 색·폰트 (우선 적용)
-3. **`docs/00-design-decisions.md`** — 제품·아키텍처 결정
+1. `docs/10_DESIGN_SYSTEM.md`
+2. `docs/02_PRODUCT_DECISIONS.md`
+3. `docs/05_SCREEN_SPEC.md`
+4. `DESIGN.md` — entry point only
 
-## 브랜드 토큰 (DESIGN.md보다 우선)
+Do not use legacy docs as current product/design truth.
 
-| 토큰 | 값 | 용도 |
-|------|-----|------|
-| accent | `#3B6D11` | CTA, 활성 탭, 강조 |
-| accent-light | `#EAF3DE` | 아이콘 배경, 배너 |
-| surface / surface-alt | `#F5F4F0` / `#F0EEEA` | 페이지·카드 배경 |
-| ink / ink-muted | `#1A1A18` / `#6B6B67` | 본문·보조 텍스트 |
-| font-serif | Noto Serif KR | Empty State·Paywall 제목 |
-| font-sans | Noto Sans KR | 본문·버튼 |
-| rounded-card | 16px | 카드·시트 |
-| rounded-btn | 14px | 버튼 |
+## Visual direction
 
-## Notion에서 가져올 패턴
+**Paper × Botanical × Vintage × Editorial × AI**
 
-- **Empty state**: `ex-empty-state-card` — 부드러운 `canvas-soft` 배경 원형 아이콘 프레임, serif 제목, 짧은 caption
-- **Paywall / modal**: `ex-modal-card`, `pricing-plan-card-featured` — 상단 핸들, 기능 리스트, primary CTA + ghost 보조
-- **간격**: sm=12px, md=16px, lg=24px
-- **아이콘**: 이모지 대신 `FlatIcon` (`src/components/common/FlatIcon.tsx`) 라인 SVG
+The product should feel like a digital book-making and publishing workspace.
 
-## 구현 규칙
+## Core rules
 
-- 새 화면은 기존 `Button`, `Card`, `EmptyState`, `FlatIcon` 재사용
-- 탭바·Empty State·Paywall 아이콘 스타일 통일 (stroke 1.75, round cap)
-- 과한 그림자·그래디언트 금지 — 따뜻한 미니멀 유지
-- 모바일 max-width `430px` (`max-w-phone`) 준수
+- Ink Brown / Warm Ivory / Sage / Terracotta.
+- Serif = book/editorial hierarchy.
+- Sans = operational UI.
+- Prefer hairline dividers and editorial lists over rounded cards.
+- Avoid card-in-card.
+- Avoid decorative emoji for navigation/features.
+- Use `FlatIcon` for functional icons.
+- PAGE remains a separate brand character.
+- One dominant CTA per screen.
+- Book covers can use subtle radius/shadow as a semantic exception.
+- Mobile-first at 320 / 375 / 414 px.
+- Respect safe-area bottom actions.
+- Keep motion restrained.
 
-## UI 폴리싱 체크리스트
+## Screen consistency checklist
 
-- [ ] 제목에 `font-serif` 적용 여부
-- [ ] 보조 텍스트 `text-ink-muted`
-- [ ] CTA는 `Button` primary variant
-- [ ] 이모지 → `FlatIcon` 교체
-- [ ] 카드/배너에 적절한 padding (`p-4` 이상)
+- [ ] `bg-surface` rather than ad-hoc white page shells
+- [ ] editorial header / serif hierarchy
+- [ ] no generic rounded-card feature grids
+- [ ] no emoji navigation/icon tiles
+- [ ] CTA uses current Button or equivalent Ink treatment
+- [ ] empty/loading/error states use the same editorial language
+- [ ] copy uses Book / Page / Workspace / Publication terminology
+- [ ] direct route guard and mobile overflow verified
