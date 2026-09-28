@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card } from '@/components/common'
+import { Button } from '@/components/common'
 import { COVER_TEMPLATES } from '@/constants/coverTemplates'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { canPublishBook, downloadPdfFromUrl, generateBookPdf, BookApiError } from '@/lib/api/books'
@@ -84,9 +84,10 @@ export function FinalReviewPage() {
         <section className="mt-8"><p className="mb-3 font-serif text-base font-bold">발행 체크</p><div className="border-y border-border py-1">{[['cover','표지 확인'],['toc','목차 순서 확인'],['manuscript','원고 최종 확인']].map(([key,label]) => <label key={key} className="flex items-center gap-3 p-3 text-sm"><input type="checkbox" checked={checks[key as keyof typeof checks]} onChange={(e) => setChecks((prev) => ({ ...prev, [key]: e.target.checked }))} /><span>{label}</span></label>)}</div></section>
         <div className="mt-8 border-l-2 border-sage pl-4"><p className="text-sm font-semibold">{isPro ? 'Pro · 반복 발행 가능' : allowed ? 'Free · 첫 책 발행 1회 사용 가능' : 'Free · 첫 책 발행 사용 완료'}</p><p className="mt-1 text-xs leading-relaxed text-ink-muted">{isPro ? '이 책을 포함해 계속 새로운 책을 발행할 수 있어요.' : allowed ? '첫 번째 책은 무료로 끝까지 완성하고 PDF로 발행할 수 있어요.' : '다음 책 발행부터는 Pro가 필요해요.'}</p></div>
         {publishing && (
-          <Card className="mt-6 p-4">
-            <p className="text-sm font-semibold">책을 만들고 있어요</p>
-            <div className="mt-3 space-y-2 text-xs text-ink-muted">
+          <section className="mt-6 border-y border-border py-5">
+            <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">PUBLISHING</p>
+            <p className="mt-2 font-serif text-base font-bold">책을 만들고 있어요</p>
+            <div className="mt-4 space-y-3 text-xs text-ink-muted">
               {[
                 ['cover', '표지 준비'],
                 ['toc', '목차 구성'],
@@ -101,14 +102,15 @@ export function FinalReviewPage() {
                 return <div key={stage} className="flex items-center gap-2"><span className={['h-2 w-2 rounded-full', done ? 'bg-sage' : active ? 'bg-terracotta' : 'bg-surface-alt'].join(' ')} /><span>{done ? '완료' : active ? '진행중' : '대기'} · {label}</span></div>
               })}
             </div>
-          </Card>
+          </section>
         )}
         {publishStage === 'error' && (
-          <Card className="mt-6 border-terracotta/30 p-4">
-            <p className="text-sm font-semibold">발행을 완료하지 못했어요</p>
-            <p className="mt-1 text-xs text-ink-muted">{publishError}</p>
-            <button className="mt-3 text-xs font-semibold text-terracotta" onClick={() => void publish()}>다시 시도하기 →</button>
-          </Card>
+          <section className="mt-6 border-y border-terracotta/40 py-5">
+            <p className="text-[10px] font-semibold tracking-[0.18em] text-terracotta">PUBLISH FAILED</p>
+            <p className="mt-2 font-serif text-base font-bold">발행을 완료하지 못했어요</p>
+            <p className="mt-2 text-xs text-ink-muted">{publishError}</p>
+            <button className="mt-4 min-h-11 border-b border-terracotta text-xs font-semibold text-terracotta" onClick={() => void publish()}>다시 시도하기 →</button>
+          </section>
         )}
         <Button className="mt-6" disabled={!ready || publishing} onClick={() => void publish()}>{publishing ? '책을 만들고 있어요...' : allowed ? '이 책 발행하기' : 'Pro로 계속 발행하기'}</Button>
       </main>
