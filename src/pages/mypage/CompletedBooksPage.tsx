@@ -70,7 +70,7 @@ export function CompletedBooksPage() {
                     </p>
                     <h2 className="mt-2 line-clamp-2 font-serif text-[18px] font-bold leading-snug">{book.project_title}</h2>
                     <p className="mt-3 text-[11px] leading-5 text-ink-muted">
-                      {new Date(book.published_at).toLocaleDateString('ko-KR')} 발행
+                      v{book.version} · {new Date(book.published_at).toLocaleDateString('ko-KR')} 발행
                       {book.page_count ? ` · 약 ${book.page_count}페이지` : ''}
                     </p>
                     <p className="mt-5 text-xs font-semibold">발행본 열기 →</p>
