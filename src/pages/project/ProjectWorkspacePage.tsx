@@ -70,7 +70,7 @@ export function ProjectWorkspacePage() {
           </div>
         </section>
         <Card className="mt-6 p-4">
-          <div className="flex gap-3"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-light font-serif font-bold">P</div><div><p className="text-sm font-semibold">PAGE의 편집 메모</p><p className="mt-1 text-xs leading-relaxed text-ink-muted">{readiness.isReady ? '이제 기록을 챕터와 원고로 발전시킬 수 있어요.' : '지금은 완성보다 재료를 모으는 시간이에요. 기간과 기록이 함께 쌓이면 책 만들기가 열려요.'}</p></div></div>
+          <div className="flex gap-3"><div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border border-[#D8CCB9] bg-[#FFF9EE] shadow-sm"><span className="absolute -top-1 left-4 h-2 w-1 rotate-[-28deg] rounded-full bg-sage" /><span className="absolute -top-1 right-2 h-1.5 w-2 rotate-[25deg] rounded-full bg-sage" /><span className="font-serif text-[9px] font-bold tracking-[0.1em]">PAGE</span></div><div><p className="text-sm font-semibold">PAGE의 편집 메모</p><p className="mt-1 text-xs leading-relaxed text-ink-muted">{readiness.isReady ? '이제 기록을 챕터와 원고로 발전시킬 수 있어요.' : '지금은 완성보다 재료를 모으는 시간이에요. 기간과 기록이 함께 쌓이면 책 만들기가 열려요.'}</p></div></div>
         </Card>
       </main>
     </div>
