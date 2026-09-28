@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { FlatIcon } from '@/components/common'
 import { getDevBypassEnv, isDevBypass } from '@/lib/devBypass'
 import { useAuthStore } from '@/stores/authStore'
-import { supabase } from '@/lib/supabase'
 
 export function SplashPage() {
   const navigate = useNavigate()
-  const { initialize, session, profile, initialized } = useAuthStore()
+  const { session, profile, initialized } = useAuthStore()
   const [fadeIn, setFadeIn] = useState(false)
 
   useEffect(() => {
@@ -15,9 +14,6 @@ export function SplashPage() {
     return () => clearTimeout(timer)
   }, [])
 
-  useEffect(() => {
-    void initialize()
-  }, [initialize])
 
   useEffect(() => {
     if (!initialized) return
@@ -57,11 +53,6 @@ export function SplashPage() {
         navigate('/onboarding/notification', { replace: true })
         return
       }
-
-      await supabase
-        .from('projects')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', session.user.id)
 
       navigate('/home', { replace: true })
     }, 1200)
