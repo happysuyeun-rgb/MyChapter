@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import { Card } from '@/components/common'
-import { NavBar } from '@/components/layout/NavBar'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { useProjectLimit } from '@/hooks/useProjectLimit'
+import { usePaywallStore } from '@/stores/paywallStore'
 import { useProjectStore } from '@/stores/projectStore'
 import type { ProjectTypeMeta } from '@/constants/projectTypes'
 
@@ -10,67 +9,36 @@ export function ProjectTypePage() {
   const navigate = useNavigate()
   const { setDraft } = useProjectStore()
   const { loading, canCreate } = useProjectLimit()
+  const { showPaywall } = usePaywallStore()
 
   const handleSelect = (meta: ProjectTypeMeta) => {
-    if (!canCreate) return
-
-    setDraft({
-      type: meta.type,
-      title: meta.defaultTitle,
-      periodDays: meta.defaultPeriodDays,
-      frequency: meta.defaultFrequency,
-    })
+    if (!canCreate) {
+      showPaywall()
+      return
+    }
+    setDraft({ type: meta.type, title: meta.defaultTitle, periodDays: meta.defaultPeriodDays, frequency: meta.defaultFrequency })
     navigate('/project/new/setup')
   }
 
-  if (loading) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center text-sm text-ink-muted">
-        로딩 중...
-      </div>
-    )
-  }
+  if (loading) return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-white">
-      <NavBar title="새 책 프로젝트" leftLabel="←" />
-      <div className="flex-1 overflow-y-auto">
-        <div className="px-5 pt-5">
-          <h1 className="mb-1.5 text-lg font-bold">어떤 책을 쓸까요?</h1>
-          <p className="mb-5 text-sm text-ink-muted">
-            주제를 선택하면 AI가 루틴을 설계해드려요
-          </p>
-        </div>
+    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+      <header className="px-5 pb-4 pt-6">
+        <button type="button" className="mb-5 text-sm text-ink-muted" onClick={() => navigate(-1)}>← 돌아가기</button>
+        <p className="text-xs font-semibold tracking-[0.18em] text-sage">NEW BOOK</p>
+        <h1 className="mt-2 font-serif text-2xl font-bold">어떤 이야기를<br />한 권으로 만들까요?</h1>
+        <p className="mt-2 text-sm leading-relaxed text-ink-muted">주제는 시작을 돕는 가이드예요. 나중에 바꿔도 기록은 그대로 남아요.</p>
+      </header>
 
-        <div className="space-y-2.5 px-5 pb-5">
-          {PROJECT_TYPES.map((meta) => (
-            <button
-              key={meta.type}
-              type="button"
-              disabled={!canCreate}
-              onClick={() => handleSelect(meta)}
-              className="w-full text-left disabled:opacity-50"
-            >
-              <Card
-                accent={meta.type === 'emotion'}
-                className="flex items-center gap-3.5 p-4"
-              >
-                <span className="text-[32px]">{meta.emoji}</span>
-                <div>
-                  <p
-                    className={[
-                      'mb-0.5 text-sm font-bold',
-                      meta.type === 'emotion' ? 'text-accent' : 'font-semibold text-ink',
-                    ].join(' ')}
-                  >
-                    {meta.label}
-                  </p>
-                  <p className="text-sm text-ink-muted">{meta.description}</p>
-                </div>
-              </Card>
-            </button>
-          ))}
-        </div>
+      <div className="grid grid-cols-2 gap-3 px-5 pb-8">
+        {PROJECT_TYPES.map((meta) => (
+          <button key={meta.type} type="button" onClick={() => handleSelect(meta)} className="min-h-36 rounded-card border border-border bg-surface-card p-4 text-left shadow-paper transition-transform active:scale-[.98]">
+            <span className="text-2xl">{meta.emoji}</span>
+            <p className="mt-3 font-serif text-[15px] font-bold">{meta.label}</p>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-ink-muted">{meta.description}</p>
+          </button>
+        ))}
       </div>
     </div>
   )
