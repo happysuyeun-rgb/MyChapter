@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Input } from '@/components/common'
+import { FlatIcon, Input } from '@/components/common'
 import { EmotionTagPicker } from '@/components/features/record/EmotionTagPicker'
 import { ExitConfirmModal } from '@/components/features/record/ExitConfirmModal'
 import { NavBar } from '@/components/layout/NavBar'
@@ -124,16 +124,16 @@ export function RecordPhotoPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
       <NavBar
-        title={`사진 기록 #${recordNumber}`}
+        title={`PAGE ${String(recordNumber).padStart(2, '0')}`}
         leftLabel="✕"
         onLeftClick={() => (isDirty ? setShowExit(true) : navigate(-1))}
         rightLabel={saving ? '...' : '저장'}
         rightAccent
         onRightClick={() => void handleSave()}
       />
-      <div className="flex-1 overflow-y-auto p-5">
+      <div className="flex-1 overflow-y-auto px-5 pb-8 pt-6">
         <input
           ref={fileRef}
           type="file"
@@ -147,20 +147,20 @@ export function RecordPhotoPage() {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="mb-5 flex h-[220px] w-full flex-col items-center justify-center gap-2.5 overflow-hidden rounded-card border-[1.5px] border-dashed border-border-strong bg-surface-alt"
+          className="mb-7 flex h-[280px] w-full flex-col items-center justify-center gap-3 overflow-hidden border-y border-border bg-surface-card"
         >
           {photoPreview ? (
             <img src={photoPreview} alt="미리보기" className="h-full w-full object-cover" />
           ) : (
             <>
-              <span className="text-4xl">📷</span>
-              <span className="text-sm font-semibold">사진 추가하기</span>
-              <span className="text-sm text-ink-muted">갤러리 또는 카메라</span>
+              <FlatIcon name="book" size={30} className="text-sage" />
+              <span className="font-serif text-base font-bold">오늘의 장면 한 장</span>
+              <span className="text-xs text-ink-muted">사진을 눌러 선택해주세요</span>
             </>
           )}
         </button>
 
-        <p className="mb-2 text-xs font-semibold text-ink-muted">한줄 캡션</p>
+        <p className="mb-2 text-[10px] font-semibold tracking-[0.16em] text-ink-faint">CAPTION</p>
         <Input
           active
           value={caption}
@@ -168,7 +168,7 @@ export function RecordPhotoPage() {
           placeholder="오늘의 한 줄"
           maxLength={100}
         />
-        <p className="mb-5 mt-1.5 text-right text-[11px] text-ink-faint">
+        <p className="mb-7 mt-2 border-t border-border pt-2 text-right text-[11px] text-ink-faint">
           {caption.length}자 / 최대 100자
         </p>
 
