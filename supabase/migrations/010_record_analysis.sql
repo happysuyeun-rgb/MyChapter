@@ -1,5 +1,7 @@
 -- Structured AI analysis for long-term personalization and semantic book composition.
 
+ALTER TYPE ai_feature ADD VALUE IF NOT EXISTS 'record_analysis';
+
 CREATE TABLE IF NOT EXISTS public.record_analysis (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   record_id UUID NOT NULL UNIQUE REFERENCES public.records(id) ON DELETE CASCADE,
@@ -47,9 +49,9 @@ FOR INSERT WITH CHECK (
     SELECT 1
     FROM public.projects p
     JOIN public.records r ON r.project_id = p.id
-    WHERE p.id = project_id
+    WHERE p.id = record_analysis.project_id
       AND p.user_id = auth.uid()
-      AND r.id = record_id
+      AND r.id = record_analysis.record_id
       AND r.user_id = auth.uid()
   )
 );
