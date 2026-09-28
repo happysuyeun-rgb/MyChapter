@@ -72,7 +72,7 @@ Book Readiness를 책 만들기 unlock과 사용자-facing 진행도의 유일�
 
 AI는 기록을 시간순 고정 묶음으로 나누지 않는다.
 
-반복 주제, 사건, 관계, 변화 흐름을 바탕으로 관련 기록을 선택해 한 챕터를 구성한다. 현재 Edge Function source는 semantic clustering 방식으로 전환했으며 DB v2 migration/deploy 후 활성화한다.
+반복 주제, 사건, 관계, 변화 흐름을 바탕으로 관련 기록을 선택해 한 챕터를 구성한다. DB v2 migration과 semantic clustering Edge Function 배포를 완료했으며, `chapter_records`를 현재 source of truth로 사용한다.
 
 ## PD-007 · Manuscript is a workflow stage
 
@@ -148,7 +148,7 @@ DB v2에서는 `chapter_records` relation table을 source of truth로 사용하�
 
 ## PD-014 · Project type can change
 
-**Status: CONFIRMED at UX level / implementation pending**
+**Status: CONFIRMED / IMPLEMENTED**
 
 화면에서 “나중에 바꿔도 기록은 그대로 남는다”고 안내한다.
 
@@ -157,9 +157,9 @@ DB v2에서는 `chapter_records` relation table을 source of truth로 사용하�
 - 원본 기록 유지
 - 기존 원고 유지
 - 미래 AI 질문/추천은 새 type 반영
-- 이미 readiness unlock을 달성한 책을 다시 잠그지 않는 방향 권장
+- 이미 readiness unlock을 달성한 책은 `ready_at`으로 유지하여 다시 잠그지 않는다.
 
-Project settings UI는 아직 미구현이다.
+Project Settings에서 제목과 책 유형 변경을 구현했다.
 
 ## PD-015 · PAGE is a brand character
 
