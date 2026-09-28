@@ -73,12 +73,12 @@ export function ProjectsListPage() {
       <div className="flex-1 px-5 pb-6 pt-2">
         {projects.length > 0 && <div className="mb-5 flex gap-2 overflow-x-auto pb-1">{(['전체', '진행중', '발행가능', '발행완료'] as const).map((item) => <button key={item} type="button" onClick={() => setFilter(item)} className={['shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors', filter === item ? 'border-ink bg-ink text-surface' : 'border-border bg-surface-card text-ink-muted'].join(' ')}>{item}</button>)}</div>}
         {projects.length === 0 ? <EmptyState variant="home" /> : (
-          <div className="space-y-4">
+          <div className="border-t border-border">
             {filteredProjects.map((project) => {
               const typeLabel = PROJECT_TYPES.find((p) => p.type === project.type)?.label ?? '나의 기록'
               const isActive = activeProject?.id === project.id
               return (
-                <button key={project.id} type="button" className={['w-full rounded-card border p-4 text-left shadow-paper transition-colors', isActive ? 'border-accent bg-accent-light/50' : 'border-border bg-surface-card'].join(' ')} onClick={() => handleSelect(project)}>
+                <button key={project.id} type="button" className={['w-full border-b border-border py-4 text-left transition-colors', isActive ? 'bg-accent-light/30' : 'bg-transparent'].join(' ')} onClick={() => handleSelect(project)}>
                   <div className="flex gap-4">
                     <div className="flex h-24 w-16 shrink-0 flex-col justify-between rounded-r-md rounded-l-sm bg-ink p-2.5 text-surface shadow-paper">
                       <span className="text-[7px] tracking-[0.16em] opacity-60">MY CHAPTER</span>
@@ -103,7 +103,7 @@ export function ProjectsListPage() {
           </div>
         )}
 
-        <button type="button" className="mt-6 w-full rounded-card border border-dashed border-border bg-surface-card py-4 text-sm font-semibold text-accent" onClick={handleCreate}>
+        <button type="button" className="mt-6 w-full border-y border-dashed border-border py-4 text-sm font-semibold text-accent" onClick={handleCreate}>
           + 새 책 시작하기
         </button>
       </div>
