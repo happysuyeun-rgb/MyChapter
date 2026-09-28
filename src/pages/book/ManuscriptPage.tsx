@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card } from '@/components/common'
+import { Button } from '@/components/common'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { listChapters } from '@/lib/api/chapters'
 import { listRecords } from '@/lib/api/records'
@@ -88,7 +88,12 @@ export function ManuscriptPage() {
         </section>
 
         {chapters.length === 0 ? (
-          <Card className="mt-6 p-4"><p className="text-sm font-semibold">먼저 챕터를 만들어주세요.</p><p className="mt-1 text-xs text-ink-muted">기록을 챕터로 구성한 뒤 원고를 다듬을 수 있어요.</p><Button className="mt-4" onClick={() => navigate('/book')}>챕터 만들기</Button></Card>
+          <section className="mt-7 border-y border-ink py-6">
+            <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">MANUSCRIPT EMPTY</p>
+            <p className="mt-3 font-serif text-lg font-bold">먼저 챕터를 만들어주세요.</p>
+            <p className="mt-2 text-xs leading-5 text-ink-muted">기록을 챕터로 구성한 뒤 한 권의 원고 흐름을 다듬을 수 있어요.</p>
+            <Button className="mt-5" onClick={() => navigate('/book')}>챕터 만들기</Button>
+          </section>
         ) : (
           <div className="mt-6">
             <Button disabled={!manuscriptReady} onClick={() => navigate('/book/cover')}>원고 확인 완료 · 표지 선택하기</Button>
