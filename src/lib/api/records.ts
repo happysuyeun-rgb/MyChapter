@@ -205,12 +205,6 @@ async function finalizeSave(
     await createBadgeNotifications(userId, badges)
   }
 
-  if (recordCount % 10 === 0) {
-    void supabase.functions.invoke('generate-chapter', {
-      body: { project_id: projectId },
-    })
-  }
-
   return {
     record,
     recordCount,
