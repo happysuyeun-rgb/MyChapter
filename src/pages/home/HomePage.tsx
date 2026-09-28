@@ -87,10 +87,10 @@ export function HomePage() {
               <h2 className="mt-1 truncate font-serif text-lg font-bold">{project.title}</h2>
               <div className="mt-5 flex items-end justify-between">
                 <span className="text-xs text-ink-muted">이야기 준비도</span>
-                <span className="font-serif text-2xl font-bold">{progress}%</span>
+                <span className="font-serif text-2xl font-bold">{recordCount === 0 ? '첫 페이지' : `${progress}%`}</span>
               </div>
-              <ProgressBar value={progress} className="mt-2" />
-              <p className="mt-2 text-[11px] text-ink-faint">{readiness.message}</p>
+              {recordCount > 0 && <ProgressBar value={progress} className="mt-2" />}
+              <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">{recordCount === 0 ? '첫 기록을 남기면 나의 책이 시작됩니다.' : readiness.message}</p>
             </div>
           </div>
 
@@ -113,7 +113,11 @@ export function HomePage() {
           <p className="font-serif text-base font-bold">오늘의 작은 안내</p>
           <Card className="mt-2 p-4">
             <div className="flex gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-light font-serif text-sm font-bold text-accent">P</div>
+              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] border border-[#D8CCB9] bg-[#FFF9EE] shadow-sm">
+                <span className="absolute -top-1 left-5 h-2 w-1 rotate-[-28deg] rounded-full bg-sage" />
+                <span className="absolute -top-1 right-3 h-1.5 w-2 rotate-[25deg] rounded-full bg-sage" />
+                <span className="font-serif text-[10px] font-bold tracking-[0.12em] text-ink">PAGE</span>
+              </div>
               <div>
                 <p className="text-sm font-semibold">PAGE가 기다리고 있어요.</p>
                 <p className="mt-1 text-xs leading-relaxed text-ink-muted">{readiness.isReady ? '이야기가 충분히 모였어요. 내 서재에서 책 만들기를 시작할 수 있어요.' : `완벽하게 쓰지 않아도 괜찮아요. 기록 ${readiness.recordsRemaining > 0 ? `${readiness.recordsRemaining}개` : '조건 충족'}${readiness.daysRemaining > 0 ? ` · ${readiness.daysRemaining}일` : ''}이 더 쌓이면 책 만들기가 열려요.`}</p>
