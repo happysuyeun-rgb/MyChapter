@@ -8,17 +8,25 @@ const FALLBACK_QUESTIONS: Record<string, string> = {
   yearly: '올해의 나에게 고마웠던 작은 순간은 무엇인가요?',
   career: '오늘 새로운 도전을 향해 내딛은 한 걸음이 있었나요?',
   custom: '오늘 하루를 돌아보며 가장 먼저 떠오르는 생각은 무엇인가요?',
+  growth: '요즘의 나를 이전과 조금 다르게 만든 순간이 있었나요?',
+  life_story: '지금 떠올리면 여전히 선명한 오래된 장면은 무엇인가요?',
+  relationships: '오늘 누군가의 말이나 행동이 마음에 남았다면 무엇인가요?',
+  travel: '오늘 여행에서 가장 오래 기억하고 싶은 장면은 무엇인가요?',
+  hobby: '오늘 좋아하는 일을 하며 발견한 작은 즐거움은 무엇인가요?',
+  learning: '오늘 배우거나 시도하며 새롭게 알게 된 것은 무엇인가요?',
 }
 
-const SYSTEM_PROMPT = `당신은 따뜻한 기록 코치입니다.
-사용자의 프로젝트 유형과 최근 기록 맥락을 바탕으로 오늘의 질문 1개를 생성하세요.
+const SYSTEM_PROMPT = `당신은 MY CHAPTER의 작은 편집자 PAGE입니다.
+사용자가 지금 남기려는 한 페이지를 시작할 수 있도록, 프로젝트 유형과 최근 기록 맥락에 맞는 질문 1개를 생성하세요.
 
 규칙:
-- 한국어 경어 사용 (반말 금지)
+- 한국어 경어 사용
 - 1문장, 따옴표 없이 텍스트만 반환
-- 평균 답변 시간 2분 이내로 유도하는 가벼운 질문
-- 너무 철학적이거나 무거운 질문 지양
-- 프로젝트 유형에 맞는 구체적인 질문`
+- 구체적인 장면·사람·행동·감각을 떠올릴 수 있는 질문을 우선
+- 너무 철학적이거나 무거운 질문은 피함
+- 프로젝트 유형은 방향만 제시하며 기록에 없는 사실을 가정하지 않음
+- 최근 질문과 같은 주제/문장을 반복하지 않음
+- 평균 2~5분 안에 답을 시작할 수 있는 난이도`
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -74,21 +82,6 @@ Deno.serve(async (req) => {
       })
     }
 
-    const today = new Date().toISOString().slice(0, 10)
-
-    const { data: cached } = await adminClient
-      .from('daily_questions')
-      .select('question')
-      .eq('project_id', project_id)
-      .eq('question_date', today)
-      .maybeSingle()
-
-    if (cached?.question) {
-      return new Response(JSON.stringify({ question: cached.question }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
     const { data: subscription } = await adminClient
       .from('subscriptions')
       .select('plan')
@@ -119,10 +112,11 @@ Deno.serve(async (req) => {
 
     const { data: recentRecords } = await adminClient
       .from('records')
-      .select('content, emotion_tags, created_at')
+      .select('content, emotion_tags, question_text, created_at')
       .eq('project_id', project_id)
+      .eq('is_draft', false)
       .order('created_at', { ascending: false })
-      .limit(3)
+      .limit(5)
 
     const { count: recordCount } = await adminClient
       .from('records')
@@ -136,7 +130,12 @@ Deno.serve(async (req) => {
     const recentContent = (recentRecords ?? [])
       .map((r) => r.content)
       .join(' ')
-      .slice(0, 100)
+      .slice(0, 600)
+
+    const recentQuestions = (recentRecords ?? [])
+      .map((r) => r.question_text)
+      .filter((question): question is string => Boolean(question))
+      .slice(0, 5)
 
     let question = FALLBACK_QUESTIONS[project.type] ?? FALLBACK_QUESTIONS.emotion
 
@@ -144,7 +143,9 @@ Deno.serve(async (req) => {
 프로젝트 제목: ${project.title}
 현재까지 기록 수: ${recordCount ?? 0}
 최근 감정 태그: ${recentEmotions.join(', ') || '없음'}
-최근 기록 요약: ${recentContent || '없음'}`
+최근 기록 맥락: ${recentContent || '없음'}
+최근 사용한 질문:
+${recentQuestions.length > 0 ? recentQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n') : '없음'}`
 
     const aiText = await generateGeminiText({
       systemInstruction: SYSTEM_PROMPT,
@@ -156,12 +157,6 @@ Deno.serve(async (req) => {
       question = stripQuotes(aiText)
     }
 
-    await adminClient.from('daily_questions').insert({
-      project_id,
-      user_id: user.id,
-      question,
-      question_date: today,
-    })
 
     await adminClient.from('ai_usage').insert({
       user_id: user.id,
