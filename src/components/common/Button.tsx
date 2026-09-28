@@ -8,10 +8,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-accent text-white font-semibold hover:opacity-95',
-  secondary: 'border-[1.5px] border-border-strong text-ink font-medium bg-white',
-  ghost: 'text-ink-muted font-medium',
-  danger: 'bg-danger text-white font-semibold',
+  primary: 'border border-ink bg-ink text-surface font-semibold hover:opacity-95',
+  secondary: 'border border-border-strong bg-surface text-ink font-medium',
+  ghost: 'border border-transparent bg-transparent text-ink-muted font-medium',
+  danger: 'border border-danger bg-danger text-white font-semibold',
 }
 
 export function Button({
@@ -24,7 +24,7 @@ export function Button({
   return (
     <button
       className={[
-        'rounded-btn px-5 py-[15px] text-[15px] transition-opacity disabled:opacity-40',
+        'min-h-[48px] px-5 py-3.5 text-[14px] transition-[opacity,transform] active:translate-y-px disabled:opacity-40',
         fullWidth ? 'w-full' : '',
         variants[variant],
         className,
