@@ -6,6 +6,7 @@ import { useActiveProject } from '@/hooks/useActiveProject'
 import { listChapters } from '@/lib/api/chapters'
 import { listRecords } from '@/lib/api/records'
 import { useAuthStore } from '@/stores/authStore'
+import { getBookReadiness } from '@/utils/bookReadiness'
 
 export function ProjectWorkspacePage() {
   const navigate = useNavigate()
@@ -29,15 +30,16 @@ export function ProjectWorkspacePage() {
 
   if (projectLoading || loading || !project) return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
 
-  const progress = Math.min(100, Math.round((recordCount / project.target_count) * 100))
+  const readiness = getBookReadiness(project, recordCount)
+  const progress = readiness.score
   const typeLabel = PROJECT_TYPES.find((item) => item.type === project.type)?.label ?? '나의 이야기'
   const stages = [
     { label: '기록', description: recordCount + '개의 이야기가 쌓였어요', to: '/records', ready: true },
-    { label: '챕터', description: chapterCount > 0 ? chapterCount + '개의 챕터를 다듬고 있어요' : '기록이 모이면 AI가 챕터를 제안해요', to: '/book', ready: recordCount > 0 },
-    { label: '원고', description: '챕터를 하나의 책 흐름으로 다듬어요', to: '/book', ready: chapterCount > 0 },
-    { label: '표지', description: '책의 첫인상을 완성해요', to: '/book/cover', ready: chapterCount > 0 },
-    { label: '최종 검수', description: '제목·목차·원고를 마지막으로 확인해요', to: '/book', ready: chapterCount > 0 },
-    { label: '발행', description: '완성된 책을 PDF로 간직해요', to: '/book/cover', ready: chapterCount > 0 },
+    { label: '챕터', description: readiness.isReady ? (chapterCount > 0 ? chapterCount + '개의 챕터를 다듬고 있어요' : '이야기가 충분히 모였어요. 챕터를 만들어보세요') : '이야기 준비도가 채워지면 열려요', to: '/book', ready: readiness.isReady },
+    { label: '원고', description: '챕터를 하나의 책 흐름으로 다듬어요', to: '/book', ready: readiness.isReady && chapterCount > 0 },
+    { label: '표지', description: '책의 첫인상을 완성해요', to: '/book/cover', ready: readiness.isReady && chapterCount > 0 },
+    { label: '최종 검수', description: '제목·목차·원고를 마지막으로 확인해요', to: '/book/review', ready: readiness.isReady && chapterCount > 0 },
+    { label: '발행', description: '완성된 책을 PDF로 간직해요', to: '/book/review', ready: readiness.isReady && chapterCount > 0 },
   ]
 
   return (
@@ -50,8 +52,9 @@ export function ProjectWorkspacePage() {
       </header>
       <main className="px-5 pb-8">
         <Card className="paper-card p-5">
-          <div className="flex items-end justify-between"><div><p className="text-xs text-ink-muted">책 완성도</p><p className="mt-1 text-sm font-semibold">{recordCount}/{project.target_count}개의 기록</p></div><p className="font-serif text-3xl font-bold">{progress}%</p></div>
+          <div className="flex items-end justify-between"><div><p className="text-xs text-ink-muted">이야기 준비도</p><p className="mt-1 text-sm font-semibold">{readiness.message}</p></div><p className="font-serif text-3xl font-bold">{progress}%</p></div>
           <ProgressBar value={progress} className="mt-3" />
+          <p className="mt-2 text-[11px] leading-relaxed text-ink-muted">{readiness.isReady ? `기록 ${recordCount}개 · ${readiness.elapsedDays}일 동안 이야기를 모았어요.` : `기록 ${recordCount}/${readiness.rule.minRecords}개 · ${readiness.elapsedDays}/${readiness.rule.minDays}일 · 책 만들기까지 ${readiness.recordsRemaining > 0 ? `기록 ${readiness.recordsRemaining}개` : ''}${readiness.recordsRemaining > 0 && readiness.daysRemaining > 0 ? ' · ' : ''}${readiness.daysRemaining > 0 ? `${readiness.daysRemaining}일` : ''}`}</p>
           <button className="mt-5 w-full rounded-btn bg-accent px-4 py-3.5 text-sm font-semibold text-white" onClick={() => navigate('/record/mode')}>+ 오늘 기록하기</button>
         </Card>
         <section className="mt-6">
@@ -67,7 +70,7 @@ export function ProjectWorkspacePage() {
           </div>
         </section>
         <Card className="mt-6 p-4">
-          <div className="flex gap-3"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-light font-serif font-bold">P</div><div><p className="text-sm font-semibold">PAGE의 편집 메모</p><p className="mt-1 text-xs leading-relaxed text-ink-muted">지금은 완성보다 재료를 모으는 시간이에요. 기록이 쌓일수록 책의 흐름이 선명해져요.</p></div></div>
+          <div className="flex gap-3"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-light font-serif font-bold">P</div><div><p className="text-sm font-semibold">PAGE의 편집 메모</p><p className="mt-1 text-xs leading-relaxed text-ink-muted">{readiness.isReady ? '이제 기록을 챕터와 원고로 발전시킬 수 있어요.' : '지금은 완성보다 재료를 모으는 시간이에요. 기간과 기록이 함께 쌓이면 책 만들기가 열려요.'}</p></div></div>
         </Card>
       </main>
     </div>
