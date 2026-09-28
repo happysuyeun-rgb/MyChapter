@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, EmptyState, ProgressBar, AppLottie } from '@/components/common'
-import bookStackAnimation from '@/assets/animations/book-stack.json'
+import { Card, EmptyState, ProgressBar } from '@/components/common'
 import { ChapterLimitBanner } from '@/components/features/chapter/ChapterLimitBanner'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { useChapterLimitStatus } from '@/hooks/useChapterLimitStatus'
 import { useSubscription } from '@/hooks/useSubscription'
 import { getUnreadCount } from '@/lib/api/notifications'
-import { ApiError, generateQuestion, getFallbackQuestion, getTodayQuestion } from '@/lib/api/questions'
 import { getProjects } from '@/lib/api/projects'
 import { listRecords } from '@/lib/api/records'
-import { calculateStreak, getNextStreakGoal } from '@/utils/streak'
 import { useAuthStore } from '@/stores/authStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { useProjectStore } from '@/stores/projectStore'
@@ -24,191 +21,111 @@ export function HomePage() {
   const { showPaywall } = usePaywallStore()
   const [projects, setProjects] = useState<Project[]>([])
   const [recordCount, setRecordCount] = useState(0)
-  const [todayQuestion, setTodayQuestion] = useState<string | null>(null)
-  const [streak, setStreak] = useState(0)
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const { chapterLimitReached } = useChapterLimitStatus(projects[0]?.id)
 
   useEffect(() => {
     if (!user) return
-
     const load = async () => {
       const projectData = await getProjects(user.id)
       setProjects(projectData)
-
       if (projectData[0]) {
         setActiveProject(projectData[0])
-
-        const allRecords = await listRecords(user.id, {
-          projectId: projectData[0].id,
-        })
-        setRecordCount(allRecords.length)
-        setStreak(calculateStreak(allRecords))
-
-        const cached = await getTodayQuestion(projectData[0].id)
-        if (cached) {
-          setTodayQuestion(cached)
-        } else {
-          try {
-            const question = await generateQuestion(projectData[0].id)
-            setTodayQuestion(question)
-          } catch (err) {
-            if (err instanceof ApiError && err.code === 'AI_LIMIT') {
-              showPaywall()
-            }
-            setTodayQuestion(getFallbackQuestion(projectData[0].type))
-          }
-        }
+        const records = await listRecords(user.id, { projectId: projectData[0].id })
+        setRecordCount(records.length)
       }
-
-      const unread = await getUnreadCount(user.id)
-      setUnreadCount(unread)
+      setUnreadCount(await getUnreadCount(user.id))
       setLoading(false)
     }
-
     void load()
-  }, [user, setActiveProject, showPaywall])
+  }, [user, setActiveProject])
 
-  if (loading) {
-    return (
-      <div className="flex flex-1 items-center justify-center text-sm text-ink-muted">
-        로딩 중...
-      </div>
-    )
-  }
-
-  if (projects.length === 0) {
-    return <EmptyState variant="home" />
-  }
+  if (loading) return <div className="flex flex-1 items-center justify-center text-sm text-ink-muted">로딩 중...</div>
+  if (projects.length === 0) return <EmptyState variant="home" />
 
   const project = projects[0]
-  const typeLabel = PROJECT_TYPES.find((p) => p.type === project.type)?.label ?? '진행 중'
-  const progress = Math.min(
-    100,
-    Math.round((recordCount / project.target_count) * 100),
-  )
-  const today = new Date().toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'long',
-  })
+  const typeLabel = PROJECT_TYPES.find((p) => p.type === project.type)?.label ?? '나의 이야기'
+  const progress = Math.min(100, Math.round((recordCount / project.target_count) * 100))
+  const today = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' })
+  const steps = ['기록', '챕터', '원고', '표지', '발행']
+  const activeStep = progress >= 100 ? 1 : 0
 
   return (
-    <div className="flex flex-1 flex-col overflow-y-auto">
-      <div className="flex items-center justify-between px-5 pt-5">
+    <div className="flex flex-1 flex-col overflow-y-auto bg-surface">
+      <header className="flex items-center justify-between px-5 pb-3 pt-6">
         <div>
           <p className="text-xs text-ink-faint">{today}</p>
-          <h1 className="mt-0.5 text-lg font-bold">
-            안녕하세요, {profile?.nickname ?? '회원'}님 👋
-          </h1>
+          <h1 className="mt-1 font-serif text-xl font-bold">안녕하세요, {profile?.nickname ?? '회원'}님</h1>
+          <p className="mt-1 text-xs text-ink-muted">오늘의 한 페이지를 남겨볼까요?</p>
         </div>
-        <button
-          type="button"
-          className="relative flex h-10 w-10 items-center justify-center rounded-full bg-accent-light text-lg"
-          onClick={() => navigate('/notifications')}
-        >
-          🔔
-          {unreadCount > 0 && (
-            <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-danger ring-2 ring-white" />
-          )}
+        <button type="button" aria-label="알림" className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface-card" onClick={() => navigate('/notifications')}>
+          <span className="text-lg">♢</span>
+          {unreadCount > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-terracotta ring-2 ring-surface" />}
         </button>
-      </div>
+      </header>
 
-      <div className="px-5 pt-4">
-        <Card className="flex items-center gap-3 p-3.5">
-          <span className="text-[28px]">🔥</span>
-          <div>
-            {streak >= 2 ? (
-              <>
-                <p className="font-bold">{streak}일 연속 기록 중</p>
-                <p className="text-sm text-ink-muted">
-                  {getNextStreakGoal(streak) ?? '오늘도 기록해보세요'}
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="font-bold">기록을 이어가 보세요</p>
-                <p className="text-sm text-ink-muted">오늘도 한 줄이면 충분해요</p>
-              </>
-            )}
-          </div>
-        </Card>
-      </div>
+      {!isPro && chapterLimitReached && <div className="px-5 pt-3"><ChapterLimitBanner onUpgrade={() => showPaywall()} /></div>}
 
-      {!isPro && chapterLimitReached && (
-        <div className="px-5 pt-4">
-          <ChapterLimitBanner onUpgrade={() => showPaywall()} />
+      <main className="px-5 pb-6 pt-3">
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-xs font-semibold text-ink-muted">지금 쓰고 있는 책</p>
+          <button className="text-xs font-semibold text-sage" onClick={() => navigate('/library')}>내 서재 →</button>
         </div>
-      )}
 
-      <div className="px-5 pt-4">
-        <div className="mb-2.5 flex items-center justify-between">
-          <span className="text-[13px] font-semibold">진행 중인 프로젝트</span>
-          {isPro && projects.length > 1 && (
-            <button
-              type="button"
-              className="text-xs text-accent"
-              onClick={() => navigate('/projects')}
-            >
-              전체보기
-            </button>
-          )}
-        </div>
-        <Card accent className="p-[18px]">
-          <div className="mb-3 flex items-start justify-between">
-            <div>
-              <p className="text-[15px] font-bold">{project.title}</p>
-              <p className="text-xs text-accent">{typeLabel}</p>
+        <Card className="paper-card p-5">
+          <div className="flex items-start gap-4">
+            <div className="flex h-28 w-20 shrink-0 flex-col justify-between rounded-r-md rounded-l-sm bg-accent p-3 text-surface shadow-paper">
+              <span className="text-[9px] uppercase tracking-[0.2em] opacity-70">MY CHAPTER</span>
+              <span className="font-serif text-sm font-bold leading-snug">{project.title}</span>
+              <span className="text-[9px] opacity-70">{typeLabel}</span>
             </div>
-            <div className="text-right">
-              <AppLottie
-                animationData={bookStackAnimation}
-                width={60}
-                height={80}
-                loop
-                className="mx-auto mb-1"
-              />
-              <p className="text-[22px] font-extrabold text-accent">{progress}%</p>
-              <p className="text-[11px] text-ink-faint">완성</p>
+            <div className="min-w-0 flex-1 pt-1">
+              <p className="text-xs text-sage">{typeLabel}</p>
+              <h2 className="mt-1 truncate font-serif text-lg font-bold">{project.title}</h2>
+              <div className="mt-5 flex items-end justify-between">
+                <span className="text-xs text-ink-muted">책 완성도</span>
+                <span className="font-serif text-2xl font-bold">{progress}%</span>
+              </div>
+              <ProgressBar value={progress} className="mt-2" />
+              <p className="mt-2 text-[11px] text-ink-faint">{recordCount}개의 이야기가 쌓였어요</p>
             </div>
           </div>
-          <ProgressBar value={progress} className="mb-2.5" />
-          <div className="flex justify-between text-[11px] text-ink-faint">
-            <span>
-              {recordCount}/{project.target_count}개 기록
-            </span>
-            <span>완성까지 {Math.max(0, project.target_count - recordCount)}개</span>
+
+          <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
+            {steps.map((step, index) => (
+              <div key={step} className="flex flex-col items-center gap-1">
+                <span className={['h-2 w-2 rounded-full', index <= activeStep ? 'bg-sage' : 'bg-surface-alt'].join(' ')} />
+                <span className={['text-[10px]', index <= activeStep ? 'font-semibold text-ink' : 'text-ink-faint'].join(' ')}>{step}</span>
+              </div>
+            ))}
           </div>
         </Card>
-      </div>
 
-      <div className="px-5 pt-4 pb-5">
-        <p className="mb-2.5 text-[13px] font-semibold">오늘의 AI 질문</p>
-        <Card className="p-[18px]">
-          <p className="mb-3.5 text-sm leading-relaxed">
-            &quot;{todayQuestion ?? '오늘의 질문을 불러오는 중...'}&quot;
-          </p>
-          <button
-            type="button"
-            className="w-full rounded-[10px] bg-accent py-3 text-center text-sm font-semibold text-white"
-            onClick={() => {
-              if (project.record_mode === 'daily') {
-                navigate('/record/mode')
-              } else if (project.record_mode === 'photo') {
-                navigate('/record/write/photo')
-              } else if (project.record_mode === 'free') {
-                navigate('/record/write/free')
-              } else {
-                navigate('/record/write/question')
-              }
-            }}
-          >
-            지금 답하기 ✍️
+        <button type="button" className="mt-4 w-full rounded-btn bg-accent px-5 py-4 text-center text-[15px] font-semibold text-white shadow-paper" onClick={() => navigate('/record/mode')}>
+          오늘 기록하기
+          <span className="mt-1 block text-[11px] font-normal text-white/70">AI 질문으로 또는 자유롭게 기록해보세요</span>
+        </button>
+
+        <section className="mt-6">
+          <p className="font-serif text-base font-bold">오늘의 작은 안내</p>
+          <Card className="mt-2 p-4">
+            <div className="flex gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-light font-serif text-sm font-bold text-accent">P</div>
+              <div>
+                <p className="text-sm font-semibold">PAGE가 기다리고 있어요.</p>
+                <p className="mt-1 text-xs leading-relaxed text-ink-muted">완벽하게 쓰지 않아도 괜찮아요. 오늘 기억하고 싶은 장면 하나면 충분해요.</p>
+              </div>
+            </div>
+          </Card>
+        </section>
+
+        {projects.length > 1 && (
+          <button className="mt-4 w-full text-center text-xs text-ink-muted" onClick={() => navigate('/library')}>
+            다른 책 {projects.length - 1}권 보기
           </button>
-        </Card>
-      </div>
+        )}
+      </main>
     </div>
   )
 }
