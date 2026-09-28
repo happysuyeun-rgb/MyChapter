@@ -39,7 +39,6 @@ export interface UpdateRecordInput {
 export interface SaveRecordResult {
   record: JournalRecord
   recordCount: number
-  progress: number
   streak: number
   badgeTitles: string[]
 }
@@ -118,12 +117,9 @@ export async function getRecordCount(projectId: string): Promise<number> {
   return count ?? 0
 }
 
-export async function createRecord(
-  input: CreateRecordInput,
-  targetCount: number,
-): Promise<SaveRecordResult> {
+export async function createRecord(input: CreateRecordInput): Promise<SaveRecordResult> {
   if (isDevBypass()) {
-    const result = mockCreateRecord(input, targetCount)
+    const result = mockCreateRecord(input)
     const badges = checkBadgeEvents(result.streak, result.recordCount)
     if (badges.length > 0) {
       await mockCreateBadgeNotifications(input.userId, badges)
@@ -152,7 +148,7 @@ export async function createRecord(
   if (error) throw error
 
   analyzeRecordInBackground(data.id)
-  return finalizeSave(input.userId, input.projectId, data, targetCount)
+  return finalizeSave(input.userId, input.projectId, data)
 }
 
 export async function updateRecord(
@@ -160,10 +156,9 @@ export async function updateRecord(
   userId: string,
   projectId: string,
   input: UpdateRecordInput,
-  targetCount: number,
 ): Promise<SaveRecordResult> {
   if (isDevBypass()) {
-    return mockUpdateRecord(id, userId, projectId, input, targetCount)
+    return mockUpdateRecord(id, userId, projectId, input)
   }
 
   const { data, error } = await supabase
@@ -183,7 +178,7 @@ export async function updateRecord(
   if (error) throw error
 
   analyzeRecordInBackground(data.id)
-  return finalizeSave(userId, projectId, data, targetCount)
+  return finalizeSave(userId, projectId, data)
 }
 
 export async function deleteRecord(id: string, userId: string): Promise<void> {
@@ -218,12 +213,10 @@ async function finalizeSave(
   userId: string,
   projectId: string,
   record: JournalRecord,
-  targetCount: number,
 ): Promise<SaveRecordResult> {
   const allRecords = await listRecords(userId, { projectId })
   const recordCount = allRecords.length
   const streak = calculateStreak(allRecords)
-  const progress = Math.min(100, Math.round((recordCount / targetCount) * 100))
 
   const badges = checkBadgeEvents(streak, recordCount)
   if (badges.length > 0) {
@@ -233,7 +226,6 @@ async function finalizeSave(
   return {
     record,
     recordCount,
-    progress,
     streak,
     badgeTitles: badges.map((b) => b.title),
   }
