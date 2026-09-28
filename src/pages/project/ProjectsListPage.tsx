@@ -42,7 +42,7 @@ export function ProjectsListPage() {
 
   const handleSelect = (project: Project) => {
     setActiveProject(project)
-    navigate('/home')
+    navigate('/project/workspace')
   }
 
   const handleCreate = () => {
