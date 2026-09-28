@@ -31,6 +31,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import type { Chapter } from '@/types/database'
 import { estimateChapterPages } from '@/utils/chapterContent'
+import { getBookReadiness } from '@/utils/bookReadiness'
 
 function SortableChapterRow({
   chapter,
@@ -192,14 +193,33 @@ export function BookPage() {
     return <EmptyState variant="book" />
   }
 
+  const totalRecords = chapters.reduce((sum, ch) => sum + ch.record_ids.length, 0) + unassignedCount
+  const readiness = getBookReadiness(project, totalRecords)
+
+  if (!readiness.isReady) {
+    return (
+      <div className="flex flex-1 flex-col bg-surface px-5 py-6">
+        <button className="self-start text-sm text-ink-muted" onClick={() => navigate('/project/workspace')}>← 책 작업실</button>
+        <Card className="mt-8 paper-card p-5">
+          <p className="text-xs font-semibold tracking-[0.16em] text-sage">STORY READINESS</p>
+          <h1 className="mt-2 font-serif text-xl font-bold">아직 이야기를 모으고 있어요</h1>
+          <p className="mt-2 text-sm leading-relaxed text-ink-muted">{readiness.message}</p>
+          <div className="mt-5 flex items-end justify-between"><span className="text-xs text-ink-muted">이야기 준비도</span><span className="font-serif text-3xl font-bold">{readiness.score}%</span></div>
+          <ProgressBar value={readiness.score} className="mt-2" />
+          <p className="mt-3 text-xs leading-relaxed text-ink-muted">기록 {totalRecords}/{readiness.rule.minRecords}개 · {readiness.elapsedDays}/{readiness.rule.minDays}일</p>
+          <Button className="mt-5" onClick={() => navigate('/record/mode')}>오늘 기록 이어가기</Button>
+        </Card>
+      </div>
+    )
+  }
+
   if (chapters.length === 0 && unassignedCount === 0) {
     return <EmptyState variant="book" />
   }
 
   const canGenerate = unassignedCount >= 10
   const chapterLimitReached = !isPro && chapters.length >= 3 && unassignedCount >= 10
-  const totalRecords = chapters.reduce((sum, ch) => sum + ch.record_ids.length, 0) + unassignedCount
-  const progress = Math.min(100, Math.round((totalRecords / project.target_count) * 100))
+  const progress = readiness.score
 
   return (
     <div className="flex flex-1 flex-col overflow-y-auto bg-surface">
