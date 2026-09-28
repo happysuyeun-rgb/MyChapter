@@ -91,8 +91,12 @@ export async function generateChapter(projectId: string): Promise<Chapter | null
     error?: string
   } | null
 
-  if (body?.code === 'CHAPTER_LIMIT') {
-    throw new ChapterApiError('CHAPTER_LIMIT', 'Free 플랜은 챕터 3개까지예요.')
+  if (body?.code === 'NOT_ENOUGH_MATERIAL') {
+    throw new ChapterApiError('NOT_ENOUGH_MATERIAL', body.error ?? '챕터를 만들기 위한 기록이 조금 더 필요해요.')
+  }
+
+  if (response.error || body?.error) {
+    throw new ChapterApiError(body?.code ?? 'CHAPTER_GENERATE_FAILED', body?.error ?? '챕터 생성에 실패했어요.')
   }
 
   if (body?.chapter_id) {
