@@ -7,7 +7,7 @@ MY CHAPTER는 사용자가 자신의 이야기를 **책(Project)** 단위로 기
 ## Product status
 
 - MVP UI/IA skeleton: 1차 구현 완료
-- Current focus: 제품 정책 정합성 정리 → DB v2 설계/마이그레이션
+- Current focus: DB v2 deployment review → backend cutover → E2E
 - Working branch: `audit/mychapter-sept-2026`
 - External bookstore / POD / community / multilingual: MVP 제외
 
@@ -35,6 +35,7 @@ MY CHAPTER는 사용자가 자신의 이야기를 **책(Project)** 단위로 기
 - [09 AI Policy](docs/09_AI_POLICY.md)
 - [10 Design System](docs/10_DESIGN_SYSTEM.md)
 - [11 MVP Scope](docs/11_MVP_SCOPE.md)
+- [12 DB v2 Cutover Checklist](docs/12_DB_V2_CUTOVER_CHECKLIST.md)
 - [MVP Changelog](docs/CHANGELOG_MVP.md)
 
 ## Product structure
