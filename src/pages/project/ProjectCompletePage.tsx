@@ -1,43 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppLottie, Button, Card } from '@/components/common'
 import bookOpenAnimation from '@/assets/animations/book-open.json'
-import { ApiError, generateQuestion } from '@/lib/api/questions'
-import { usePaywallStore } from '@/stores/paywallStore'
 import { useProjectStore } from '@/stores/projectStore'
 import { formatDateKo } from '@/utils/calculateRoutine'
 
 export function ProjectCompletePage() {
   const navigate = useNavigate()
-  const { showPaywall } = usePaywallStore()
-  const { createdProject, firstQuestion, setFirstQuestion, resetDraft } = useProjectStore()
-  const [loading, setLoading] = useState(true)
+  const { createdProject, resetDraft } = useProjectStore()
 
   useEffect(() => {
-    if (!createdProject) {
-      navigate('/project/new', { replace: true })
-      return
-    }
-
-    const loadQuestion = async () => {
-      try {
-        const question = await generateQuestion(createdProject.id)
-        setFirstQuestion(question)
-      } catch (err) {
-        if (err instanceof ApiError && err.code === 'AI_LIMIT') {
-          showPaywall()
-        }
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (!firstQuestion) {
-      void loadQuestion()
-    } else {
-      setLoading(false)
-    }
-  }, [createdProject, firstQuestion, navigate, setFirstQuestion, showPaywall])
+    if (!createdProject) navigate('/project/new', { replace: true })
+  }, [createdProject, navigate])
 
   if (!createdProject) return null
 
@@ -57,39 +31,26 @@ export function ProjectCompletePage() {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col items-center justify-center bg-surface px-7 py-10 text-center">
-      <AppLottie
-        animationData={bookOpenAnimation}
-        width={100}
-        height={80}
-        loop={false}
-        className="mb-6"
-      />
-      <h1 className="mb-3 text-lg font-bold">프로젝트가 시작됐어요!</h1>
-      <p className="mb-8 text-sm leading-relaxed text-ink-muted">
+      <AppLottie animationData={bookOpenAnimation} width={100} height={80} loop={false} className="mb-6" />
+      <p className="text-xs font-semibold tracking-[0.18em] text-sage">NEW BOOK</p>
+      <h1 className="mt-2 font-serif text-2xl font-bold">첫 페이지가 준비됐어요.</h1>
+      <p className="mb-8 mt-3 text-sm leading-relaxed text-ink-muted">
         <strong className="text-ink">{createdProject.title}</strong>
         <br />
-        {targetDate}까지 {createdProject.target_count}개의 기록으로
+        {targetDate ? targetDate + '까지 ' : ''}기록을 차곡차곡 모아
         <br />
-        당신의 첫 책이 완성돼요.
+        한 권의 이야기로 만들어가요.
       </p>
 
-      <Card accent className="mb-8 w-full p-4 text-left">
-        <p className="mb-2 text-[13px] font-bold text-accent">첫 번째 AI 질문</p>
-        {loading ? (
-          <p className="text-sm text-ink-muted">질문을 생성하고 있어요...</p>
-        ) : (
-          <p className="text-sm leading-relaxed text-ink">
-            &quot;{firstQuestion ?? '오늘 하루 중 가장 기억에 남는 순간은 무엇인가요?'}&quot;
-          </p>
-        )}
+      <Card className="mb-8 w-full p-4 text-left">
+        <p className="text-sm font-semibold">첫 기록 방식은 매번 선택할 수 있어요.</p>
+        <p className="mt-2 text-xs leading-relaxed text-ink-muted">
+          PAGE의 AI 질문으로 시작해도 되고, 오늘 떠오르는 이야기를 자유롭게 적어도 괜찮아요.
+        </p>
       </Card>
 
-      <Button className="mb-2" disabled={loading} onClick={handleWrite}>
-        첫 기록 방식 선택하기
-      </Button>
-      <Button variant="ghost" onClick={handleHome}>
-        홈으로
-      </Button>
+      <Button className="mb-2" onClick={handleWrite}>첫 기록 방식 선택하기</Button>
+      <Button variant="ghost" onClick={handleHome}>홈으로</Button>
     </div>
   )
 }
