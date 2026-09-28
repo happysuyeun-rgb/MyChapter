@@ -6,8 +6,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
       <textarea
         ref={ref}
         className={[
-          'w-full resize-none rounded-[14px] bg-surface-alt p-4 text-[15px] leading-relaxed text-ink outline-none',
-          'focus:border-[1.5px] focus:border-accent focus:bg-white',
+          'w-full resize-none border border-border bg-surface-card p-4 text-[15px] leading-relaxed text-ink outline-none',
+          'focus:border-ink',
           className,
         ].join(' ')}
         {...props}
