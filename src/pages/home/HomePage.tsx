@@ -1,15 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { EmptyState, ProgressBar } from '@/components/common'
-import { ChapterLimitBanner } from '@/components/features/chapter/ChapterLimitBanner'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
-import { useChapterLimitStatus } from '@/hooks/useChapterLimitStatus'
-import { useSubscription } from '@/hooks/useSubscription'
 import { getUnreadCount } from '@/lib/api/notifications'
 import { getProjects } from '@/lib/api/projects'
 import { listRecords } from '@/lib/api/records'
 import { useAuthStore } from '@/stores/authStore'
-import { usePaywallStore } from '@/stores/paywallStore'
 import { useProjectStore } from '@/stores/projectStore'
 import type { Project } from '@/types/database'
 import { getBookReadiness } from '@/utils/bookReadiness'
@@ -17,14 +13,11 @@ import { getBookReadiness } from '@/utils/bookReadiness'
 export function HomePage() {
   const navigate = useNavigate()
   const { user, profile } = useAuthStore()
-  const { setActiveProject } = useProjectStore()
-  const { isPro } = useSubscription()
-  const { showPaywall } = usePaywallStore()
+  const { activeProjectId, setActiveProject } = useProjectStore()
   const [projects, setProjects] = useState<Project[]>([])
   const [recordCount, setRecordCount] = useState(0)
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
-  const { chapterLimitReached } = useChapterLimitStatus(projects[0]?.id)
 
   useEffect(() => {
     if (!user) return
@@ -32,20 +25,21 @@ export function HomePage() {
       const projectData = await getProjects(user.id)
       setProjects(projectData)
       if (projectData[0]) {
-        setActiveProject(projectData[0])
-        const records = await listRecords(user.id, { projectId: projectData[0].id })
+        const selected = projectData.find((project) => project.id === activeProjectId) ?? projectData[0]
+        setActiveProject(selected)
+        const records = await listRecords(user.id, { projectId: selected.id })
         setRecordCount(records.length)
       }
       setUnreadCount(await getUnreadCount(user.id))
       setLoading(false)
     }
     void load()
-  }, [user, setActiveProject])
+  }, [user, activeProjectId, setActiveProject])
 
   if (loading) return <div className="flex flex-1 items-center justify-center text-sm text-ink-muted">로딩 중...</div>
   if (projects.length === 0) return <EmptyState variant="home" />
 
-  const project = projects[0]
+  const project = projects.find((item) => item.id === activeProjectId) ?? projects[0]
   const typeLabel = PROJECT_TYPES.find((p) => p.type === project.type)?.label ?? '나의 이야기'
   const readiness = getBookReadiness(project, recordCount)
   const progress = readiness.score
@@ -66,8 +60,6 @@ export function HomePage() {
           {unreadCount > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-terracotta ring-2 ring-surface" />}
         </button>
       </header>
-
-      {!isPro && chapterLimitReached && <div className="px-5 pt-3"><ChapterLimitBanner onUpgrade={() => showPaywall()} /></div>}
 
       <main className="px-5 pb-6 pt-3">
         <div className="mb-2 flex items-center justify-between">
