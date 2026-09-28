@@ -3,3 +3,5 @@ export { ChapterPreviewPage } from './ChapterPreviewPage'
 export { ChapterEditPage } from './ChapterEditPage'
 export { BookCoverPage } from './BookCoverPage'
 export { PublishCompletePage } from './PublishCompletePage'
+
+export { FinalReviewPage } from './FinalReviewPage'
