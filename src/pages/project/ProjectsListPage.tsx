@@ -9,10 +9,12 @@ import { useAuthStore } from '@/stores/authStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { useProjectStore } from '@/stores/projectStore'
 import type { Project } from '@/types/database'
+import { getBookReadiness } from '@/utils/bookReadiness'
 
 interface ProjectWithProgress extends Project {
   recordCount: number
   progress: number
+  statusLabel: string
 }
 
 export function ProjectsListPage() {
@@ -31,8 +33,10 @@ export function ProjectsListPage() {
       const withProgress = await Promise.all(projectData.map(async (project) => {
         const records = await listRecords(user.id, { projectId: project.id })
         const recordCount = records.length
-        const progress = Math.min(100, Math.round((recordCount / project.target_count) * 100))
-        return { ...project, recordCount, progress }
+        const readiness = getBookReadiness(project, recordCount)
+        const progress = readiness.score
+        const statusLabel = project.is_completed ? '발행완료' : readiness.isReady ? '발행가능' : '진행중'
+        return { ...project, recordCount, progress, statusLabel }
       }))
       setProjects(withProgress)
       setLoading(false)
@@ -74,12 +78,12 @@ export function ProjectsListPage() {
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-serif text-base font-bold">{project.title}</p>
-                      <p className="mt-1 text-xs text-ink-muted">{typeLabel}{project.is_completed ? ' · 완성' : ' · 집필 중'}</p>
+                      <p className="mt-1 text-xs text-ink-muted">{typeLabel} · {project.statusLabel}</p>
                     </div>
                     <p className="text-lg font-bold text-accent">{project.progress}%</p>
                   </div>
                   <ProgressBar value={project.progress} />
-                  <p className="mt-2 text-[11px] text-ink-faint">{project.recordCount}/{project.target_count}개 기록</p>
+                  <p className="mt-2 text-[11px] text-ink-faint">{project.recordCount}개 기록 · 이야기 준비도 {project.progress}%</p>
                 </button>
               )
             })}
