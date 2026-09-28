@@ -1,9 +1,9 @@
 # 08. DB v2 Design
 
-**Status:** DRAFT — design only, NOT migrated  
+**Status:** STRUCTURE CONFIRMED — migrations prepared, NOT deployed  
 **Updated:** 2026-09-28
 
-> Do not apply this schema directly yet. Product-policy cleanup must be completed first.
+> Migrations `009`–`013` are prepared in GitHub but have not been applied to Supabase. Apply them before deploying the new `analyze-record` and semantic `generate-chapter` Edge Functions.
 
 ## Why v2 is needed
 
@@ -87,10 +87,10 @@ updated_at
 
 - `record_mode` → REMOVE
 - `is_completed` → REMOVE; derive from publications or explicit workflow fields
-- `target_count` → REMOVE if readiness becomes sole progress source
-- `frequency` → OPEN
-- `target_date` → OPEN
-- per-project `notification_time` → likely REMOVE in favor of user global notification setting
+- `target_count` → REMOVE after compatibility cutover
+- `frequency` → REMOVE after compatibility cutover
+- `target_date` → REMOVE after compatibility cutover
+- per-project `notification_time` → REMOVE after compatibility cutover; user-level notification setting remains
 
 ### Why snapshot readiness rules
 
@@ -205,10 +205,11 @@ UNIQUE (chapter_id, position)
 
 This supports semantic regrouping and prevents duplicated relationship state.
 
-Decision required before migration:
+Confirmed relation policy:
 
-- allow one record in multiple chapters?
-- default recommendation: **yes at DB level**, UI/AI should avoid unnecessary duplication.
+- DB allows one record to relate to multiple chapters through the relation table.
+- Current AI composition should avoid unnecessary duplication.
+- Legacy one-record-one-chapter fields remain only during migration.
 
 ## 8. cover_assets
 
@@ -313,7 +314,7 @@ Generated question can live in draft while writing and `records.question_text` a
 
 Do not rewrite old migrations.
 
-Suggested:
+Prepared:
 
 ```text
 009_db_v2_foundation.sql
@@ -321,21 +322,21 @@ Suggested:
 011_chapter_records.sql
 012_publication_versions.sql
 013_rls_v2.sql
-014_backfill_v2.sql
 ```
 
-Exact split should be finalized after policy cleanup.
+Backfill for chapter relationships and existing published books is included in `011` and `012`. A later cleanup migration will remove legacy columns/tables only after application code has fully cut over.
 
 ## Backfill concerns
 
-Need migration logic for:
+Prepared backfill covers:
 
-- existing project type values
+- readiness policy snapshots on existing projects
 - existing `chapters.record_ids[]` → `chapter_records`
-- existing `records.chapter_id`
+- existing `records.chapter_id` relationships missing from arrays
 - existing `published_books` → `publications version=1`
-- existing cover template IDs
-- existing completed projects → publication-derived status
+- existing cover template IDs inside publication snapshots
+
+Legacy `is_completed` remains until publication-query cutover.
 
 ## RLS v2 principle
 
