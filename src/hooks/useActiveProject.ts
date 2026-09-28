@@ -8,28 +8,34 @@ import type { Project } from '@/types/database'
 export function useActiveProject() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const { activeProject, setActiveProject } = useProjectStore()
-  const [loading, setLoading] = useState(!activeProject)
+  const { activeProject, activeProjectId, setActiveProject } = useProjectStore()
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!user) return
-    if (activeProject) {
-      setLoading(false)
-      return
-    }
 
     const load = async () => {
+      setLoading(true)
       const projects = await getProjects(user.id)
+
       if (projects.length === 0) {
+        setActiveProject(null)
+        setLoading(false)
         navigate('/home', { replace: true })
         return
       }
-      setActiveProject(projects[0])
+
+      const selected = projects.find((project) => project.id === activeProjectId) ?? projects[0]
+
+      if (!activeProject || activeProject.id !== selected.id || activeProject.updated_at !== selected.updated_at) {
+        setActiveProject(selected)
+      }
+
       setLoading(false)
     }
 
     void load()
-  }, [user, activeProject, setActiveProject, navigate])
+  }, [user, activeProjectId, activeProject?.id, activeProject?.updated_at, setActiveProject, navigate])
 
   return { project: activeProject, loading }
 }
