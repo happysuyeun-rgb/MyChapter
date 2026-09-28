@@ -20,20 +20,20 @@ export function NavBar({
   const navigate = useNavigate()
 
   return (
-    <header className="flex h-[52px] shrink-0 items-center gap-3 border-b border-border px-5">
+    <header className="flex min-h-[56px] shrink-0 items-center gap-3 border-b border-border bg-surface px-5">
       <button
         type="button"
-        className="min-w-10 text-left text-[13px] font-medium text-accent"
+        className="min-h-11 min-w-12 text-left text-[12px] font-medium text-ink-muted"
         onClick={onLeftClick ?? (() => navigate(-1))}
       >
         {leftLabel ?? ''}
       </button>
-      <h1 className="flex-1 text-center text-base font-semibold">{title}</h1>
+      <h1 className="flex-1 text-center font-serif text-[15px] font-bold tracking-[-0.01em]">{title}</h1>
       <button
         type="button"
         className={[
-          'min-w-10 text-right text-[13px] font-medium',
-          rightAccent ? 'font-bold text-accent' : 'text-accent',
+          'min-h-11 min-w-12 text-right text-[12px] font-medium',
+          rightAccent ? 'font-bold text-terracotta' : 'text-ink-muted',
         ].join(' ')}
         onClick={onRightClick}
       >
