@@ -27,7 +27,12 @@ export function PublishCompletePage() {
 
   const handleBook = () => {
     clearPublishResult()
-    navigate('/book')
+    navigate('/project/workspace')
+  }
+
+  const handleLibrary = () => {
+    clearPublishResult()
+    navigate('/library')
   }
 
   return (
@@ -69,12 +74,9 @@ export function PublishCompletePage() {
         </div>
       </Card>
 
-      <Button className="mb-2" onClick={handleBook}>
-        내 책 보기
-      </Button>
-      <Button variant="ghost" onClick={handleHome}>
-        홈으로
-      </Button>
+      <Button className="mb-2" onClick={handleBook}>완성된 책 열기</Button>
+      <Button variant="secondary" className="mb-2" onClick={handleLibrary}>내 서재에서 보기</Button>
+      <Button variant="ghost" onClick={handleHome}>홈으로</Button>
     </div>
   )
 }
