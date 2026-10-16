@@ -1,3 +1,10 @@
+> **DEPRECATED — 2026-10-16**
+>
+> 이 문서는 2026-06 초기 MVP 기준의 과거 개발명세서입니다. 현재 개발 판단에 사용하지 마세요.
+> 최신 기준은 `docs/README.md`, `02_PRODUCT_DECISIONS.md`, `05_SCREEN_SPEC.md` 및 새 `13_DEVELOPMENT_SPEC.md`를 따릅니다.
+>
+> 충돌 예: 10-record chapter, Free 3 chapter limit, PDF Pro-only, published_books 단일 발행 구조 등.
+
 # MyChapter — 개발명세서
 
 > **문서 버전:** 1.0  
