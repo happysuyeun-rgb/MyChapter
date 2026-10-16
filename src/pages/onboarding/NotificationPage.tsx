@@ -9,12 +9,14 @@ export function NotificationPage() {
   const navigate = useNavigate()
   const { user, setProfile } = useAuthStore()
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const complete = async (enabled: boolean) => {
     if (!user) return
     setLoading(true)
+    setError('')
 
-    const { data, error } = await supabase
+    const { data, error: updateError } = await supabase
       .from('users')
       .update({
         notification_enabled: enabled,
@@ -26,10 +28,12 @@ export function NotificationPage() {
 
     setLoading(false)
 
-    if (!error && data) {
-      setProfile(data)
+    if (updateError || !data) {
+      setError('알림 설정을 저장하지 못했어요. 다시 시도해주세요.')
+      return
     }
 
+    setProfile(data)
     navigate('/project/new')
   }
 
@@ -56,6 +60,8 @@ export function NotificationPage() {
           <p className="text-xs font-semibold">알림은 언제든 설정에서 바꿀 수 있어요.</p>
           <p className="mt-1 text-[11px] leading-5 text-ink-muted">건너뛰어도 책 만들기와 기록 기능에는 제한이 없습니다.</p>
         </div>
+
+        {error && <p className="mt-5 text-sm text-danger">{error}</p>}
 
         <div className="mt-auto pt-8">
           <Button disabled={loading} onClick={() => void complete(true)}>알림 받기</Button>
