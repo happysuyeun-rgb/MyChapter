@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Textarea } from '@/components/common'
 import { EmotionTagPicker } from '@/components/features/record/EmotionTagPicker'
@@ -30,11 +30,14 @@ export function RecordFreePage() {
   const [showExit, setShowExit] = useState(false)
   const [error, setError] = useState('')
 
+  const touched = useRef(false)
+  const initialization = useRef(0)
   const isDirty = content.trim().length > 0 || title.trim().length > 0
 
   useEffect(() => {
     if (!project || !user) return
 
+    const generation = ++initialization.current
     const init = async () => {
       if (editingRecord) {
         setRecordNumber(editingRecord.record_number)
@@ -42,31 +45,33 @@ export function RecordFreePage() {
       }
 
       const count = await getRecordCount(project.id)
+      if (initialization.current !== generation) return
       setRecordNumber(count + 1)
 
       try {
         const draft = await loadDraft(user.id, project.id, 'free')
-        if (draft) {
+        if (draft && !touched.current && initialization.current === generation) {
           setContent(draft.content ?? '')
           setTitle(draft.title ?? '')
           setEmotions(draft.emotionTags ?? [])
         }
       } catch {
-        setError('임시저장 기록을 불러오지 못했어요. 다시 접속해 확인해주세요.')
+        if (initialization.current === generation) setError('임시저장 기록을 불러오지 못했어요. 다시 접속해 확인해주세요.')
       }
 
       try {
         const h = await generateFreewritingHint(project.id)
-        setHint(h)
+        if (initialization.current === generation) setHint(h)
       } catch (err) {
         if (err instanceof ApiError && err.code === 'AI_LIMIT') {
           showPaywall()
         }
-        setHint(getFallbackHint(project.type))
+        if (initialization.current === generation) setHint(getFallbackHint(project.type))
       }
     }
 
     void init()
+    return () => { initialization.current++ }
   }, [project, user, editingRecord, showPaywall])
 
   const handleSave = async () => {
@@ -165,7 +170,7 @@ export function RecordFreePage() {
           <input
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => { touched.current = true; setTitle(e.target.value) }}
             placeholder="제목을 입력해주세요"
             className="w-full bg-transparent font-serif text-[22px] font-bold tracking-[-0.02em] text-ink outline-none placeholder:text-ink-faint"
           />
@@ -173,7 +178,7 @@ export function RecordFreePage() {
 
         <Textarea
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => { touched.current = true; setContent(e.target.value) }}
           placeholder="자유롭게 써보세요"
           className="min-h-[360px] border-0 bg-transparent px-0 font-serif text-[16px] leading-8 shadow-none focus:ring-0"
           maxLength={5000}
@@ -182,7 +187,7 @@ export function RecordFreePage() {
           {content.length}자
         </p>
 
-        <EmotionTagPicker selected={emotions} onChange={setEmotions} />
+        <EmotionTagPicker selected={emotions} onChange={(value) => { touched.current = true; setEmotions(value) }} />
         {error && <p className="mt-3 text-sm text-danger">{error}</p>}
       </div>
 
