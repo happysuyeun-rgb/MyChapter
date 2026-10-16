@@ -36,7 +36,7 @@ Current MVP onboarding is two steps: A-03 Nickname + O-01 Notification. Old O-01
 | A-01 | Login | /login | Implemented | Google / Kakao / Email entry |
 | A-02 | Email Login / Auth | /login/email | Implemented / E2E Pending | magic-link sign in |
 | A-03 | Nickname | /onboarding/nickname | Implemented | save 2~10 char author name |
-| O-01 | Notification Onboarding | /onboarding/notification | Implemented / gap | save notification preference and complete onboarding |
+| O-01 | Notification Onboarding | /onboarding/notification | Implemented | save notification preference and complete onboarding |
 
 ### Final rules
 
@@ -112,7 +112,7 @@ Publishing progress/failure is finalized as U-04/U-06 state inside Final Review.
 | L-01 | All Books | /library | Implemented |
 | L-02 | 진행중 | /library | Implemented |
 | L-03 | 발행가능 | /library | Implemented |
-| L-04 | 발행완료 | /library | Implemented / source alignment needed |
+| L-04 | 발행완료 | /library | Implemented |
 | L-05 | Project Limit / Pro | G-01 | Implemented |
 
 Final Book status should use publications + Readiness. Free users opening a restricted second Book flow see G-01 only at the restricted action.
@@ -303,8 +303,8 @@ No standalone publishing route is required.
 | M-04 | Publication History | /mypage/completed-books | Implemented |
 | M-05 | Notifications | /notifications | Implemented / error-state gap |
 | M-06 | Settings | /mypage/settings | Implemented |
-| M-07 | Privacy Policy | /mypage/privacy-policy | Implemented / guard gap |
-| M-08 | Terms | /mypage/terms-of-service | Implemented / guard gap |
+| M-07 | Privacy Policy | /mypage/privacy-policy | Implemented |
+| M-08 | Terms | /mypage/terms-of-service | Implemented |
 | M-09 | Delete Account | /mypage/delete-account | Implemented / E2E Pending |
 | G-01 | Paywall Modal | global | Implemented |
 
