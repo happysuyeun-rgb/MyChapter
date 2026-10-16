@@ -147,3 +147,12 @@ Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays t
 - Finalization uses project-before-publication lock order consistent with reservation. Nullable AI tagline supported.
 - Supabase `generate-pdf` **v9 ACTIVE**. Finalization RPC permitted for service_role only; authenticated users cannot finalize directly. Post-migration Security Advisor shows zero warnings.
 - **PENDING:** two-account authenticated E2E, generation-versus-edit race simulation, timed-out old attempt finishing after a retry, publication recovery, and real Free/Pro PDF rendering. Treat code+schema deployment as verified, not E2E completion.
+
+## 14. Phase B onboarding → project → first free record source audit (2026-10-16)
+
+- Reviewed EmailLoginPage, NicknamePage, NotificationPage, ProjectTypePage, ProjectSetupPage, ProjectCompletePage, RecordModePage, RecordFreePage, authStore and useActiveProject.
+- Fixed free record save handler to reject duplicate in-flight saves and stale editingRecord from a different user or Book; commit 1270bdb0.
+- Fixed project creation handler to guard against a second in-flight creation request; commit 52888d51.
+- **Not an E2E pass:** OAuth/email callbacks, automatic users-row bootstrap, notification preferences, record persistence and two-account ownership have not been executed under a real test login.
+- **Additional risk:** UI-only Free project creation limit may be bypassed by direct project insert unless database/API enforces it. A JavaScript loading guard alone is not an atomic idempotency lock.
+- **Next:** live account smoke tests and server-side project entitlement validation before asserting first-run complete.
