@@ -203,3 +203,11 @@ Live `projects` column inventory confirms **neither** `manuscript_reviewed_at` n
 ## 8. Migration 015 applied — 2026-10-16
 
 Live Supabase migration history now includes `20261016025534 workflow_review_milestones`. A read-only information_schema query confirmed both `projects.manuscript_reviewed_at` and `projects.final_review_completed_at` are **nullable timestamp with time zone**. Source migration `supabase/migrations/015_workflow_review_milestones.sql` and `src/types/database.ts` were updated. Earlier TARGET/ABSENT labels in this v0.1 are historical pre-migration observations; these fields are **now PRESENT** in the live schema. Live Security Advisor after migration: zero lints. Functional E2E remains pending.
+
+## 9. Workflow invalidation triggers (migration 016)
+
+Live Supabase migration `review_invalidation` applied 2026-10-16. The following database triggers were confirmed via information_schema:
+- `projects_invalidate_final_review` BEFORE UPDATE: book title/subtitle/author or cover metadata change nullifies final-review timestamp.
+- `chapters_invalidate_book_review` AFTER INSERT/UPDATE/DELETE: meaningful manuscript or chapter-structure mutations nullify manuscript and final-review timestamps.
+
+This is database-transactional invalidation, not client-only synchronization. Behavior with authenticated accounts still requires E2E verification.
