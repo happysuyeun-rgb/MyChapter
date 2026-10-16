@@ -63,6 +63,7 @@ Deno.serve(async (req) => {
   }
 
   let publicationId: string | null = null
+  let attemptToken: string | null = null
   let adminForFailure: ReturnType<typeof createClient> | null = null
 
   try {
@@ -122,6 +123,8 @@ Deno.serve(async (req) => {
       })
     }
     publicationId = reservation.id as string
+    attemptToken = reservation.attempt_token as string
+    if (!attemptToken) throw new Error('PUBLICATION_ATTEMPT_MISSING')
     const version = reservation.version as number
 
     const { data: project, error: projectError } = await admin
@@ -220,7 +223,7 @@ Deno.serve(async (req) => {
     }
 
     const pdfBytes = await pdfDoc.save()
-    const storagePath = `${user.id}/${project_id}/v${version}.pdf`
+    const storagePath = `${user.id}/${project_id}/v${version}/${attemptToken}.pdf`
 
     const { error: uploadError } = await admin.storage
       .from('published-pdfs')
@@ -237,31 +240,23 @@ Deno.serve(async (req) => {
 
     if (signedError) throw signedError
 
-    const { error: finalizeError } = await admin
-      .from('publications')
-      .update({
-        status: 'published',
-        pdf_path: storagePath,
-        page_count: pageCount,
-        cover_snapshot: { template_id: cover_template_id, tagline },
-        published_at: new Date().toISOString(),
-        error_code: null,
-        error_message: null,
-      })
-      .eq('id', publicationId)
+    const { data: finalized, error: finalizeError } = await admin.rpc('finish_book_publication', {
+      p_publication_id: publicationId,
+      p_attempt_token: attemptToken,
+      p_storage_path: storagePath,
+      p_page_count: pageCount,
+      p_tagline: tagline,
+    })
+    if (finalizeError || !finalized) {
+      // The uploaded attempt-scoped file cannot overwrite any current publication.
+      await admin.storage.from('published-pdfs').remove([storagePath])
+      throw finalizeError ?? new Error('SOURCE_CHANGED_OR_STALE_ATTEMPT')
+    }
 
-    if (finalizeError) throw finalizeError
-
-    // Transitional project flags remain until all UI status reads use publications.
-    await admin
-      .from('projects')
-      .update({
-        cover_template_id,
-        selected_cover_id: cover_template_id,
-        is_completed: true,
-      })
-      .eq('id', project_id)
-      .eq('user_id', user.id)
+    // Transitional status update must not alter reviewed source fields: updating
+    // cover metadata here would invalidate the final review during publishing.
+    await admin.from('projects').update({ is_completed: true })
+      .eq('id', project_id).eq('user_id', user.id)
 
     return new Response(
       JSON.stringify({
@@ -276,15 +271,15 @@ Deno.serve(async (req) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
 
-    if (publicationId && adminForFailure) {
-      await adminForFailure
-        .from('publications')
-        .update({
-          status: 'failed',
-          error_code: 'PDF_GENERATE_FAILED',
-          error_message: message,
-        })
-        .eq('id', publicationId)
+    if (publicationId && attemptToken && adminForFailure) {
+      await adminForFailure.rpc('finish_book_publication', {
+        p_publication_id: publicationId,
+        p_attempt_token: attemptToken,
+        p_storage_path: '',
+        p_page_count: 0,
+        p_tagline: '',
+        p_failure_reason: message,
+      })
     }
 
     return new Response(JSON.stringify({ error: message }), {
