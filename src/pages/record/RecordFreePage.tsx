@@ -193,7 +193,10 @@ export function RecordFreePage() {
             content,
             title,
             emotionTags: emotions,
-          }).then(() => navigate(-1))
+          }).then(() => navigate(-1)).catch(() => {
+            setShowExit(false)
+            setError('임시저장에 실패했어요. 작성한 내용은 유지됩니다.')
+          })
         }}
       />
     </div>
