@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase'
 import type { Project, ProjectType } from '@/types/database'
 import type { NewProjectDraft } from '@/stores/projectStore'
 import { calculateRoutine } from '@/utils/calculateRoutine'
-import { BOOK_READINESS_RULES } from '@/utils/bookReadiness'
+import { BOOK_READINESS_RULES, getBookReadiness } from '@/utils/bookReadiness'
 
 export async function getProjects(userId: string): Promise<Project[]> {
   if (isDevBypass()) return mockGetProjects()
@@ -21,7 +21,46 @@ export async function getProjects(userId: string): Promise<Project[]> {
     .order('created_at', { ascending: false })
 
   if (error) throw error
-  return data ?? []
+  const projects = data ?? []
+  // Duration may become sufficient without another Record insert. Persist the
+  // sticky milestone before returning projects to Home, Library and Workspace.
+  return Promise.all(projects.map((project) => ensureProjectReady(project, userId)))
+}
+
+/** Persists an earned readiness milestone without ever resetting an existing one. */
+export async function ensureProjectReady(project: Project, userId: string): Promise<Project> {
+  if (project.ready_at) return project
+  if (project.user_id !== userId) throw new Error('책 소유권이 일치하지 않습니다.')
+  const minDays = project.readiness_min_days ?? BOOK_READINESS_RULES[project.type]?.minDays ?? 30
+  const start = project.started_at || project.created_at.slice(0, 10)
+  // If time requirement has not elapsed, avoid a needless record-count query.
+  const nowDate = new Date()
+  const startDate = new Date(start)
+  const today = Date.UTC(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate())
+  const firstDay = Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate())
+  if (Math.floor((today - firstDay) / 86_400_000) + 1 < minDays) return project
+
+  if (isDevBypass()) {
+    const { mockGetRecordCount } = await import('@/mocks')
+    if (!getBookReadiness(project, mockGetRecordCount(project.id)).isReady) return project
+    project.ready_at = new Date().toISOString()
+    return project
+  }
+
+  const { count, error: countError } = await supabase.from('records')
+    .select('*', { count: 'exact', head: true })
+    .eq('project_id', project.id).eq('user_id', userId).eq('is_draft', false)
+  if (countError) throw countError
+  if (!getBookReadiness(project, count ?? 0).isReady) return project
+  const { data, error } = await supabase.from('projects')
+    .update({ ready_at: new Date().toISOString() })
+    .eq('id', project.id).eq('user_id', userId).is('ready_at', null)
+    .select().maybeSingle()
+  if (error) throw error
+  if (data) return data
+  // A concurrent read may have marked the book ready: fetch its authoritative row.
+  const latest = await getProjectById(project.id)
+  return latest ?? project
 }
 
 export async function getProjectCount(userId: string): Promise<number> {
@@ -97,6 +136,9 @@ export async function updateProjectSettings(
 
   const rule = BOOK_READINESS_RULES[input.type]
   if (!rule) throw new Error('지원하지 않는 책 유형입니다.')
+
+  // Preserve Ready earned under the previous policy before a type change.
+  await ensureProjectReady(await getProjectById(projectId) ?? (() => { throw new Error('책을 찾을 수 없어요.') })(), userId)
 
   const { data, error } = await supabase
     .from('projects')
