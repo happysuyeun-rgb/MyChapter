@@ -30,6 +30,8 @@ export function mockCreateProject(userId: string, draft: NewProjectDraft): Proje
     subtitle: null,
     author_name: null,
     ready_at: null,
+    manuscript_reviewed_at: null,
+    final_review_completed_at: null,
     archived_at: null,
     readiness_min_days: BOOK_READINESS_RULES[draft.type]?.minDays ?? 30,
     readiness_min_records: BOOK_READINESS_RULES[draft.type]?.minRecords ?? 20,
