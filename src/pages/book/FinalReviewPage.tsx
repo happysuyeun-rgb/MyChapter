@@ -121,6 +121,9 @@ export function FinalReviewPage() {
       if (error instanceof BookApiError && error.code === 'PUBLICATION_LIMIT') {
         setPublishStage('idle')
         showPaywall()
+      } else if (error instanceof BookApiError && ['REVIEW_REQUIRED', 'COVER_MISMATCH', 'MANUSCRIPT_INCOMPLETE'].includes(error.code)) {
+        setPublishStage('error', error.message)
+        setReviewSaved(false)
       } else {
         setPublishStage('error', 'PDF 생성 중 문제가 발생했어요. 다시 시도해주세요.')
       }
