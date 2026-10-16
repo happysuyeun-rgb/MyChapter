@@ -5,6 +5,7 @@ import { EmotionTagPicker } from '@/components/features/record/EmotionTagPicker'
 import { ExitConfirmModal } from '@/components/features/record/ExitConfirmModal'
 import { NavBar } from '@/components/layout/NavBar'
 import { useActiveProject } from '@/hooks/useActiveProject'
+import { clearRecordRequestId, getOrCreateRecordRequestId } from '@/lib/recordRequestId'
 import { deleteDraft, loadDraft, saveDraft } from '@/lib/api/drafts'
 import { generateFreewritingHint, getFallbackHint } from '@/lib/api/hints'
 import { ApiError } from '@/lib/api/questions'
@@ -15,7 +16,6 @@ import { useRecordStore } from '@/stores/recordStore'
 
 export function RecordFreePage() {
   const navigate = useNavigate()
-  const createRequestId = useRef(crypto.randomUUID())
   const { user } = useAuthStore()
   const { showPaywall } = usePaywallStore()
   const { project, loading } = useActiveProject()
@@ -109,7 +109,7 @@ export function RecordFreePage() {
             {
               projectId: project.id,
               userId: user.id,
-              requestId: createRequestId.current,
+              requestId: getOrCreateRecordRequestId(user.id, project.id, 'free'),
               mode: 'free',
               content: content.trim(),
               title: recordTitle,
@@ -123,6 +123,7 @@ export function RecordFreePage() {
       } catch {
         // Keep the saved result; cleanup can be retried separately.
       }
+      if (!editingRecord) clearRecordRequestId(user.id, project.id, 'free')
       setEditingRecord(null)
       setLastSave(result, project)
       navigate('/record/complete')
