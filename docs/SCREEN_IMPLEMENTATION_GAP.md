@@ -10,7 +10,9 @@ This document contains only gaps found by comparing the final screen specificati
 
 ### GAP-001 · Onboarding guard does not cover all product routes
 
-**Current**
+**Status: RESOLVED IN CODE** — commit 4fdf536. Vercel build passed.
+
+**Previous state**
 
 - OnboardingGuard wraps /home, /library, /mypage, /records, /book.
 - /project/*, /record/*, /book/manuscript, /book/cover, /book/review, /publication/:id and other detailed routes sit directly under AuthGuard.
@@ -36,7 +38,9 @@ An incomplete-onboarding account is redirected to A-03/O-01 from every product d
 
 ### GAP-002 · Notification onboarding advances even when persistence fails
 
-**Current**
+**Status: RESOLVED IN CODE** — commit 5547eb5. Vercel build passed.
+
+**Previous state**
 
 NotificationPage calls Supabase update, but navigates to /project/new even when the update returns an error.
 
@@ -62,7 +66,9 @@ A forced update failure leaves the user on O-01 and retry works.
 
 ### GAP-003 · Login Terms/Privacy links are behind AuthGuard
 
-**Current**
+**Status: RESOLVED IN CODE** — commit 4fdf536. Vercel build passed.
+
+**Previous state**
 
 LoginPage links to /mypage/terms-of-service and /mypage/privacy-policy, but both routes are inside AuthGuard.
 
@@ -87,7 +93,9 @@ Logged-out users can open both legal pages directly and return to Login.
 
 ### GAP-004 · Publication status still depends on legacy project.is_completed in some screens
 
-**Current**
+**Status: PARTIALLY RESOLVED IN CODE** — Library commit 8a77ef1, Workspace commit 0bd765e. Vercel build passed. Home H-04 remains GAP-006.
+
+**Previous state**
 
 - Library derives 발행완료 from project.is_completed.
 - Book Workspace derives published from project.is_completed.
@@ -326,13 +334,12 @@ This is not a screen-code gap, but it blocks verification of:
 
 ## Implementation order
 
-1. GAP-001 + GAP-002 + GAP-003
-2. GAP-004 + GAP-005
-3. GAP-006
-4. GAP-008 + GAP-009 + GAP-010
-5. GAP-011 + GAP-012
-6. GAP-013
-7. only after real-data E2E: legacy cleanup and any Planned scope
+1. GAP-005
+2. GAP-006
+3. GAP-008 + GAP-009 + GAP-010
+4. GAP-011 + GAP-012
+5. GAP-013
+6. only after real-data E2E: legacy cleanup and any Planned scope
 
 ## Lock rule
 
