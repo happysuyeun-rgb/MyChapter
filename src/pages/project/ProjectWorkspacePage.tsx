@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { ProgressBar } from '@/components/common'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { useActiveProject } from '@/hooks/useActiveProject'
+import { getPublishedBook } from '@/lib/api/books'
 import { listChapters } from '@/lib/api/chapters'
 import { listRecords } from '@/lib/api/records'
+import { isDevBypass } from '@/lib/devBypass'
 import { useAuthStore } from '@/stores/authStore'
 import { getBookReadiness } from '@/utils/bookReadiness'
 import { getChapterDisplayContent } from '@/utils/chapterContent'
@@ -16,6 +18,7 @@ export function ProjectWorkspacePage() {
   const [recordCount, setRecordCount] = useState(0)
   const [chapterCount, setChapterCount] = useState(0)
   const [manuscriptComplete, setManuscriptComplete] = useState(false)
+  const [publishedVersion, setPublishedVersion] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -23,12 +26,18 @@ export function ProjectWorkspacePage() {
     void Promise.all([
       listRecords(user.id, { projectId: project.id }),
       listChapters(project.id),
-    ]).then(([records, chapters]) => {
+      isDevBypass() ? Promise.resolve(null) : getPublishedBook(project.id),
+    ]).then(([records, chapters, publication]) => {
       setRecordCount(records.length)
       setChapterCount(chapters.length)
       setManuscriptComplete(
         chapters.length > 0 &&
           chapters.every((chapter) => getChapterDisplayContent(chapter).trim().length > 0),
+      )
+      setPublishedVersion(
+        isDevBypass() && project.is_completed
+          ? 1
+          : publication?.version ?? null,
       )
       setLoading(false)
     })
@@ -41,7 +50,7 @@ export function ProjectWorkspacePage() {
   const typeLabel = PROJECT_TYPES.find((item) => item.type === project.type)?.label ?? '나의 이야기'
   const manuscriptReady = manuscriptComplete
   const coverSelected = Boolean(project.selected_cover_id ?? project.cover_template_id)
-  const published = project.is_completed
+  const published = publishedVersion !== null
 
   type StageState = 'done' | 'active' | 'pending'
 
@@ -87,7 +96,7 @@ export function ProjectWorkspacePage() {
     },
     {
       label: '최종 검수',
-      description: published ? '발행 전 검수를 완료했어요' : coverSelected ? '표지·목차·원고를 마지막으로 확인해주세요' : '표지 선택 후 진행할 수 있어요',
+      description: published ? `v${publishedVersion} 발행 전 검수를 완료했어요` : coverSelected ? '표지·목차·원고를 마지막으로 확인해주세요' : '표지 선택 후 진행할 수 있어요',
       statusLabel: published ? '완료' : coverSelected ? '확인 필요' : '대기',
       to: '/book/review',
       ready: readiness.isReady && chapterCount > 0 && coverSelected,
@@ -95,8 +104,8 @@ export function ProjectWorkspacePage() {
     },
     {
       label: '발행',
-      description: published ? 'PDF 발행이 완료되었어요' : '아직 발행되지 않았어요',
-      statusLabel: published ? '완료' : '미발행',
+      description: published ? `PDF v${publishedVersion} 발행이 완료되었어요` : '아직 발행되지 않았어요',
+      statusLabel: published ? `v${publishedVersion} 완료` : '미발행',
       to: '/book/review',
       ready: readiness.isReady && chapterCount > 0 && coverSelected,
       state: published ? 'done' : coverSelected ? 'active' : 'pending',
