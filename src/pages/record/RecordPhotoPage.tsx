@@ -18,6 +18,7 @@ import { useRecordStore } from '@/stores/recordStore'
 
 export function RecordPhotoPage() {
   const navigate = useNavigate()
+  const createRequestId = useRef(crypto.randomUUID())
   const fileRef = useRef<HTMLInputElement>(null)
   const { user } = useAuthStore()
   const { project, loading } = useActiveProject()
@@ -65,7 +66,7 @@ export function RecordPhotoPage() {
   }
 
   const handleSave = async () => {
-    if (!user || !project) return
+    if (!user || !project || saving) return
     if (!photoFile && !existingPhotoPath) {
       setError('사진을 추가해주세요.')
       return
@@ -95,6 +96,7 @@ export function RecordPhotoPage() {
             {
               projectId: project.id,
               userId: user.id,
+              requestId: createRequestId.current,
               mode: 'photo',
               content: caption.trim(),
               photoUrl: photoUrl!,
@@ -102,7 +104,7 @@ export function RecordPhotoPage() {
             }
           )
 
-      await deleteDraft(user.id, project.id, 'photo')
+      try { await deleteDraft(user.id, project.id, 'photo') } catch { /* saved record remains valid */ }
       setEditingRecord(null)
       setLastSave(result, project)
       navigate('/record/complete')
