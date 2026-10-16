@@ -1,638 +1,604 @@
 # 13. Development Specification
 
-**Status:** CURRENT  
-**Version:** 2.0  
+**Document Version:** 2.0  
+**Status:** CURRENT / IMPLEMENTATION BASELINE  
 **Updated:** 2026-10-16  
-**Basis:** current `main` code + Supabase production schema/function state + Product Decisions + Final Screen Spec v1.1
+**Scope:** MY CHAPTER current MVP implementation and launch-completion target
 
-> 이 문서는 MY CHAPTER를 **어떻게 구현하고 연결하는지**를 정의하는 통합 개발명세서다.  
-> 제품 정책을 새로 정의하지 않는다. 정책 충돌 시 `02_PRODUCT_DECISIONS.md`가 우선한다.
+This document defines how the current MY CHAPTER product is implemented and how the remaining MVP gaps must be closed.
 
----
+This document does not redefine product policy. When a conflict exists, use the following precedence:
 
-## 0. Source of Truth / 문서 관계
+1. 02_PRODUCT_DECISIONS.md
+2. 01_PRODUCT_SPEC.md
+3. 05_SCREEN_SPEC.md
+4. 06_FREE_PRO_POLICY.md
+5. this document
 
-개발 판단 우선순위:
-
-1. `02_PRODUCT_DECISIONS.md` — 제품 정책
-2. `01_PRODUCT_SPEC.md` — 현재 기능 정의
-3. `05_SCREEN_SPEC.md` — 화면/UX 동작
-4. `06_FREE_PRO_POLICY.md` — Free/Pro 권한
-5. `07_ARCHITECTURE.md` — 상위 기술 구조
-6. 실제 Supabase schema + migrations — DB 실제 상태
-7. 본 문서 — 구현 연결 규칙
-8. 향후 `14_API_SPEC.md` — API/Edge Function 상세 계약
-9. 향후 `15_DATA_DICTIONARY.md` — 실제 필드/관계 상세
-10. 향후 `16_QA_E2E.md` — QA/E2E 실행 기준
-
-Legacy 문서(`docs/08-development-specification.md`, `02-database-schema.md`, `03-edge-functions-api.md`, `04-business-rules.md` 등 초기 소문자 문서군)는 신규 개발 판단에 사용하지 않는다.
+Detailed API payload contracts and the final data dictionary will be separated into 14_API_SPEC.md and 15_DATA_DICTIONARY.md. Until those documents are created, current source code and applied Supabase schema are the implementation evidence.
 
 ---
 
-## 1. Product / Runtime Definition
+## 1. Product implementation definition
 
-### 1.1 제품 정의
+MY CHAPTER is a recording-to-publishing product.
 
-MY CHAPTER는 사용자가 자신의 이야기를 **책(Project)** 단위로 기록하고, AI가 기록을 분석해 챕터와 원고로 발전시킨 뒤 최종적으로 전자책(PDF)으로 발행하게 만드는 서비스다.
+Core domain flow:
 
-사용자-facing 핵심 개념:
+    Book(Project)
+    → Records
+    → Record Analysis
+    → Story Readiness
+    → Semantic Chapters
+    → Manuscript Review
+    → Cover
+    → Final Review
+    → Versioned Publication
 
-- Project = Book
-- Record = 원본 기록
-- Story Readiness = 책 만들기 unlock 기준
-- Chapter = 여러 원본 기록을 의미 기반으로 묶은 편집 결과
-- Manuscript = 챕터들을 전체 책 관점에서 검수하는 workflow stage
-- Publication = 발행 당시 상태를 보존한 immutable version snapshot
+User-facing rule:
 
-### 1.2 구현 핵심 불변식
-
-- 원본 Record는 AI가 임의로 변경하지 않는다.
-- `chapter_records`가 Chapter↔Record 관계의 source of truth다.
-- `publications`가 발행 이력의 source of truth다.
-- 발행본은 v1, v2, v3처럼 버전이 증가하며 이전 발행본을 덮어쓰지 않는다.
-- Free 사용자는 첫 책의 첫 PDF 발행까지 완료할 수 있다.
-- 개발용 mock bypass는 production에서 항상 비활성이다.
-
----
-
-## 2. Current Implementation Snapshot
-
-### 2.1 Repository
-
-- Repository: `happysuyeun-rgb/MyChapter`
-- Main branch: `main`
-- Current frontend deploy: Vercel
-- Production URL: `https://my-chapter.vercel.app`
-
-### 2.2 Supabase
-
-Project:
-
-- name: `MyChapter`
-- ref: `rdrafwfdwfzgcfiqkgug`
-- region: `ap-southeast-1`
-- status at 2026-10-16 verification: `ACTIVE_HEALTHY`
-- PostgreSQL: 17.6
-
-Applied migration lineage:
-
-- 001 initial_schema
-- 002 rls_policies
-- 003 triggers
-- 004 notifications_insert
-- 005 cron_daily_reminder
-- 006 published_pdfs_storage
-- project type expansion
-- publication entitlement
-- DB v2 foundation
-- record_analysis
-- chapter_records
-- publication_versions
-- rls_v2
-- security_performance_hardening
-
-Current verification data count was 0 for auth users, projects, records, analyses, chapters, relations, and publications. This is an environment snapshot, not a product rule.
-
-### 2.3 Active Edge Functions
-
-| Function | Current deployed version | JWT |
-|---|---:|---|
-| generate-question | 6 | required |
-| generate-freewriting-hint | 6 | required |
-| analyze-record | 1 | required |
-| generate-chapter | 7 | required |
-| regenerate-chapter | 8 | required |
-| generate-pdf | 6 | required |
-| verify-subscription | 4 | required |
-| delete-account | 5 | required |
-| send-daily-reminder | 4 | deployed |
-
-Security advisor at the latest verification returned no security warnings. Performance advisor still contains legacy/performance notices that are not launch-blocking correctness issues.
+- Project is always presented as one Book.
+- Records remain the original source material.
+- AI creates derived structure/content and must not silently overwrite original Records.
+- Manuscript is a workflow over Chapter content, not a duplicated manuscript-body table.
+- Publication is an immutable versioned snapshot.
+- Free users must be able to complete and publish one real Book.
 
 ---
 
-## 3. Technology Stack
+## 2. Current implementation status
 
-### 3.1 Client
+As of 2026-10-16:
+
+| Area | Status |
+|---|---|
+| Product policy | Confirmed |
+| Screen/UX specification | v1.1 final baseline |
+| Frontend main flow | Implemented |
+| Supabase DB v2 | Applied |
+| Record Analysis | Implemented, production E2E pending |
+| Semantic Chapter | Implemented, production E2E pending |
+| Publication v2 | Implemented, production E2E pending |
+| Screen Guard broad onboarding protection | Implemented |
+| Library/Workspace publication source | publications-aligned |
+| Workflow milestone persistence | Not implemented |
+| Published Home | Not implemented |
+| Google/Kakao production OAuth | Not fully verified |
+| Full real-user E2E | Pending |
+| Legacy DB cleanup | Deferred until E2E passes |
+
+Current Supabase project status verified on 2026-10-16:
+
+- ACTIVE_HEALTHY
+- PostgreSQL 17
+- migrations through security_performance_hardening applied
+- v2 Edge Functions active
+- current test data set is empty
+- latest security advisor check had no security warnings
+
+---
+
+## 3. Technology stack
+
+### 3.1 Frontend
 
 | Layer | Technology |
 |---|---|
-| UI | React 19.1 |
+| UI runtime | React 19 |
 | Language | TypeScript 5.8 |
-| Build | Vite 6.3 |
-| Routing | React Router 7.6 |
-| State | Zustand 5 |
-| Styling | Tailwind CSS 3.4 |
-| Drag reorder | dnd-kit |
-| Animation asset runtime | lottie-react |
-| Backend SDK | @supabase/supabase-js 2.49 |
-| Native shell | Capacitor 7 |
+| Build | Vite 6 |
+| Router | React Router 7 |
+| Client state | Zustand 5 |
+| Styling | Tailwind CSS 3 |
+| Drag/reorder | dnd-kit |
+| Motion asset support | lottie-react |
+| Backend client | @supabase/supabase-js |
+| Native wrapper | Capacitor 7 |
+| Android | @capacitor/android |
+
+Primary scripts:
+
+    npm run dev
+    npm run build
+    npm run preview
+    npm run cap:sync
+    npm run cap:android
+    npm run cap:run:android
+
+Build acceptance:
+
+- TypeScript project build must pass.
+- Vite production build must pass.
+- Vercel success alone does not prove Supabase Edge Function deployment or production E2E.
 
 ### 3.2 Backend
 
-- Supabase Auth
+Backend responsibilities are implemented with Supabase:
+
+- Auth
 - PostgreSQL
-- RLS
-- Supabase Storage
-- Supabase Edge Functions
-- Gemini text generation through shared Edge Function helper
-- FCM reminder integration
-- Google Play subscription verification path
+- Storage
+- Row Level Security
+- Edge Functions
 
-### 3.3 AI runtime
+External/native integrations include:
 
-Current shared AI helper:
+- Firebase / FCM for push
+- Google Play Billing verification
+- Capacitor native bridge/deep links
 
-- model: `gemini-2.5-flash`
-- secret key env: `GOOGLE_AI_API_KEY`
-- AI requests originate from Edge Functions, not from the browser client
-
-Legacy Anthropic/Claude descriptions in old documentation are obsolete.
+AI generation is executed through server-side Edge Functions. Provider/model configuration is an implementation detail and is not a client contract.
 
 ---
 
-## 4. Repository Structure
+## 4. Repository architecture
 
-```text
-MyChapter/
-├─ docs/
-├─ public/
-│  └─ legal/
-├─ src/
-│  ├─ components/
-│  │  ├─ common/
-│  │  ├─ features/
-│  │  └─ layout/
-│  ├─ pages/
-│  │  ├─ auth/
-│  │  ├─ onboarding/
-│  │  ├─ home/
-│  │  ├─ project/
-│  │  ├─ record/
-│  │  ├─ book/
-│  │  ├─ notifications/
-│  │  └─ mypage/
-│  ├─ router/
-│  ├─ stores/
-│  ├─ hooks/
-│  ├─ lib/
-│  │  └─ api/
-│  ├─ constants/
-│  ├─ utils/
-│  ├─ types/
-│  └─ mocks/
-├─ supabase/
-│  ├─ migrations/
-│  └─ functions/
-└─ android/
-```
+Current implementation structure:
 
----
+    src/
+      components/
+        common/
+        features/
+        layout/
+      pages/
+        auth/
+        onboarding/
+        home/
+        project/
+        record/
+        book/
+        mypage/
+        notifications/
+      router/
+      stores/
+      hooks/
+      lib/
+        api/
+      utils/
+      constants/
+      types/
+      mocks/
 
-## 5. Application Shell / Routing
+    supabase/
+      migrations/
+      functions/
 
-### 5.1 Root
+    public/
+      legal/
 
-`RootLayout` responsibilities:
+### Layer rules
 
-- Auth store initialize
-- Native bridge mount
-- child route render
-- global Paywall
-- global Toast
+Pages:
+- compose user flows and screen state
+- do not own persistent domain truth
 
-### 5.2 AppLayout
+lib/api:
+- wraps Supabase tables, Storage, and Edge Function calls
+- converts backend errors into app-facing errors where needed
 
-Bottom navigation shell:
+stores:
+- hold transient/current UX state
+- must not become the authoritative copy of persistent domain objects
 
-- Home
-- Library
-- My
+utils:
+- deterministic business calculations such as Story Readiness and streaks
 
-`/records` and `/book` may render within AppLayout while focused edit/detail routes render outside bottom navigation when appropriate.
-
-### 5.3 Auth Guards
-
-#### AuthGuard
-
-Required for all authenticated application routes.
-
-Behavior:
-
-- auth state not initialized → loading
-- no session → `/login`
-- valid session → render child route
-
-#### GuestGuard
-
-Used by Login routes.
-
-- no session → login UI
-- session exists → `/splash`
-
-#### OnboardingGuard
-
-Current product routes are wrapped after GAP-001 correction.
-
-Rules:
-
-- no nickname → `/onboarding/nickname`
-- nickname exists but onboarding incomplete → `/onboarding/notification`
-- onboarding complete → render child route
-
-### 5.4 Public routes
-
-Public without AuthGuard:
-
-- `/` → `/splash`
-- `/splash`
-- `/login`
-- `/login/email`
-- `/mypage/privacy-policy`
-- `/mypage/terms-of-service`
-
-Legal documents must remain viewable before authentication.
-
-### 5.5 Route-specific prerequisite target
-
-Broad onboarding protection is implemented. Resource/stage-specific protection still requires full regression and some explicit guards.
-
-Target:
-
-- `/record/*`: active Book
-- `/records/:id*`: active Book + Record ownership
-- `/book`: active Book + Ready
-- `/book/chapter/:id*`: Ready + Chapter ownership
-- `/book/manuscript`: Ready + at least 1 Chapter
-- `/book/cover`: Ready + at least 1 Chapter
-- `/book/review`: Ready + Chapter + persisted Cover
-- `/book/publish/complete`: valid transient publishResult
-- `/publication/:id`: publication ownership
-
-Detailed UX mapping is defined in `05_SCREEN_SPEC.md`.
+Supabase:
+- persistent domain truth
+- authorization
+- protected/paid-operation enforcement
+- derived AI artifacts
 
 ---
 
-## 6. Authentication / Onboarding
+## 5. Routing and access control
 
-### 6.1 Providers
+Current top-level routing:
 
-Client exposes:
+### Public
 
-- Kakao OAuth
-- Google OAuth
-- Email Magic Link
+- /
+- /splash
+- /login
+- /login/email
+- /mypage/privacy-policy
+- /mypage/terms-of-service
 
-Web redirect target:
+### Authenticated onboarding
 
-`/splash`
+- /onboarding/nickname
+- /onboarding/notification
 
-Native OAuth currently uses:
+### Authenticated + onboarding-completed product routes
 
-`com.mychapter.app://home`
+Project:
+- /project/new
+- /project/new/setup
+- /project/new/complete
+- /project/workspace
+- /project/settings
 
-Native callback semantics still need confirmation so onboarding routing cannot be bypassed.
+Record:
+- /record/mode
+- /record/write/question
+- /record/write/photo
+- /record/write/free
+- /record/complete
+- /records
+- /records/:id
+- /records/:id/edit
 
-### 6.2 Splash as post-auth checkpoint
+Book:
+- /book
+- /book/chapter/:id
+- /book/chapter/:id/edit
+- /book/manuscript
+- /book/cover
+- /book/review
+- /book/publish/complete
 
-Splash must remain the single web checkpoint for post-auth routing.
+Publication:
+- /publication/:id
 
-Decision tree:
+My:
+- /mypage
+- /mypage/settings
+- /mypage/subscription
+- /mypage/completed-books
+- /mypage/delete-account
 
-```text
-no session
-→ /login
+Other:
+- /notifications
+- /library
 
-session + nickname missing
-→ /onboarding/nickname
+### Guard responsibilities
 
-session + nickname exists + onboarding incomplete
-→ /onboarding/notification
+AuthGuard:
+- waits for auth initialization
+- rejects unauthenticated users
+- redirects to /login
 
-session + onboarding complete
-→ /home
-```
+GuestGuard:
+- prevents authenticated users from remaining on login screens
+- redirects authenticated users to /splash
 
-### 6.3 Profile bootstrap
+OnboardingGuard:
+- requires completed profile onboarding
+- nickname missing → /onboarding/nickname
+- nickname exists but onboarding incomplete → /onboarding/notification
 
-Auth initialization:
+### Required route-specific protection
 
-1. `supabase.auth.getSession()`
-2. set session/user
-3. if user exists, read `public.users`
-4. subscribe to `onAuthStateChange`
-5. keep profile in `authStore`
+Broad onboarding protection is implemented, but route-specific guards still require completion/regression coverage.
 
-### 6.4 New auth user DB bootstrap
+Target rules:
 
-Database trigger creates:
+- Record routes require an active Book.
+- Record detail/edit requires Record ownership.
+- /book requires Story Readiness.
+- Chapter detail/edit requires Chapter ownership.
+- Manuscript requires at least one Chapter.
+- Cover requires Ready + Chapter.
+- Final Review requires Ready + Chapter + persisted Cover.
+- Publish Complete requires valid current publishResult.
+- Publication viewer requires publication ownership.
 
-- `public.users`
-- default Free `subscriptions` row
-
-This trigger must be verified in real-account E2E.
+These remaining checks are tracked under SCREEN_IMPLEMENTATION_GAP GAP-012.
 
 ---
 
-## 7. Development Bypass / Mock Rule
+## 6. Authentication and onboarding
 
-`isDevBypass()`:
+### Auth initialization
 
-- production: **always false**
-- development: enabled only when `VITE_DEV_BYPASS` is truthy (`true`, `1`, `yes`)
+authStore is the single client auth store.
 
-Production must never render mock book/user data even if a stale environment variable remains.
-
-Mock paths are for local UI development only and cannot be used as real-data acceptance evidence.
-
----
-
-## 8. Client State Management
-
-### 8.1 authStore
-
-Persistent responsibility:
+It owns:
 
 - session
 - user
 - profile
 - initialized state
 
-On sign-out:
+RootLayout performs auth initialization.
 
-- reset subscription
-- clear active project
+Post-auth web routing goes through /splash.
+
+Target routing:
+
+    no session
+    → /login
+
+    session + no nickname
+    → /onboarding/nickname
+
+    session + nickname + onboarding incomplete
+    → /onboarding/notification
+
+    session + onboarding complete
+    → /home
+
+### Email login
+
+Email uses Supabase OTP / magic link.
+
+Web redirect target:
+
+    {origin}/splash
+
+### OAuth
+
+Web OAuth callback must use the same splash checkpoint semantics.
+
+Current native callback remains:
+
+    com.mychapter.app://home
+
+Native callback equivalence must be verified before launch. This is GAP-007.
+
+### Onboarding persistence
+
+Nickname:
+- 2–10 characters
+- Korean / English / numbers
+- persisted to public.users.nickname
+
+Notification onboarding:
+- persists notification_enabled
+- persists onboarding_completed = true
+- must not navigate on failed persistence
+
+---
+
+## 7. Client state management
+
+### authStore
+
+Persistent truth source:
+- Supabase Auth + public.users
+
+Client state:
+- session
+- user
+- profile
+- initialized
+
+Sign-out must:
 - clear auth state
+- reset subscription state
+- clear active Project state
 
-### 8.2 projectStore
+### projectStore
 
 State:
-
-- project list
-- active Project object
+- projects
+- activeProject
 - activeProjectId
-- created Project
+- createdProject
 - firstQuestion
-- new Book draft
+- New Book draft
 
-Only `activeProjectId` is persisted to local storage.
+Persistence:
+- only activeProjectId is persisted locally
 
-On app load the persisted ID must be revalidated against the authenticated user's actual project list.
+Rule:
+- activeProject object itself is not authoritative
+- activeProjectId must be resolved/validated against the authenticated user's Supabase Projects
 
-### 8.3 recordStore
+### recordStore
 
-Transient state:
-
-- editingRecord
+Transient workflow state:
 - lastSave
 - lastProject
+- editingRecord
 
-`lastSave` drives Record Complete and should not be treated as persistent domain state.
+Used for:
+- Record Complete
+- Record edit handoff
 
-### 8.4 bookStore
+### bookStore
 
-Transient state:
-
+Transient workflow state:
 - selectedCoverId
+- publishResult
 - publishStage
 - publishError
-- publishResult
 
-`publishResult` is required for `/book/publish/complete`; direct page entry without it redirects away.
+PublishComplete is intentionally protected by publishResult; direct route entry without it returns to the Book flow.
 
-Persistent cover selection belongs in `projects.selected_cover_id`.
-
-### 8.5 subscriptionStore
+### subscriptionStore
 
 State:
-
-- `free | pro`
+- free / pro
 - loading
 
-Actual entitlement source is Supabase `subscriptions`, not Zustand.
+Persistent truth:
+- public.subscriptions
 
-### 8.6 paywallStore
+### paywallStore
 
-State:
+Global entitlement UI state:
+- isOpen
+- pendingAction
 
-- modal visibility
-- optional pendingAction
-
-Purchase completion may execute pendingAction after plan verification.
+Purchase completion can resume an action through pendingAction.
 
 ---
 
-## 9. Book / Project Domain
+## 8. Book / Project domain
 
-### 9.1 Project = Book
+Project is the persistent Book root.
 
-`projects` remains the root aggregate.
+Current important fields include:
 
-Current DB retains compatibility fields:
-
-- `target_count`
-- `frequency`
-- `notification_time`
-- `record_mode`
-- `target_date`
-- `is_completed`
-- `cover_template_id`
-
-These are not current product source-of-truth where they conflict with newer v2 policy.
-
-### 9.2 Current creation implementation
-
-`createProject()` still writes legacy routine-compatible fields using `calculateRoutine()`.
-
-This is transitional.
-
-User-facing creation UI must only communicate:
-
-- Book type
+- id
+- user_id
+- type
 - title
-- Story Readiness minimum guidance
-
-Legacy period/frequency/target_count must not appear as competing completion logic.
-
-### 9.3 Project type
-
-Current types:
-
-- growth
-- life_story
-- career
-- parenting
-- relationships
-- travel
-- hobby
-- learning
-- custom
-
-Legacy readable types:
-
-- emotion
-- yearly
-
-Changing Project type:
-
-- preserves Records
-- preserves existing Chapters/Manuscript
-- updates future guidance
-- updates readiness snapshot thresholds
-- must not relock a Book that already has `ready_at`
-
----
-
-## 10. Story Readiness
-
-### 10.1 Rule source
-
-Primary runtime implementation:
-
-`src/utils/bookReadiness.ts`
-
-Weights:
-
-- elapsed time: 35%
-- Record volume: 65%
-
-Unlock:
-
-- minimum days AND minimum records
-- OR existing `projects.ready_at`
-
-The score itself does not unlock a Book.
-
-### 10.2 Rules
-
-| Type | Minimum | Target |
-|---|---:|---:|
-| growth | 60d + 30 | 90d + 40 |
-| life_story | 90d + 40 | 180d + 60 |
-| career | 60d + 30 | 90d + 40 |
-| parenting | 30d + 30 | 90d + 45 |
-| relationships | 30d + 25 | 90d + 40 |
-| travel | 7d + 10 | 15d + 15 |
-| hobby | 30d + 20 | 60d + 30 |
-| learning | 30d + 20 | 90d + 35 |
-| custom | 30d + 20 | 60d + 30 |
-| legacy emotion | 30d + 20 | 60d + 30 |
-| legacy yearly | 60d + 30 | 100d + 40 |
-
-### 10.3 Project snapshot
-
-Projects store readiness threshold snapshots:
-
+- subtitle
+- author_name
+- started_at
+- ready_at
+- archived_at
 - readiness_min_days
 - readiness_min_records
 - readiness_target_days
 - readiness_target_records
 - readiness_policy_version
+- selected_cover_id
+- created_at
+- updated_at
 
-This prevents future global policy changes from silently changing existing Books.
+Legacy transitional fields still exist:
 
-### 10.4 Known persistence gap
+- target_count
+- frequency
+- notification_time
+- record_mode
+- cover_template_id
+- is_completed
+- target_date
 
-If the date threshold becomes satisfied solely because time passes, with no subsequent mutation, frontend can calculate Ready while `ready_at` remains null.
+### Current creation caveat
 
-Required follow-up:
+createProject still populates several legacy routine fields through calculateRoutine for compatibility.
 
-- persist first Ready transition safely
-- once Ready, never regress to locked state
+User-facing completion logic must not use those fields as a competing progress model.
+
+The final user-facing source is Story Readiness.
+
+### Project type change
+
+Changing Book type:
+
+- preserves original Records
+- preserves Chapters/manuscript
+- changes future AI direction
+- updates readiness snapshot values
+- must not re-lock a Book that already reached Ready
+
+ready_at is sticky once achieved.
 
 ---
 
-## 11. Record Domain
+## 9. Story Readiness
 
-### 11.1 Modes
+Story Readiness is the single Book-making gate.
 
-Each Record chooses mode independently:
+Current scoring:
+
+- elapsed time: 35%
+- Record volume: 65%
+
+Unlock is not score >= 100.
+
+Unlock requires both:
+- minimum elapsed days reached
+- minimum Record count reached
+
+Or:
+- ready_at is already persisted
+
+### Rules
+
+| Project Type | Min Days | Min Records | Target Days | Target Records |
+|---|---:|---:|---:|---:|
+| growth | 60 | 30 | 90 | 40 |
+| life_story | 90 | 40 | 180 | 60 |
+| career | 60 | 30 | 90 | 40 |
+| parenting | 30 | 30 | 90 | 45 |
+| relationships | 30 | 25 | 90 | 40 |
+| travel | 7 | 10 | 15 | 15 |
+| hobby | 30 | 20 | 60 | 30 |
+| learning | 30 | 20 | 90 | 35 |
+| custom | 30 | 20 | 60 | 30 |
+| legacy emotion | 30 | 20 | 60 | 30 |
+| legacy yearly | 60 | 30 | 100 | 40 |
+
+### Required follow-up
+
+There is a known edge case:
+
+- time threshold may pass without any Project mutation
+- frontend can calculate Ready
+- ready_at may remain null
+
+Before legacy cleanup, Ready persistence must be made durable so future type changes cannot accidentally re-lock a Book.
+
+---
+
+## 10. Record domain
+
+Record modes:
 
 - question
 - free
 - photo
 
-Project-level `record_mode` is legacy compatibility only.
+The mode is selected per Record.
 
-### 11.2 Input validation
+### Validation
 
-Current UI rules:
+AI Question Record:
+- content 10–2000 chars
 
-- question: 10–2000 chars
-- free: 10–5000 chars
-- photo: photo required + caption 1–100 chars
+Free Record:
+- content 10–5000 chars
+- title optional
+- blank title uses date-based fallback
 
-Open before launch:
+Photo Record:
+- photo required
+- caption 1–100 chars
+- photo size/resolution launch policy still open
 
-- free Record title max length
-- photo max bytes / dimensions
-- Chapter title/body max lengths
+### Drafts
 
-### 11.3 Record numbering
+record_drafts is one draft per:
 
-Current implementation:
+    user + project + mode
 
-1. query latest `record_number`
-2. calculate max + 1
-3. insert
+Exit flow supports:
 
-Risk:
+- continue writing
+- save draft and leave
+- discard
 
+### Record numbering
+
+Current client API calculates:
+
+    max(record_number) + 1
+
+Known risk:
 - concurrent writes can race
 
-Target:
+This is technical debt and should eventually move to an atomic server-side mechanism.
 
-- atomic DB-side sequence/transaction/RPC or retry on uniqueness violation
+### Derived analysis
 
-### 11.4 Drafts
+After successful Record create/update:
 
-One draft per:
+- analyze-record is invoked asynchronously
+- Record save is considered successful even if analysis fails
+- analysis failure must not roll back user content
 
-`user_id + project_id + mode`
+record_analysis stores structured derived metadata.
 
-API:
-
-- saveDraft → upsert
-- loadDraft
-- deleteDraft
-
-Question draft preserves questionText so re-entry does not silently replace the prompt.
-
-### 11.5 Photo Storage
-
-Bucket:
-
-`record-photos`
-
-Current object path:
-
-`{user_id}/{project_id}/{uuid}.{ext}`
-
-Delete Record flow:
-
-1. read photo path
-2. delete DB Record
-3. remove Storage object when path exists
-
-Photo replacement/orphan behavior requires E2E verification.
+Required follow-up:
+- analysis status/retry/reprocessing strategy is still missing
 
 ---
 
-## 12. Record Analysis
+## 11. Record Analysis domain
 
-### 12.1 Trigger model
+record_analysis is derived data associated 1:1 with a Record.
 
-After create/update Record:
+Current fields include:
 
-- Record save is completed first
-- client invokes `analyze-record` asynchronously
-- failure is swallowed intentionally
-- Record save must never be rolled back because analysis failed
-
-### 12.2 Stored analysis
-
-`record_analysis` stores:
-
+- record_id
+- project_id
+- user_id
 - summary
 - themes
 - people
@@ -646,219 +612,179 @@ After create/update Record:
 - model
 - schema_version
 - analyzed_at
+- updated_at
 
-One analysis per Record via upsert on `record_id`.
+Purpose:
 
-### 12.3 AI policy
+- future personalized questions
+- semantic Chapter selection
+- Story Graph / long-term personalization
+- future quality signal
 
-Analysis may only derive information grounded in the original Record.
-
-If uncertain:
-
-- empty arrays
-- null
-
-No invented people, places, events, causes, or emotions.
-
-### 12.4 Known operational gap
-
-No first-class analysis job status/retry queue currently exists.
-
-Target later:
-
-- pending / success / failed
-- retry/reprocess
-- observability for repeated failure
+Readiness v1 does not depend on Record Analysis.
 
 ---
 
-## 13. AI Question / Freewriting Hint
+## 12. Chapter domain
 
-### 13.1 generate-question
-
-Current server behavior:
-
-- JWT required
-- validates Project ownership
-- reads subscription
-- Free monthly shared quota with freewriting_hint
-- quota threshold currently 10
-- reads up to 5 recent Records/questions
-- Gemini-generated question
-- fallback supported
-- writes `ai_usage(feature=question)`
-
-There is no daily-question cache in the current flow.
-
-### 13.2 generate-freewriting-hint
-
-- JWT required
-- validates Project ownership
-- shares Free monthly AI quota with question
-- reads recent emotion context
-- returns Gemini-generated or fallback hint
-- writes `ai_usage(feature=freewriting_hint)`
-
-### 13.3 Quota caution
-
-The exact long-term AI edit/fair-use policy remains open in Product Decisions.
-
-Do not generalize the current 10-request question/hint implementation into all future AI features.
-
----
-
-## 14. Chapter Domain
-
-### 14.1 Source relation
-
-Primary relation:
-
-`chapter_records(chapter_id, record_id, position, relevance_score)`
-
-Legacy fields:
-
-- `records.chapter_id`
-- `chapters.record_ids[]`
-
-are transitional compatibility only.
-
-### 14.2 Chapter generation
-
-`generate-chapter`:
-
-- authenticated user
-- Project ownership validation
-- considers all non-draft Records
-- removes Records already assigned through `chapter_records`
-- minimum unassigned material: 3 Records
-- semantic clustering, not fixed 10-record buckets
-- when many Records exist, uses analysis metadata to select a coherent cluster
-- typical target cluster: 5–12 Records
-- generates chapter title/content
-- inserts Chapter
-- inserts `chapter_records`
-- then updates legacy `records.chapter_id` for compatibility
-- inserts chapter_complete notification
-- writes `ai_usage(feature=chapter)`
-
-If relation insert fails after Chapter insert, the function deletes the newly created Chapter.
-
-### 14.3 Chapter regeneration
-
-`regenerate-chapter`:
-
-- validates Chapter ownership
-- reads source Record IDs from `chapter_records` ordered by position
-- regenerates from original Record content
-- updates `ai_content`
-- clears `user_content`
-- may update title
-- writes `ai_usage(feature=chapter_regenerate)`
-
-Original Records remain unchanged.
-
-### 14.4 Chapter edit
-
-User edit writes:
-
-- title
-- user_content
-
-Display rule:
-
-`user_content ?? ai_content`
-
-### 14.5 Reorder
-
-Current client reorder performs sequential updates:
-
-1. temporary chapter_number offset
-2. final sort_order / chapter_number updates
-
-Risk:
-
-- non-atomic partial update if network failure occurs midway
-
-Target:
-
-- server transaction/RPC for reorder
-
----
-
-## 15. Manuscript Workflow
-
-Manuscript is not a duplicate content table.
-
-It is a workflow over Chapter content.
-
-Source:
-
-- Chapter order
-- display content per Chapter
-
-Current gap:
-
-- Workspace infers “manuscript complete” when all Chapter display content exists
-- this does not prove user review action
-
-Target GAP-005:
-
-Add persistent workflow milestones to `projects`:
-
-- `manuscript_reviewed_at timestamptz null`
-- `final_review_completed_at timestamptz null`
-
-Rules:
-
-- Manuscript screen explicit completion action sets `manuscript_reviewed_at`
-- Final Review completion sets `final_review_completed_at`
-- editing relevant upstream content may require explicit policy on whether milestone resets
-- Workspace stage status reads persisted milestone rather than content existence
-
-This target requires the next DB migration after current applied set.
-
----
-
-## 16. Cover
-
-Persistent selection:
-
-`projects.selected_cover_id`
-
-Fallback legacy field:
-
-`cover_template_id`
+Final Chapter design is semantic, not fixed batching.
 
 Flow:
 
-1. load persisted selection if present
-2. preview selected template
-3. Free/Pro entitlement check
-4. update `selected_cover_id`
-5. Final Review requires persisted cover
+    Ready Book
+    → user opens Chapter Desk
+    → unassigned Records inspected
+    → AI selects related source Records
+    → Chapter created
+    → user reviews/edits/reorders
 
-Pro templates exist.
+### Source of truth
 
-AI-generated custom cover remains post-MVP.
+chapter_records is the primary Chapter↔Record relation.
+
+Current transitional redundancy remains:
+
+- records.chapter_id
+- chapters.record_ids
+
+Do not build new logic that treats those legacy fields as the authoritative relationship.
+
+### Generation
+
+generate-chapter:
+- starts only from Book-making workflow
+- does not run automatically after every N Records
+- current client permits generation when at least 3 unassigned Records are available
+- Edge Function selects source Records semantically
+
+### Regeneration
+
+regenerate-chapter:
+- reads source Records from normalized Chapter relationships
+- regenerates derived Chapter content
+- must never mutate original Records
+
+### Content precedence
+
+Chapter display content:
+
+    user_content
+    fallback to ai_content
+
+### Reordering
+
+Current reorder implementation performs multiple updates in sequence.
+
+Known risk:
+- not atomic
+- partial failure may create temporary ordering inconsistency
+
+Current client attempts reload/recovery after failure.
+
+Future hardening:
+- server-side transaction/RPC or equivalent atomic reorder
 
 ---
 
-## 17. Publication v2
+## 13. Manuscript workflow
 
-### 17.1 Source of truth
+Manuscript is not a separate content table.
 
-`publications`
+It is a review workflow across ordered Chapter content.
 
-Legacy:
+Current state:
+- /book/manuscript exists
+- Chapter content is shown as the manuscript
+- editing returns to Chapter edit
+- Workspace currently infers manuscript completion from Chapter content existence
 
-`published_books`
+Target:
+- explicit user review milestone
 
-must not drive new UI state.
+Minimum new persistent field:
 
-### 17.2 Immutable version model
+    projects.manuscript_reviewed_at timestamptz nullable
 
-Each publish creates a versioned publication:
+Required behavior:
 
+- user explicitly completes manuscript review
+- timestamp persists
+- refresh preserves completed state
+- Workspace reads the milestone rather than inferring from content
+
+This is GAP-005 and is the next implementation task.
+
+---
+
+## 14. Cover domain
+
+Current cover flow:
+
+- default/free templates
+- Pro templates
+- persisted selected_cover_id
+- BookCover initializes from persisted Project selection
+- Final Review requires persisted Cover
+
+Free user:
+- can use default/free Cover for first Book
+
+Pro:
+- can access Pro template Covers
+
+Post-MVP:
+- AI-generated custom Cover
+
+Do not implement AI Cover before P0/P1 launch gaps are complete.
+
+---
+
+## 15. Final Review workflow
+
+Final Review currently verifies:
+
+- Cover
+- TOC
+- Manuscript
+
+Current checkboxes are local UI state and reset on refresh.
+
+Target persistent milestone:
+
+    projects.final_review_completed_at timestamptz nullable
+
+Implementation target for GAP-005:
+
+1. user confirms required review items
+2. milestone is persisted
+3. refresh restores completion state
+4. Workspace uses persisted state
+5. publication remains a separate event; review completion is not inferred from publication existence
+
+Publishing progress remains embedded in Final Review:
+
+- cover
+- TOC
+- body
+- PDF
+
+Do not create a standalone Publishing route.
+
+---
+
+## 16. Publication v2
+
+publications is the publication source of truth.
+
+Legacy published_books remains transitional only.
+
+### Model
+
+Every publication is an immutable snapshot.
+
+Important fields:
+
+- id
 - project_id
 - user_id
 - version
@@ -871,7 +797,8 @@ Each publish creates a versioned publication:
 - pdf_path
 - epub_path
 - page_count
-- error fields
+- error_code
+- error_message
 - created_at
 - published_at
 
@@ -881,221 +808,95 @@ Status:
 - published
 - failed
 
-### 17.3 Free / Pro enforcement
+### Versioning
 
-Server `generate-pdf` rechecks subscription.
+Expected behavior:
 
-Free:
+    first publish → v1
+    republish → v2
+    next republish → v3
 
-- if published publication count = 0 → first publish allowed
-- if count >= 1 → `PUBLICATION_LIMIT`
+A republish does not overwrite an older Publication.
 
-Pro:
+### Retry
 
-- repeated publication allowed
+A failed Publication retry should preserve the intended version rather than creating accidental version gaps.
 
-Client checks are UX only; server is authoritative.
+### Storage path
 
-### 17.4 Version allocation
+Current versioned PDF path:
 
-Version:
+    published-pdfs/{user_id}/{project_id}/v{version}.pdf
 
-`latest published version + 1`
+### Viewer
 
-If the same next version exists in `failed` state, retry reuses that failed publication row instead of consuming a new version number.
+/publication/:id:
+- loads one specific publication
+- verifies user ownership
+- creates a signed URL for the PDF
+- renders snapshot metadata, not mutable Project metadata
 
-### 17.5 Snapshot
+### Publication status in app
 
-Before PDF creation, publication stores:
+Library and Workspace have been moved toward publications-derived status.
 
-- title
-- subtitle
-- author
-- cover template
-- TOC
+Home still needs H-04 Published Home implementation.
 
-Final cover snapshot may also persist generated tagline.
-
-### 17.6 PDF Storage
-
-Bucket:
-
-`published-pdfs`
-
-Path:
-
-`{user_id}/{project_id}/v{version}.pdf`
-
-This path must remain version-specific.
-
-### 17.7 Viewer
-
-Publication Viewer:
-
-- fetch by publication ID
-- filter by current user
-- require `status=published`
-- create one-hour signed URL
-- render/download PDF externally
-
-### 17.8 Transitional Project flags
-
-`generate-pdf` currently also updates:
-
-- `cover_template_id`
-- `selected_cover_id`
-- `is_completed=true`
-
-These remain compatibility updates until all UI reads are migrated to `publications`.
-
-Library and Workspace have already been moved toward publication-derived state. Home Published state remains a planned code gap.
+Do not introduce new dependency on projects.is_completed.
 
 ---
 
-## 18. Free / Pro Entitlement
+## 17. Free / Pro entitlement
 
-Primary policy document:
+Product rule:
 
-`06_FREE_PRO_POLICY.md`
+Free users can complete one real Book, including one PDF publication.
 
-Current core rules:
+### Free includes
 
-### Free
-
-- 1 Book
+- one Book
 - recording
-- question/hint with quota + fallback
+- AI question with fallback
+- free writing
+- photo recording
 - Story Readiness
-- first Book chapter/manuscript
-- default cover
+- semantic Chapters for first Book
+- manuscript workflow
+- default Cover
 - Final Review
-- first PDF publication once
-- Library / published book access
+- first PDF Publication
+- Library
+- published Book access
 
-### Pro
+### Pro includes
 
 - multiple Books
-- repeated publications
+- republishing / additional Publication versions
 - expanded AI
-- Pro cover templates
-- future AI cover
+- Pro Covers
+- future AI Cover
 
-### Project limit
+### Enforcement
 
-Client hook:
+Client-only gating is insufficient.
 
-`useProjectLimit()`
+Protected actions must be re-checked server-side, especially:
 
-Current:
+- publication entitlement
+- subscription-sensitive generation
+- resource ownership
 
-- Pro → create allowed
-- Free + project count < 1 → create allowed
-- otherwise Paywall
+Current displayed monthly Pro label:
 
-Server-side project creation entitlement should eventually be enforced independently from client UI.
+    월 5,900원
 
-### Current displayed price
-
-`월 5,900원`
-
-Product ID:
-
-`mychapter_pro_monthly`
-
-Price must remain synchronized with actual store configuration.
+This is an implementation constant and must remain synchronized with store configuration before release.
 
 ---
 
-## 19. Billing
+## 18. Supabase data model
 
-### 19.1 Client bridge
-
-Native billing expects:
-
-`window.MyChapterBilling.purchase(productId)`
-
-Web production:
-
-- billing unavailable
-- UI should instruct user to pay in mobile app
-
-Development can use dev purchase token only in dev / explicit billing dev mode.
-
-### 19.2 Verification
-
-Client calls `verify-subscription` with:
-
-- purchase_token
-- product_id
-- optional order_id
-
-Server response updates entitlement; client then refreshes subscription state.
-
-Detailed server contract belongs in `14_API_SPEC.md`.
-
----
-
-## 20. Notifications
-
-### 20.1 In-app notifications
-
-Types:
-
-- daily_question
-- badge
-- chapter_complete
-
-Client:
-
-- list newest first
-- unread count
-- mark one read
-- mark all read
-- follow optional link
-
-### 20.2 Badge notifications
-
-Current client checks streak/Record count milestones after Record save.
-
-Duplicate prevention currently checks existing notification title.
-
-This is operationally simple but title-based deduplication is weaker than a dedicated badge key.
-
-### 20.3 Reminder
-
-`send-daily-reminder` is deployed for reminder delivery.
-
-Push/FCM end-to-end still requires device and environment verification.
-
----
-
-## 21. Account Deletion
-
-Client requires exact confirmation phrase:
-
-`계정 삭제`
-
-Then calls `delete-account`.
-
-Server cleanup currently:
-
-1. authenticate user
-2. verify `confirm`
-3. collect Record photo paths
-4. remove `record-photos`
-5. collect v2 publication PDF paths
-6. also collect legacy `published_books.pdf_url`
-7. remove `published-pdfs`
-8. `auth.admin.deleteUser(user.id)`
-9. public rows cascade
-
-Acceptance requires real E2E proving Auth + DB + both Storage buckets are cleaned.
-
----
-
-## 22. Database Domains
-
-Current relevant public tables:
+Current important public tables:
 
 - users
 - projects
@@ -1106,404 +907,567 @@ Current relevant public tables:
 - chapter_records
 - publications
 - subscriptions
-- ai_usage
 - notifications
+- ai_usage
 - device_tokens
 
-Transitional/legacy:
+Legacy transitional tables still present:
 
 - daily_questions
 - published_books
-- records.chapter_id
-- chapters.record_ids
-- project routine/completion compatibility fields
 
-Legacy removal must wait until real production E2E passes.
+### Ownership model
 
----
+Primary rule:
+- resources belong to the authenticated user
+- Project relationship should be used to validate nested resources where appropriate
 
-## 23. RLS / Security
+Preferred authorization chain:
 
-### 23.1 Principle
+    nested resource
+    → project_id
+    → projects.user_id
+    → auth.uid()
 
-All user-owned data tables keep RLS enabled.
+RLS remains mandatory on user-owned tables.
 
-Client must never rely on hidden UI as authorization.
+### Migrations
 
-Ownership must be checked:
+Current applied migration history includes:
 
-- directly by `user_id`, or
-- through Project ownership where appropriate
+- 001 initial_schema
+- 002 rls_policies
+- 003 triggers
+- 004 notifications_insert
+- 005 cron_daily_reminder
+- 006 published_pdfs_storage
+- expand_project_types
+- publication_entitlement
+- db_v2_foundation
+- record_analysis
+- chapter_records
+- publication_versions
+- rls_v2
+- security_performance_hardening
 
-### 23.2 Edge Function pattern
+DB v2 is applied.
 
-Protected Edge Functions:
-
-1. require Authorization header
-2. create user-scoped Supabase client
-3. call `auth.getUser()`
-4. resolve authenticated user
-5. validate Project/Record/Chapter ownership
-6. use service role only after ownership is established
-7. recheck entitlement for paid/protected operations
-
-### 23.3 Current security state
-
-Latest Supabase security advisor check: no security warnings.
-
-Performance advisories remain, especially older RLS initplan patterns / unused indexes. Treat as optimization debt unless correctness is affected.
-
----
-
-## 24. Storage
-
-### 24.1 Buckets
-
-`record-photos`
-
-- user Record images
-
-`published-pdfs`
-
-- immutable versioned PDFs
-
-### 24.2 Signed URLs
-
-Both private media types are expected to be served using signed URLs.
-
-Current PDF signed URL lifetime:
-
-- 3600 seconds
-
-### 24.3 Cleanup rule
-
-Deletion must remove Storage object in addition to DB row where relevant.
-
-Do not assume database cascade deletes Storage.
+Legacy removal is forbidden until real production E2E passes.
 
 ---
 
-## 25. Client API Layer
+## 19. Storage
 
-Current `src/lib/api/` modules:
+Current buckets/use cases:
 
-| Module | Responsibility |
-|---|---|
-| projects.ts | list/create/update Book, cover selection |
-| records.ts | CRUD, photo storage, post-save badge/analyze trigger |
-| drafts.ts | mode-specific draft persistence |
-| chapters.ts | list/get/count/generate/edit/reorder/regenerate |
-| questions.ts | AI question + fallback |
-| hints.ts | freewriting hint + fallback |
-| books.ts | publication query, permission, PDF function call, signed URL |
-| subscriptions.ts | plan read / purchase verification |
-| notifications.ts | list/read/badge creation |
-| users.ts | nickname/profile/notification settings |
-| account.ts | account delete Edge Function |
+### record photos
 
-Rule:
-
-- pages should not duplicate raw Supabase domain queries when an API module already owns the operation
-- entitlement-sensitive actions require server enforcement
-- repeated multi-step domain updates should move to RPC/Edge Function when atomicity matters
-
----
-
-## 26. Error Handling Standard
-
-UI target state matrix is defined in `05_SCREEN_SPEC.md`.
-
-All API-backed flows should distinguish:
-
-- loading
-- empty
-- recoverable error + retry
-- ownership/permission failure
-- entitlement failure
-- success
-
-Known error codes used today:
-
-- `AI_LIMIT`
-- `NOT_ENOUGH_MATERIAL`
-- `PUBLICATION_LIMIT`
-- `PDF_PRO_ONLY` compatibility handling
-- generic generate/update failures
+Purpose:
+- original photo attached to Photo Record
 
 Requirements:
+- owner-only access
+- signed read where private
+- Record delete removes object
+- Account delete removes all owned objects
 
-- AI helper failure must not block original Record creation
-- publication failure must preserve retryable failed version
-- ownership failure must not expose existence/content of another user's resource
-- error UI should not silently swallow user-action failures except intentionally non-blocking derived work such as record analysis
+### published-pdfs
+
+Purpose:
+- immutable versioned Publication output
+
+Path rule:
+
+    {user_id}/{project_id}/v{version}.pdf
+
+Requirements:
+- no overwrite across versions
+- owner-only access
+- signed viewer URL
+- Account delete removes all versions
+
+Storage deletion behavior requires production E2E verification.
 
 ---
 
-## 27. Environment / Secrets
+## 20. Edge Functions
 
-### 27.1 Client-exposed variables
+Currently deployed/active:
 
-Typical client variables include:
+- generate-question
+- generate-freewriting-hint
+- analyze-record
+- generate-chapter
+- regenerate-chapter
+- generate-pdf
+- verify-subscription
+- send-daily-reminder
+- delete-account
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-- legal document URLs
-- optional billing dev-mode flag
-- optional local dev bypass flag
+### Server responsibilities
+
+Every protected function must independently validate as relevant:
+
+- JWT/authenticated user
+- resource ownership
+- operation prerequisites
+- subscription entitlement
+- input validity
+
+### generate-question
+
+Purpose:
+- produce a fresh contextual prompt for a new Record
+
+Current product rule:
+- no daily-question cache requirement for normal new Record flow
+- generation failure should fall back to a local/type-based question
+- writing remains available
+
+### generate-freewriting-hint
+
+Purpose:
+- optional writing assistance
+
+Failure:
+- must not block Free Record writing
+
+### analyze-record
+
+Purpose:
+- persist structured derived metadata
+
+Failure:
+- must not fail the user's Record save
+
+### generate-chapter
+
+Purpose:
+- semantic source selection + Chapter generation
 
 Rules:
+- only Book-making flow
+- normalized chapter_records relation
+- original Record preservation
 
-- only public/anon-safe values may use `VITE_*`
-- service role / AI secrets must never be exposed to client bundles
+### regenerate-chapter
 
-### 27.2 Edge Function secrets
+Purpose:
+- regenerate derived Chapter from its source Records
 
-Current AI helper expects:
+### generate-pdf
 
-- `GOOGLE_AI_API_KEY`
+Purpose:
+- enforce Publication entitlement
+- create versioned Publication state
+- generate/upload PDF
+- persist immutable snapshot
+- mark success/failure
 
-Protected functions also use Supabase runtime values/service role.
+### verify-subscription
 
-Exact secret inventory should be maintained in deployment documentation without recording secret values.
+Purpose:
+- validate store purchase and persist entitlement
 
----
+### delete-account
 
-## 28. Deployment
+Purpose:
+- remove Storage artifacts and authenticated account data safely
 
-### 28.1 Frontend
+### send-daily-reminder
 
-`npm run build`:
-
-1. TypeScript build
-2. Vite production build
-
-Vercel deploy verifies frontend build only.
-
-### 28.2 Supabase
-
-Git commit does **not** deploy Edge Functions automatically.
-
-Any Edge Function change requires explicit Supabase deploy.
-
-DB DDL must be applied via numbered migration.
-
-### 28.3 Migration rule
-
-For schema changes:
-
-1. add migration file
-2. apply migration to Supabase
-3. verify schema
-4. update `src/types/database.ts`
-5. rerun security advisor
-6. inspect performance advisor
-7. update DB/cutover docs
-8. run affected flow E2E
-
-Next planned schema work for GAP-005:
-
-- `manuscript_reviewed_at`
-- `final_review_completed_at`
+Purpose:
+- scheduled notification flow
 
 ---
 
-## 29. Android / Native
+## 21. Error handling standard
 
-Current shell:
+Every API-backed screen must implement the relevant states:
 
-- Capacitor Android
-- app ID: `com.mychapter.app`
-- Push Notifications
-- Camera/Share dependencies available
+- Loading
+- Empty
+- Error
+- Retry
+- Permission/ownership failure
+- Paywall
+- Success
 
-Open production integration checks:
+### Non-blocking derived-data failures
 
-- native OAuth callback routing
-- actual billing native bridge
-- FCM device token / real notification delivery
-- Android back behavior on modal/editor flows
-- Play Console release flow
+These must not invalidate primary user content:
 
-Do not treat web success as proof of native success.
+- Record analysis failure
+- AI question generation failure when fallback exists
+- freewriting hint failure
 
----
+### Blocking failures
 
-## 30. Build / Validation Commands
+These must block navigation to false-success states:
 
-Current npm scripts:
+- Record database save failure
+- Project creation failure
+- onboarding persistence failure
+- Cover persistence failure before Final Review
+- Publication failure before Publish Complete
 
-```bash
-npm run dev
-npm run build
-npm run preview
-npm run cap:sync
-npm run cap:android
-npm run cap:run:android
-```
+### Current gaps
 
-Minimum change acceptance:
+- Notifications explicit error/retry
+- Home/Library and other API loads have uneven error handling
+- Legal iframe loading/error fallback missing
 
-- TypeScript build passes
-- Vite build passes
-- affected route renders
-- no production DEV bypass
-- migration/function deploy verified where applicable
+Tracked as GAP-008, GAP-009, GAP-010.
 
 ---
 
-## 31. Current Implementation Gaps
+## 22. Security
+
+### Required
+
+- RLS enabled on user-owned tables
+- no service role key in client
+- Edge Functions verify authenticated ownership
+- paid operations are server-enforced
+- signed URLs for private published PDFs
+- production DEV bypass impossible
+
+### Development bypass
+
+DEV bypass exists for local/mock UX work.
+
+Production rule:
+- if Vite PROD is true, bypass must return false
+- production must never expose mock Book/user state
+
+### Current security state
+
+Latest verified Supabase security advisor result:
+- 0 security warnings
+
+Performance advisor warnings are optimization work, not current security blockers.
+
+---
+
+## 23. Development vs production testing
+
+### Mock/dev testing
+
+Use only for:
+- UI iteration
+- navigation checks
+- visual states
+- component development
+
+Mock mode cannot prove:
+
+- RLS
+- Auth triggers
+- real Storage
+- Edge Functions
+- Publication versioning
+- account deletion
+- multi-user isolation
+
+### Real-data E2E
+
+Production-like E2E is required before release.
+
+Required baseline:
+
+    new user
+    → login
+    → nickname
+    → notification onboarding
+    → first Book
+    → first Record
+    → Record Analysis
+    → Story Readiness
+    → semantic Chapter
+    → manuscript review
+    → Cover
+    → Final Review
+    → PDF v1
+    → Publication Viewer
+
+Then verify:
+- Free second Book blocked
+- Free republish blocked
+- Pro v2 allowed
+- failed publication retry
+- logout/login
+- second user isolation
+- Record/photo deletion
+- account deletion
+- direct URL guards
+
+---
+
+## 24. Deployment model
+
+### Web
 
 Source:
+- GitHub main
 
-`SCREEN_IMPLEMENTATION_GAP.md`
+Build:
+- npm run build
+
+Deployment:
+- Vercel
+
+Vercel success confirms:
+- frontend build/deploy success
+
+It does not confirm:
+- DB migration
+- Edge Function deployment
+- secrets
+- Auth provider setup
+- RLS E2E
+
+### Supabase
+
+DB changes:
+- migration files
+- apply through migration workflow
+- DDL changes must not be performed as undocumented ad-hoc production changes
+
+Edge Functions:
+- deployed explicitly
+- source commit alone does not deploy Function runtime
+
+After DB/Function changes:
+- re-run Security Advisor
+- perform focused E2E
+
+### Android
+
+Capacitor remains the native packaging layer.
+
+Before store release verify:
+- OAuth/deep links
+- push permission/FCM
+- Play Billing
+- app links
+- account deletion flow
+- production API configuration
+
+---
+
+## 25. Environment configuration
+
+Client-visible environment configuration may include:
+
+- VITE_SUPABASE_URL
+- VITE_SUPABASE_ANON_KEY
+- VITE_PRIVACY_POLICY_URL
+- VITE_TERMS_URL
+
+Development-only configuration may include DEV bypass controls.
+
+Server secrets belong only in secure platform configuration.
+
+Never commit or document secret values such as:
+- service role keys
+- OAuth client secrets
+- API keys
+- service-account JSON
+- purchase tokens
+
+---
+
+## 26. Current implementation gaps
+
+Authoritative checklist:
+- SCREEN_IMPLEMENTATION_GAP.md
+
+Current order:
 
 ### P0
 
-Resolved:
+GAP-005:
+- persist manuscript_reviewed_at
+- persist final_review_completed_at
+- use milestones in Workspace
 
-- broad onboarding guard
-- onboarding notification persistence failure
-- public Legal routes
-- Library/Workspace publication source migration
-
-Open:
-
-- GAP-005 workflow milestone persistence
+GAP-004 remainder:
+- Home H-04 still needs publications alignment
 
 ### P1
 
-Open:
+GAP-006:
+- implement Published Home
 
-- Published Home
-- native OAuth callback semantic alignment
+GAP-007:
+- native OAuth callback equivalence
+
+GAP-008:
 - Notifications error/retry
-- general API loading/error consistency
+
+GAP-009:
+- normalize API error states
+
+GAP-010:
 - Legal loading/error fallback
-- unresolved input limits
-- full direct URL ownership/stage guard regression
+
+GAP-011:
+- close remaining input policies
+
+GAP-012:
+- route ownership/stage guard regression
 
 ### P2
 
+GAP-013:
 - accessibility verification
-- defer planned/non-MVP scope
 
-Operational:
+### Explicitly out of current MVP completion
 
-- Supabase is currently active again, so real E2E can proceed after required code/schema work.
+- M-03 AI Usage screen
+- R-06 AI Record Edit Result
+- R-10 exact AI Edit quota policy
+- AI-generated Cover
+- EPUB milestone
+
+Do not expand scope into these before P0/P1 and production E2E are complete.
 
 ---
 
-## 32. Technical Debt / Risk Register
+## 27. Next migration target
 
-| Risk | Current behavior | Target |
+The next planned additive migration is for workflow milestones.
+
+Target columns:
+
+    projects.manuscript_reviewed_at timestamptz null
+    projects.final_review_completed_at timestamptz null
+
+Migration requirements:
+
+- additive only
+- no destructive legacy cleanup
+- update TypeScript database type
+- update Project API helpers
+- update ManuscriptPage
+- update FinalReviewPage
+- update ProjectWorkspacePage
+- build
+- run Supabase Security Advisor
+- verify persistence with real user E2E
+
+Do not mark GAP-005 resolved until refresh persistence is actually verified.
+
+---
+
+## 28. Technical debt register
+
+### High priority
+
+1. Workflow milestones are inferred, not persisted.
+2. Published Home is missing.
+3. Ready timestamp persistence can lag when only elapsed time changes.
+4. Direct nested-route guard behavior needs full regression.
+5. Record number max+1 is race-prone.
+6. Chapter reorder is not atomic.
+7. Record Analysis has no explicit retry/status model.
+8. Production OAuth E2E is incomplete.
+
+### Medium priority
+
+1. API error UX is uneven.
+2. Photo upload size/resolution policy is open.
+3. Free Record title max length is open.
+4. Chapter title/body max policy is open.
+5. remaining legacy RLS performance warnings should be optimized.
+
+### Deferred
+
+1. Legacy field/table removal.
+2. generated Supabase TypeScript types replacing hand-sync.
+3. AI Cover.
+4. EPUB.
+5. advanced AI usage UI.
+
+---
+
+## 29. Definition of MVP technical completion
+
+MY CHAPTER MVP is technically complete only when all of the following are true:
+
+### Auth
+
+- Email login E2E passes.
+- OAuth launch providers pass.
+- onboarding state is durable.
+- direct URL access respects guards.
+
+### Records
+
+- all three Record modes create/edit/delete correctly.
+- drafts restore.
+- photos upload/delete.
+- analysis is created or fails safely.
+
+### Readiness
+
+- minimum days + Records gate correctly.
+- ready_at cannot regress.
+- type changes do not re-lock Ready Books.
+
+### Book making
+
+- semantic Chapter generation works on real data.
+- chapter_records is authoritative.
+- reordering/edit/regenerate works.
+- originals remain unchanged.
+- manuscript completion is persisted.
+
+### Publication
+
+- Cover persists.
+- Final Review completion persists.
+- Free v1 succeeds.
+- Free v2 is blocked.
+- Pro v2 succeeds.
+- snapshots remain immutable.
+- PDF viewer works by publication ID.
+- failed retry does not corrupt versioning.
+
+### Security / deletion
+
+- second account cannot access first account resources.
+- RLS works for Records/Chapters/Publications.
+- account deletion removes Auth, DB rows, Record photos, and Publication PDFs.
+
+### UI / device
+
+- 320 / 375 / 414 / 768 layouts pass.
+- Loading / Empty / Error / Retry states pass.
+- major accessibility checks pass.
+- Android native auth/push/billing integrations pass before store release.
+
+---
+
+## 30. Change control
+
+When implementation changes:
+
+- Product behavior change → update 02_PRODUCT_DECISIONS if policy changed.
+- Screen behavior change → update 05_SCREEN_SPEC.
+- Architecture change → update 07_ARCHITECTURE.
+- DB migration → update 12_DB_V2_CUTOVER_CHECKLIST and future 15_DATA_DICTIONARY.
+- Edge/API contract change → update future 14_API_SPEC.
+- Implementation gap resolved → update SCREEN_IMPLEMENTATION_GAP.
+- Release verification → record in future 16_QA_E2E / 17_RELEASE_RUNBOOK.
+
+Do not silently rewrite a product rule in this document merely to match accidental code behavior.
+
+---
+
+## 31. Version history
+
+| Version | Date | Change |
 |---|---|---|
-| workflow milestone | inferred/local | DB persisted timestamps |
-| ready_at | may remain null if only time passes | persist first-ready transition |
-| record_number | client max+1 | atomic server allocation |
-| Chapter reorder | multiple sequential updates | DB transaction/RPC |
-| Record analysis | fire-and-forget | status + retry |
-| API errors | uneven catch/retry UI | common state standard |
-| project creation entitlement | client-oriented check | server recheck |
-| legacy DB fields | still written/read for compatibility | remove after E2E |
-| DB TS types | hand-maintained | generated/reconciled later |
-| Native OAuth | different callback | same routing semantics |
-| legal content | iframe-only | load/error fallback |
-| image constraints | open | explicit launch limits |
-
----
-
-## 33. Required Development Order
-
-Current recommended execution:
-
-1. GAP-005 workflow milestone migration + UI persistence
-2. GAP-006 Published Home
-3. error-state standardization
-4. input limits + direct URL/resource guards
-5. accessibility/mobile QA
-6. real Email Auth E2E
-7. Record + analysis E2E
-8. controlled Readiness E2E
-9. Chapter / chapter_records E2E
-10. Manuscript → Cover → Final Review E2E
-11. Free publication v1
-12. Pro publication v2 / retry
-13. deletion + multi-account RLS E2E
-14. OAuth provider finalization
-15. Android/FCM/Billing final verification
-16. legacy cleanup only after all above pass
-
----
-
-## 34. Definition of Done — MVP Development
-
-MY CHAPTER MVP development is complete only when all of the following pass with real Supabase data:
-
-- real user signup/login
-- trigger-created profile + Free subscription
-- onboarding persistence
-- Book creation
-- all 3 Record modes
-- draft restore
-- asynchronous record analysis
-- Readiness before/after state
-- semantic Chapter generation
-- chapter_records integrity
-- Chapter edit/regenerate/reorder recovery
-- persisted Manuscript review completion
-- persisted Final Review completion
-- Cover persistence
-- Free publication v1
-- immutable Publication Viewer
-- Pro v2 republish
-- failed publish retry without version skip
-- Free second Book / republish paywall
-- photo/PDF cleanup
-- account deletion
-- cross-account ownership isolation
-- direct URL guards
-- 320/375/414/768 responsive QA
-- production build/deploy
-- OAuth / Native final checks for launch target
-
----
-
-## 35. Non-MVP / Do Not Build Yet
-
-Until current P0/P1 and E2E complete:
-
-- AI Record Edit Result screen
-- exact AI edit fair-use expansion
-- AI-generated cover
-- EPUB
-- POD / external bookstore
-- broad new product modules
-
-Do not expand scope to hide incomplete core workflow verification.
-
----
-
-## 36. References
-
-- `00_PRODUCT_OVERVIEW.md`
-- `01_PRODUCT_SPEC.md`
-- `02_PRODUCT_DECISIONS.md`
-- `03_IA.md`
-- `04_USER_FLOWS.md`
-- `05_SCREEN_SPEC.md`
-- `06_FREE_PRO_POLICY.md`
-- `07_ARCHITECTURE.md`
-- `08_DB_V2_DESIGN.md`
-- `09_AI_POLICY.md`
-- `10_DESIGN_SYSTEM.md`
-- `11_MVP_SCOPE.md`
-- `12_DB_V2_CUTOVER_CHECKLIST.md`
-- `SCREEN_IMPLEMENTATION_GAP.md`
-
----
-
-## 37. Change Log
-
-| Version | Date | Summary |
-|---|---|---|
-| 2.0 | 2026-10-16 | Current code/Supabase-based development spec rebuilt; replaces deprecated 2026-06 development specification |
+| 1.0 | 2026-06-12 | Initial legacy MVP development specification |
+| 2.0 | 2026-10-16 | Rebuilt against current Product Decisions, Screen Spec v1.1, DB v2, publication versioning, semantic Chapters, current router/state/API structure and Supabase runtime status |
