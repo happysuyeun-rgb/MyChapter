@@ -33,14 +33,15 @@ export async function listChapters(projectId: string): Promise<Chapter[]> {
   return data ?? []
 }
 
-export async function getChapter(id: string): Promise<Chapter | null> {
-  if (isDevBypass()) return mockGetChapter(id)
+export async function getChapter(id: string, userId?: string): Promise<Chapter | null> {
+  if (isDevBypass()) {
+    const chapter = mockGetChapter(id)
+    return chapter && (!userId || chapter.user_id === userId) ? chapter : null
+  }
 
-  const { data, error } = await supabase
-    .from('chapters')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle()
+  let query = supabase.from('chapters').select('*').eq('id', id)
+  if (userId) query = query.eq('user_id', userId)
+  const { data, error } = await query.maybeSingle()
 
   if (error) throw error
   return data
