@@ -25,7 +25,7 @@ export function ProjectSetupPage() {
   const readiness = BOOK_READINESS_RULES[draft.type]
 
   const handleStart = async () => {
-    if (!user || !draft.title.trim()) return
+    if (!user || loading || !draft.title.trim()) return
     setLoading(true)
     setError('')
     try {
