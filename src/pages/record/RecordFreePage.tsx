@@ -15,6 +15,7 @@ import { useRecordStore } from '@/stores/recordStore'
 
 export function RecordFreePage() {
   const navigate = useNavigate()
+  const createRequestId = useRef(crypto.randomUUID())
   const { user } = useAuthStore()
   const { showPaywall } = usePaywallStore()
   const { project, loading } = useActiveProject()
@@ -108,6 +109,7 @@ export function RecordFreePage() {
             {
               projectId: project.id,
               userId: user.id,
+              requestId: createRequestId.current,
               mode: 'free',
               content: content.trim(),
               title: recordTitle,
