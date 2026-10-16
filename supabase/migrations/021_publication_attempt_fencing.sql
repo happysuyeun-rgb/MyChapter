@@ -77,11 +77,13 @@ $$;
 CREATE OR REPLACE FUNCTION public.finish_book_publication(
  p_publication_id uuid,p_attempt_token uuid,p_storage_path text,
  p_page_count integer,p_tagline text,p_failure_reason text DEFAULT NULL
-) RETURNS boolean LANGUAGE plpgsql SECURITY INVOKER SET search_path = '' AS $$
- SELECT private.finish_book_publication(
+) RETURNS boolean LANGUAGE plpgsql SECURITY INVOKER SET search_path = '' AS $
+BEGIN
+ RETURN private.finish_book_publication(
  p_publication_id,p_attempt_token,p_storage_path,p_page_count,p_tagline,p_failure_reason
  );
-$$;
+END;
+$;
 -- Only service_role may finalize. This API must never be callable by normal users.
 REVOKE ALL ON FUNCTION public.finish_book_publication(uuid,uuid,text,integer,text,text) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.finish_book_publication(uuid,uuid,text,integer,text,text) TO service_role;
