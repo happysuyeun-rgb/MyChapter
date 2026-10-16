@@ -48,6 +48,8 @@ export const DEV_MOCK_PROJECT: Project = {
   author_name: '서아',
   ready_at: '2026-09-01T00:00:00.000Z',
   archived_at: null,
+  manuscript_reviewed_at: null,
+  final_review_completed_at: null,
   readiness_min_days: 30,
   readiness_min_records: 20,
   readiness_target_days: 60,
