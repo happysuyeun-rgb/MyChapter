@@ -104,7 +104,12 @@ export function RecordFreePage() {
             }
           )
 
-      await deleteDraft(user.id, project.id, 'free')
+      // Draft cleanup is non-critical: an already persisted record must not be reported as a failed save.
+      try {
+        await deleteDraft(user.id, project.id, 'free')
+      } catch {
+        // Keep the saved result; cleanup can be retried separately.
+      }
       setEditingRecord(null)
       setLastSave(result, project)
       navigate('/record/complete')
