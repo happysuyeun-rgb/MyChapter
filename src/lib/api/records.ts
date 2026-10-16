@@ -173,6 +173,7 @@ export async function updateRecord(
     })
     .eq('id', id)
     .eq('user_id', userId)
+    .eq('project_id', projectId)
     .select()
     .single()
 
