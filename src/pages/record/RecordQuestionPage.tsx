@@ -5,6 +5,7 @@ import { EmotionTagPicker } from '@/components/features/record/EmotionTagPicker'
 import { ExitConfirmModal } from '@/components/features/record/ExitConfirmModal'
 import { NavBar } from '@/components/layout/NavBar'
 import { useActiveProject } from '@/hooks/useActiveProject'
+import { clearRecordRequestId, getOrCreateRecordRequestId } from '@/lib/recordRequestId'
 import { deleteDraft, loadDraft, saveDraft } from '@/lib/api/drafts'
 import { createRecord, getRecordCount, updateRecord } from '@/lib/api/records'
 import { ApiError, generateQuestion, getFallbackQuestion } from '@/lib/api/questions'
@@ -14,7 +15,6 @@ import { useRecordStore } from '@/stores/recordStore'
 
 export function RecordQuestionPage() {
   const navigate = useNavigate()
-  const createRequestId = useRef(crypto.randomUUID())
   const { user } = useAuthStore()
   const { showPaywall } = usePaywallStore()
   const { project, loading } = useActiveProject()
@@ -101,7 +101,7 @@ export function RecordQuestionPage() {
             {
               projectId: project.id,
               userId: user.id,
-              requestId: createRequestId.current,
+              requestId: getOrCreateRecordRequestId(user.id, project.id, 'question'),
               mode: 'question',
               content: content.trim(),
               questionText: question,
@@ -110,6 +110,7 @@ export function RecordQuestionPage() {
           )
 
       try { await deleteDraft(user.id, project.id, 'question') } catch { /* saved record remains valid */ }
+      if (!editingRecord) clearRecordRequestId(user.id, project.id, 'question')
       setEditingRecord(null)
       setLastSave(result, project)
       navigate('/record/complete')
