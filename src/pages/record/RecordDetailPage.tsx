@@ -29,10 +29,10 @@ export function RecordDetailPage() {
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
-    if (!id) return
+    if (!id || !user) return
 
     const load = async () => {
-      const data = await getRecord(id)
+      const data = await getRecord(id, user.id)
       if (!data) {
         navigate('/records', { replace: true })
         return
@@ -55,7 +55,7 @@ export function RecordDetailPage() {
     }
 
     void load()
-  }, [id, navigate])
+  }, [id, user, navigate])
 
   const handleDelete = async () => {
     if (!record || !user) return
