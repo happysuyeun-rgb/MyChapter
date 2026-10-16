@@ -5,6 +5,7 @@ import { EmotionTagPicker } from '@/components/features/record/EmotionTagPicker'
 import { ExitConfirmModal } from '@/components/features/record/ExitConfirmModal'
 import { NavBar } from '@/components/layout/NavBar'
 import { useActiveProject } from '@/hooks/useActiveProject'
+import { clearRecordRequestId, getOrCreateRecordRequestId } from '@/lib/recordRequestId'
 import { deleteDraft, loadDraft, saveDraft } from '@/lib/api/drafts'
 import {
   createRecord,
@@ -18,7 +19,6 @@ import { useRecordStore } from '@/stores/recordStore'
 
 export function RecordPhotoPage() {
   const navigate = useNavigate()
-  const createRequestId = useRef(crypto.randomUUID())
   const uploadedPhotoPath = useRef<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const { user } = useAuthStore()
@@ -101,7 +101,7 @@ export function RecordPhotoPage() {
             {
               projectId: project.id,
               userId: user.id,
-              requestId: createRequestId.current,
+              requestId: getOrCreateRecordRequestId(user.id, project.id, 'photo'),
               mode: 'photo',
               content: caption.trim(),
               photoUrl: photoUrl!,
@@ -110,6 +110,7 @@ export function RecordPhotoPage() {
           )
 
       try { await deleteDraft(user.id, project.id, 'photo') } catch { /* saved record remains valid */ }
+      if (!editingRecord) clearRecordRequestId(user.id, project.id, 'photo')
       setEditingRecord(null)
       setLastSave(result, project)
       navigate('/record/complete')
