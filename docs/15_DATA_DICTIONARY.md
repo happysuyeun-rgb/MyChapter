@@ -199,3 +199,7 @@ Project `MyChapter` is **ACTIVE_HEALTHY** (PostgreSQL 17). Live `public` table i
 Live `projects` column inventory confirms **neither** `manuscript_reviewed_at` nor `final_review_completed_at` exists; Migration 015 remains a target. Live user `notification_time` and project `notification_time` are SQL `time without time zone` (represented as strings in the client). `subscriptions.user_id` is unique, and `record_analysis.record_id` unique. Live `records.content` SQL check allows 1–5000 characters: mode-specific 10-character minimum is presently application policy, **not** an equivalent DB CHECK.
 
 **Scope of verification:** table existence/columns/RLS-enabled flags and migration inventory confirmed from Supabase introspection; row-level cross-account behavior, Storage policy runtime, and complete policy expressions have **not** been E2E-tested. This is not yet a production launch sign-off.
+
+## 8. Migration 015 applied — 2026-10-16
+
+Live Supabase migration history now includes `20261016025534 workflow_review_milestones`. A read-only information_schema query confirmed both `projects.manuscript_reviewed_at` and `projects.final_review_completed_at` are **nullable timestamp with time zone**. Source migration `supabase/migrations/015_workflow_review_milestones.sql` and `src/types/database.ts` were updated. Earlier TARGET/ABSENT labels in this v0.1 are historical pre-migration observations; these fields are **now PRESENT** in the live schema. Live Security Advisor after migration: zero lints. Functional E2E remains pending.
