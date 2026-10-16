@@ -1,9 +1,9 @@
 # 08. DB v2 Design
 
-**Status:** STRUCTURE CONFIRMED — migrations prepared, NOT deployed  
+**Status:** DB V2 APPLIED — legacy compatibility fields retained  
 **Updated:** 2026-09-28
 
-> Migrations `009`–`013` are prepared in GitHub but have not been applied to Supabase. Apply them before deploying the new `analyze-record` and semantic `generate-chapter` Edge Functions.
+> **2026-10-16 verification:** DB v2 migrations are applied in Supabase, `record_analysis`, `chapter_records`, and `publications` exist, and the related Edge Functions are deployed. Sections below describe the v2 design rationale; where a deployment-status sentence conflicts with `12_DB_V2_CUTOVER_CHECKLIST.md` or the live schema, the live schema/cutover checklist wins.
 
 ## Why v2 is needed
 
