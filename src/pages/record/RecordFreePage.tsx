@@ -64,7 +64,11 @@ export function RecordFreePage() {
   }, [project, user, editingRecord, showPaywall])
 
   const handleSave = async () => {
-    if (!user || !project) return
+    if (!user || !project || saving) return
+    if (editingRecord && (editingRecord.user_id !== user.id || editingRecord.project_id !== project.id)) {
+      setError('다른 책의 기록은 여기에서 수정할 수 없어요. 기록 목록에서 다시 열어주세요.')
+      return
+    }
     if (content.trim().length < 10) {
       setError('최소 10자 이상 작성해주세요.')
       return
