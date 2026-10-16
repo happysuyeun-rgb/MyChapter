@@ -191,3 +191,7 @@ If the new Edge Functions fail:
 2. leave additive DB tables/columns in place
 3. continue using legacy application paths
 4. fix and redeploy
+
+## Migration 015 status update — 2026-10-16
+
+**APPLIED to MyChapter Supabase:** `workflow_review_milestones` (live history version `20261016025534`). Both nullable TIMESTAMPTZ fields are present on `public.projects`. Live Security Advisor returned zero lints. GitHub migration filename is `015_workflow_review_milestones.sql`. Manuscript/Final Review/Workspace source implementation committed; build and real-user E2E **not yet verified**. Legacy cleanup remains deferred.
