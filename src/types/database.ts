@@ -55,6 +55,8 @@ export interface Database {
           subtitle: string | null
           author_name: string | null
           ready_at: string | null
+          manuscript_reviewed_at: string | null
+          final_review_completed_at: string | null
           archived_at: string | null
           readiness_min_days: number | null
           readiness_min_records: number | null
@@ -81,6 +83,8 @@ export interface Database {
           subtitle?: string | null
           author_name?: string | null
           ready_at?: string | null
+          manuscript_reviewed_at?: string | null
+          final_review_completed_at?: string | null
           archived_at?: string | null
           readiness_min_days?: number | null
           readiness_min_records?: number | null
