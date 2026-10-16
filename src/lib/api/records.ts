@@ -20,6 +20,7 @@ import { createBadgeNotifications } from './notifications'
 export interface CreateRecordInput {
   projectId: string
   userId: string
+  requestId?: string
   mode: RecordModeInstance
   content: string
   questionText?: string
@@ -129,10 +130,12 @@ export async function createRecord(input: CreateRecordInput): Promise<SaveRecord
   }
 
   const recordNumber = await getNextRecordNumber(input.projectId)
+  const requestId = input.requestId ?? crypto.randomUUID()
 
   const { data, error } = await supabase
     .from('records')
     .insert({
+      id: requestId,
       project_id: input.projectId,
       user_id: input.userId,
       record_number: recordNumber,
@@ -146,7 +149,17 @@ export async function createRecord(input: CreateRecordInput): Promise<SaveRecord
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    // A timed-out response may hide a committed insert: look up this exact request ID.
+    const { data: existing, error: lookupError } = await supabase.from('records')
+      .select('*').eq('id', requestId).eq('user_id', input.userId)
+      .eq('project_id', input.projectId).maybeSingle()
+    if (lookupError || !existing || existing.mode !== input.mode ||
+      existing.content !== input.content || existing.question_text !== (input.questionText ?? null) ||
+      existing.title !== (input.title ?? null) || existing.photo_url !== (input.photoUrl ?? null) ||
+      JSON.stringify(existing.emotion_tags) !== JSON.stringify(input.emotionTags)) throw error
+    return finalizeSave(input.userId, input.projectId, existing)
+  }
 
   analyzeRecordInBackground(data.id)
   return finalizeSave(input.userId, input.projectId, data)
