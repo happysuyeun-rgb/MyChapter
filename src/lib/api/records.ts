@@ -221,7 +221,11 @@ async function finalizeSave(
 
   const badges = checkBadgeEvents(streak, recordCount)
   if (badges.length > 0) {
-    await createBadgeNotifications(userId, badges)
+    try {
+      await createBadgeNotifications(userId, badges)
+    } catch {
+      // Badge notifications must not turn a successful record insert into a save error.
+    }
   }
 
   return {
