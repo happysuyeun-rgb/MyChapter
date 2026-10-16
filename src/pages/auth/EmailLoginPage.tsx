@@ -21,7 +21,9 @@ export function EmailLoginPage() {
     })
     setLoading(false)
     if (submitError) {
-      setError('로그인 링크를 보내지 못했어요. 다시 시도해주세요.')
+      setError(submitError.status === 401
+        ? '인증 서버가 요청을 거부했어요(401). 관리자에게 인증키 설정 확인이 필요해요.'
+        : `로그인 링크 발송 실패: ${submitError.message} (${submitError.status ?? 'unknown'})`)
       return
     }
     setSent(true)
