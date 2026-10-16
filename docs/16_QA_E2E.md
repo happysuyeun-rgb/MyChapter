@@ -71,3 +71,14 @@
 - No GitHub Actions job result was observed in previous checks; Vercel build is separate verification.
 
 **GAP-005 is implemented but remains E2E PENDING.**
+
+## 6. Review invalidation — migration 016 (2026-10-16)
+
+**Implemented and applied:** `supabase/migrations/016_review_invalidation.sql`, Supabase migration `review_invalidation`.
+
+- Project title, subtitle, author, or cover changes clear `final_review_completed_at` only.
+- Chapter INSERT/DELETE or meaningful content/title/order/record_ids UPDATE clears both `manuscript_reviewed_at` and `final_review_completed_at`.
+- No-op Chapter updates do not reset milestones.
+- Database triggers make source writes and milestone invalidation transactional; existing versioned publications are not modified.
+- Live information_schema confirms `chapters_invalidate_book_review` (INSERT/UPDATE/DELETE) and `projects_invalidate_final_review` (UPDATE). Live post-migration Security Advisor reports zero lints.
+- **PENDING:** authenticated tests that edit a reviewed Book, refresh Workspace, then reapprove manuscript/final review. Trigger existence alone is not behavioral E2E. DB security / RLS correctness for the trigger caller also needs cross-user test.
