@@ -138,7 +138,9 @@ export async function updateProjectSettings(
   if (!rule) throw new Error('지원하지 않는 책 유형입니다.')
 
   // Preserve Ready earned under the previous policy before a type change.
-  await ensureProjectReady(await getProjectById(projectId) ?? (() => { throw new Error('책을 찾을 수 없어요.') })(), userId)
+  const currentProject = await getProjectById(projectId)
+  if (!currentProject) throw new Error('책을 찾을 수 없어요.')
+  await ensureProjectReady(currentProject, userId)
 
   const { data, error } = await supabase
     .from('projects')
