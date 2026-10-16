@@ -253,6 +253,10 @@ export async function generateBookPdf(
     error?: string
   } | null
 
+  if (body?.code === 'PUBLICATION_IN_PROGRESS') {
+    throw new BookApiError('PUBLICATION_IN_PROGRESS', '이미 PDF를 제작하고 있어요. 완료 상태를 확인한 뒤 다시 시도해주세요.')
+  }
+
   if (body?.code === 'REVIEW_REQUIRED' || body?.code === 'COVER_MISMATCH' || body?.code === 'MANUSCRIPT_INCOMPLETE') {
     throw new BookApiError(body.code, body.error ?? '원고와 최종 검수를 다시 확인해주세요.')
   }
