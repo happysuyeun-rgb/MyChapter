@@ -82,3 +82,11 @@
 - Database triggers make source writes and milestone invalidation transactional; existing versioned publications are not modified.
 - Live information_schema confirms `chapters_invalidate_book_review` (INSERT/UPDATE/DELETE) and `projects_invalidate_final_review` (UPDATE). Live post-migration Security Advisor reports zero lints.
 - **PENDING:** authenticated tests that edit a reviewed Book, refresh Workspace, then reapprove manuscript/final review. Trigger existence alone is not behavioral E2E. DB security / RLS correctness for the trigger caller also needs cross-user test.
+
+## 7. Story Readiness sticky persistence — 2026-10-16
+
+- Source: `src/lib/api/projects.ts`; `getProjects` now checks eligible unmarked Books and persists `ready_at` using a conditional owned Supabase update. On change of Book type, `updateProjectSettings` first persists Ready earned under the old policy.
+- Existing record-insert trigger still handles records that qualify immediately; this client load path handles the previously missing **time-only transition**.
+- **PENDING E2E:** ready book with elapsed days + record count but NULL `ready_at`; reload Home and check DB updated; switch type to stricter rule and confirm Ready remains true; non-owner update rejected; concurrent client reads; failure handling.
+- **Risk:** time calculations use device-local day boundaries and real DB date rules may differ around timezone midnight; test in Asia/Seoul with rollover cases.
+- Do not mark this resolved until actual authenticated test and production build evidence are recorded.
