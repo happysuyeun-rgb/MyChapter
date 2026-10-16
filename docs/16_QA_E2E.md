@@ -108,3 +108,15 @@
 - A recoverable loading failure / retry state is now present on Home.
 - **PENDING real-account E2E:** publish v1, return Home, confirm snapshot version/date and CTA; modify live Book title without republishing and confirm Home still displays latest publication snapshot; republish v2 Pro and recheck, compare Library/Workspace/Completed Books.
 - The publication-specific Free republish CTA policy is not yet implemented; treat GAP-006 as partially implemented until full H-04 alignment is checked.
+
+## 10. Server-side publication prerequisites — 2026-10-16
+
+**Shipped:** `generate-pdf` Edge Function **v7 ACTIVE** (JWT verification enabled). GitHub source commit `51f7819d`. Existing authenticated user/owned project and server-side Free/Pro published count checks retained. Added server rejection before PDF generation for:
+
+- `REVIEW_REQUIRED` (409): missing `ready_at`, `manuscript_reviewed_at` or `final_review_completed_at`.
+- `COVER_MISMATCH` (409): requested cover differs from persisted project cover.
+- `MANUSCRIPT_INCOMPLETE` (400): chapter list empty, or any chapter title/content empty.
+
+Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays the specific rejection message. Deployment v7 fetched back from live project and confirmed to contain the guards.
+
+**Not yet proven:** authenticated E2E with two accounts, Free v1/Pro v2 PDF generation, payment entitlements, or concurrent publication. There is a TOCTOU window between the initial review check and PDF finalization; a separate atomic server-side reservation/recheck plan is required for race-safe publication and version allocation. These checks are not sufficient to declare full publication security and versioning complete.
