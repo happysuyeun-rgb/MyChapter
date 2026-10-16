@@ -130,3 +130,12 @@ Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays t
 - Privileged function lives in `private` schema, called via `public.reserve_book_publication` SECURITY INVOKER wrapper; anon EXECUTE is denied. Post-migration Security Advisor: **0 warnings**.
 - Production Edge Function `generate-pdf` **v8 ACTIVE** calls the reservation RPC; client shows in-progress conflict message.
 - **Pending before marking publication stable:** authenticated Free/Pro end-to-end PDF success, double-submit collision test, failed publication retry, crash/timeout orphaned processing reservation recovery, and content mutation while rendering (TOCTOU). Existing `processing` reservation has no recovery timeout; manual diagnostic is required for stuck attempts.
+
+
+## 12. Phase A-1 — interrupted PDF reservation recovery (2026-10-16)
+
+- Live migration `020_publication_timeout_recovery.sql` applied; adds `publications.processing_started_at` and extends `private.reserve_book_publication`.
+- Reservations older than one hour in `processing` are marked `failed` with `PUBLICATION_TIMEOUT` **when that same user next requests a publication**; this is on-demand recovery, not a background scheduled watchdog.
+- A failed latest version is reused and its `processing_started_at` resets on retry; fresh reservations stamp the start time.
+- Supabase Security Advisor shows zero warnings. SQL function introspection confirms timeout handling and lease reset.
+- **Risks:** a still-running function older than an hour could compete with a retry; safe finalization fencing/token and writing PDFs to attempt-scoped storage are not yet in place. Authenticated crash/retry E2E not performed.
