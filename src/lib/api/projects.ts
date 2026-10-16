@@ -103,7 +103,12 @@ export async function createProject(
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    if (error.message.includes('FREE_PROJECT_LIMIT')) {
+      throw new Error('Free 플랜에서는 책을 한 권만 만들 수 있어요. Pro에서 추가 책을 만들 수 있어요.')
+    }
+    throw error
+  }
   return data
 }
 
