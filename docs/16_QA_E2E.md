@@ -100,3 +100,11 @@
 - An authenticated user can still access Chapter Preview/Edit via direct URL when they own that Chapter even if their Book is not Ready; intended exception must be confirmed or a stricter chapter-stage rule added.
 - This is client navigation hardening, **not** a substitute for Supabase RLS or server-side Edge Function authorization.
 - **PENDING:** Vercel build status for new BookStageGuard commit; two-account deep-link tests, access before readiness, before manuscript confirmation, before cover selection, and direct publication URLs.
+
+## 9. GAP-006 Published Home implementation — 2026-10-16
+
+- `HomePage` now retrieves latest published `publications` snapshot for the active Book via `getPublishedBook` and displays its immutable `title_snapshot`, version and published date.
+- Primary CTA for published Book opens `/publication/:id`; secondary CTA goes to Workspace. Before publication, the primary CTA remains Record entry.
+- A recoverable loading failure / retry state is now present on Home.
+- **PENDING real-account E2E:** publish v1, return Home, confirm snapshot version/date and CTA; modify live Book title without republishing and confirm Home still displays latest publication snapshot; republish v2 Pro and recheck, compare Library/Workspace/Completed Books.
+- The publication-specific Free republish CTA policy is not yet implemented; treat GAP-006 as partially implemented until full H-04 alignment is checked.
