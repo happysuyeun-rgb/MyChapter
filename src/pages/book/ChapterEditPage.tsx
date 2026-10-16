@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Button, Input, Modal, Textarea } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { getChapter, regenerateChapter, updateChapterContent } from '@/lib/api/chapters'
+import { useAuthStore } from '@/stores/authStore'
 import type { Chapter } from '@/types/database'
 import { getChapterDisplayContent } from '@/utils/chapterContent'
 import { useToastStore } from '@/stores/toastStore'
@@ -10,6 +11,7 @@ import { useToastStore } from '@/stores/toastStore'
 export function ChapterEditPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuthStore()
   const { showToast } = useToastStore()
 
   const [chapter, setChapter] = useState<Chapter | null>(null)
@@ -20,9 +22,9 @@ export function ChapterEditPage() {
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   useEffect(() => {
-    if (!id) return
+    if (!id || !user) return
 
-    void getChapter(id).then((data) => {
+    void getChapter(id, user.id).then((data) => {
       if (!data) {
         navigate('/book', { replace: true })
         return
@@ -31,7 +33,7 @@ export function ChapterEditPage() {
       setTitle(data.title)
       setContent(getChapterDisplayContent(data))
     })
-  }, [id, navigate])
+  }, [id, user, navigate])
 
   const handleSave = async () => {
     if (!chapter) return
