@@ -9,7 +9,6 @@ import { listRecords } from '@/lib/api/records'
 import { isDevBypass } from '@/lib/devBypass'
 import { useAuthStore } from '@/stores/authStore'
 import { getBookReadiness } from '@/utils/bookReadiness'
-import { getChapterDisplayContent } from '@/utils/chapterContent'
 
 export function ProjectWorkspacePage() {
   const navigate = useNavigate()
@@ -18,6 +17,7 @@ export function ProjectWorkspacePage() {
   const [recordCount, setRecordCount] = useState(0)
   const [chapterCount, setChapterCount] = useState(0)
   const [manuscriptComplete, setManuscriptComplete] = useState(false)
+  const [finalReviewComplete, setFinalReviewComplete] = useState(false)
   const [publishedVersion, setPublishedVersion] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -30,10 +30,8 @@ export function ProjectWorkspacePage() {
     ]).then(([records, chapters, publication]) => {
       setRecordCount(records.length)
       setChapterCount(chapters.length)
-      setManuscriptComplete(
-        chapters.length > 0 &&
-          chapters.every((chapter) => getChapterDisplayContent(chapter).trim().length > 0),
-      )
+      setManuscriptComplete(Boolean(project.manuscript_reviewed_at))
+      setFinalReviewComplete(Boolean(project.final_review_completed_at))
       setPublishedVersion(
         isDevBypass() && project.is_completed
           ? 1
@@ -96,11 +94,11 @@ export function ProjectWorkspacePage() {
     },
     {
       label: '최종 검수',
-      description: published ? `v${publishedVersion} 발행 전 검수를 완료했어요` : coverSelected ? '표지·목차·원고를 마지막으로 확인해주세요' : '표지 선택 후 진행할 수 있어요',
-      statusLabel: published ? '완료' : coverSelected ? '확인 필요' : '대기',
+      description: finalReviewComplete ? '표지·목차·원고의 최종 검수를 완료했어요' : coverSelected ? '표지·목차·원고를 마지막으로 확인해주세요' : '표지 선택 후 진행할 수 있어요',
+      statusLabel: finalReviewComplete ? '완료' : coverSelected ? '확인 필요' : '대기',
       to: '/book/review',
       ready: readiness.isReady && chapterCount > 0 && coverSelected,
-      state: published ? 'done' : coverSelected ? 'active' : 'pending',
+      state: finalReviewComplete ? 'done' : coverSelected ? 'active' : 'pending',
     },
     {
       label: '발행',
