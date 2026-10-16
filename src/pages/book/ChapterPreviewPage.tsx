@@ -3,25 +3,27 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { getChapter } from '@/lib/api/chapters'
+import { useAuthStore } from '@/stores/authStore'
 import type { Chapter } from '@/types/database'
 import { getChapterDisplayContent } from '@/utils/chapterContent'
 
 export function ChapterPreviewPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuthStore()
   const [chapter, setChapter] = useState<Chapter | null>(null)
 
   useEffect(() => {
-    if (!id) return
+    if (!id || !user) return
 
-    void getChapter(id).then((data) => {
+    void getChapter(id, user.id).then((data) => {
       if (!data) {
         navigate('/book', { replace: true })
         return
       }
       setChapter(data)
     })
-  }, [id, navigate])
+  }, [id, user, navigate])
 
   if (!chapter) {
     return <div className="flex flex-1 items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
