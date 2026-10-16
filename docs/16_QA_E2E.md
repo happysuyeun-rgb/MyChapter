@@ -210,3 +210,9 @@ Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays t
 - The DB primary key rejects a second insert of the same UUID; createRecord reconciles matching existing rows. This improves idempotency across same-tab refresh, not cross-browser/device or sessionStorage loss.
 - **Known blocker for photo refresh:** selected File and upload path are component-local; if refreshed after an ambiguous photo submission, re-uploading creates a different photo path and the existing-row matching check safely rejects it. Needs durable photo attempt metadata + uploaded file recovery workflow, without persisting the image insecurely.
 - **Other limitations:** changed content with an outstanding ambiguous request is intentionally rejected to avoid silently treating different content as a retry; no authoritative real-user timeout/retry E2E executed.
+
+## 23. Photo uploaded-path restoration after refresh — 2026-10-16
+
+- Added `src/lib/photoAttempt.ts` (commit `ea81e895`), storing only the user's/project's pending upload path and matching record request UUID in sessionStorage with 24h TTL; no original image bytes or record content are stored.
+- Photo editor (commit `c9ef4d3f`) restores matching upload path and requests a fresh signed preview after reload; creation can retry using the same previously uploaded Storage object. Successful save clears pending photo metadata and record request ID.
+- **Not an E2E PASS:** live upload, access control, signed URL and ambiguous response handling still require authenticated exercise. Changing the photo after an ambiguous committed attempt may produce safe payload mismatch; no automatic merge. Upload or DB failures can leave orphaned files, needing cleanup policy. Client-level sessionStorage may be unavailable.
