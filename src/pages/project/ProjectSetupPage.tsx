@@ -35,8 +35,8 @@ export function ProjectSetupPage() {
       setCreatedProject(project)
       setActiveProject(project)
       navigate('/project/new/complete')
-    } catch {
-      setError('책을 시작하지 못했어요. 다시 시도해주세요.')
+    } catch (err) {
+      setError(err instanceof Error && err.message.includes('Free 플랜') ? err.message : '책을 시작하지 못했어요. 다시 시도해주세요.')
     } finally {
       setLoading(false)
     }
