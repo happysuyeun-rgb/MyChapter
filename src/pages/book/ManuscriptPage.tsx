@@ -6,6 +6,7 @@ import { listChapters } from '@/lib/api/chapters'
 import { listRecords } from '@/lib/api/records'
 import { completeManuscriptReview } from '@/lib/api/projects'
 import { useAuthStore } from '@/stores/authStore'
+import { useProjectStore } from '@/stores/projectStore'
 import type { Chapter } from '@/types/database'
 import { getBookReadiness } from '@/utils/bookReadiness'
 import { getChapterDisplayContent } from '@/utils/chapterContent'
@@ -13,6 +14,7 @@ import { getChapterDisplayContent } from '@/utils/chapterContent'
 export function ManuscriptPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  const { setActiveProject } = useProjectStore()
   const { project, loading: projectLoading } = useActiveProject()
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [recordCount, setRecordCount] = useState(0)
@@ -49,7 +51,8 @@ export function ManuscriptPage() {
     setSaving(true)
     setSaveError(null)
     try {
-      await completeManuscriptReview(project.id, user.id)
+      const updated = await completeManuscriptReview(project.id, user.id)
+      setActiveProject(updated)
       navigate('/book/cover')
     } catch {
       setSaveError('원고 확인 상태를 저장하지 못했어요. 다시 시도해주세요.')
