@@ -171,3 +171,19 @@ export async function completeFinalReview(projectId: string, userId: string): Pr
   if (error) throw error
   return data
 }
+
+/** Reopen a completed final review explicitly; keep manuscript review intact. */
+export async function reopenFinalReview(projectId: string, userId: string): Promise<Project> {
+  if (isDevBypass()) {
+    const project = mockGetProjectById(projectId)
+    if (!project || project.user_id !== userId) throw new Error('책을 찾을 수 없어요.')
+    project.final_review_completed_at = null
+    return project
+  }
+  const { data, error } = await supabase.from('projects')
+    .update({ final_review_completed_at: null })
+    .eq('id', projectId).eq('user_id', userId)
+    .select().single()
+  if (error) throw error
+  return data
+}
