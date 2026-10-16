@@ -195,3 +195,11 @@ Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays t
 - Applied `supabase/migrations/024_atomic_record_number.sql` to live DB: BEFORE INSERT trigger `records_assign_record_number` serializes each project's numbering through transaction-scoped advisory lock and assigns MAX+1 on the server. It checks the authorized user owns the book; client-submitted number is replaced. Commit `0c89cab7`.
 - Post-migration Security Advisor: zero lints. Existing UI may display a provisional count before saving; persisted `record_number` is authoritative.
 - **Pending E2E:** concurrent authenticated INSERTs to one project, editing and deletion gaps, cross-user insert, retry after failed network requests, and DB constraint behavior.
+
+## 21. Record create retry reconciliation — 2026-10-16
+
+- Each new record editor (free, question, photo) now retains one UUID for its current create attempt. The create API inserts that UUID as the record primary key and, if its insert response fails, reads back the exact ID under the same user/project; only a complete match of mode, body, question, title, photo and emotion tags counts as a recovered success.
+- The DB already enforces unique primary-key IDs and atomic per-project record numbering via migration 024. Reusing the UUID prevents a timed-out insert followed by an immediate retry from creating a second record with a new ID.
+- Photo editor caches the successfully uploaded Storage path for the same selected file, preventing path mismatch and duplicate upload on retry. Selecting another file resets that cache.
+- Relevant commits: `2069df57`, `23976540`, `98853368`, `3b2a0b37`, `cbffea57`.
+- **Pending:** authorized account E2E with injected network timeouts; retries after full page refresh are not guaranteed idempotent (the UUID is component-local). Edits and badge events need separate idempotency policy. Do not claim E2E PASS from a ready build.
