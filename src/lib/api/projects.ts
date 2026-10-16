@@ -143,6 +143,13 @@ export async function updateProjectCoverSelection(
 
 /** Explicit, owned workflow completion; only successful database writes count. */
 export async function completeManuscriptReview(projectId: string, userId: string): Promise<Project> {
+  if (isDevBypass()) {
+    const project = mockGetProjectById(projectId)
+    if (!project || project.user_id !== userId) throw new Error('책을 찾을 수 없어요.')
+    project.manuscript_reviewed_at = new Date().toISOString()
+    project.final_review_completed_at = null
+    return project
+  }
   const { data, error } = await supabase.from('projects')
     .update({ manuscript_reviewed_at: new Date().toISOString(), final_review_completed_at: null })
     .eq('id', projectId).eq('user_id', userId).select().single()
@@ -151,6 +158,12 @@ export async function completeManuscriptReview(projectId: string, userId: string
 }
 
 export async function completeFinalReview(projectId: string, userId: string): Promise<Project> {
+  if (isDevBypass()) {
+    const project = mockGetProjectById(projectId)
+    if (!project || project.user_id !== userId || !project.manuscript_reviewed_at) throw new Error('원고 확인을 먼저 완료해주세요.')
+    project.final_review_completed_at = new Date().toISOString()
+    return project
+  }
   const { data, error } = await supabase.from('projects')
     .update({ final_review_completed_at: new Date().toISOString() })
     .eq('id', projectId).eq('user_id', userId).not('manuscript_reviewed_at', 'is', null)
