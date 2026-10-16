@@ -141,14 +141,31 @@ Deno.serve(async (req) => {
       })
     }
 
-    const { data: chapters } = await admin
+    // Never rely on client route guards or checkboxes for publication authorization.
+    if (!project.ready_at || !project.manuscript_reviewed_at || !project.final_review_completed_at) {
+      return new Response(JSON.stringify({
+        code: 'REVIEW_REQUIRED',
+        error: '책 만들기 준비와 원고·최종 검수를 완료해주세요.',
+      }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    if ((project.selected_cover_id ?? project.cover_template_id) !== cover_template_id) {
+      return new Response(JSON.stringify({
+        code: 'COVER_MISMATCH',
+        error: '저장된 표지와 발행 요청이 달라요. 표지를 다시 확인해주세요.',
+      }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    const { data: chapters, error: chaptersError } = await admin
       .from('chapters')
       .select('*')
       .eq('project_id', project_id)
       .order('sort_order', { ascending: true })
 
-    if (!chapters?.length) {
-      return new Response(JSON.stringify({ error: 'No chapters to publish' }), {
+    if (chaptersError) throw chaptersError
+
+    if (!chapters?.length || chapters.some((chapter) => !getDisplayContent(chapter).trim() || !chapter.title.trim())) {
+      return new Response(JSON.stringify({ code: 'MANUSCRIPT_INCOMPLETE', error: '챕터와 원고 내용을 모두 확인해주세요.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
