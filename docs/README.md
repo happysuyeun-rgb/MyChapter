@@ -54,7 +54,7 @@
 | 07 | [07_ARCHITECTURE.md](./07_ARCHITECTURE.md) | 기술 스택/도메인/런타임 구조 | CURRENT |
 | 08 | [08_DB_V2_DESIGN.md](./08_DB_V2_DESIGN.md) | DB v2 설계 배경/구조 | CURRENT, 일부 상태 문구 갱신 필요 |
 | 12 | [12_DB_V2_CUTOVER_CHECKLIST.md](./12_DB_V2_CUTOVER_CHECKLIST.md) | DB v2 적용/검증 체크리스트 | ACTIVE |
-| 13 | `13_DEVELOPMENT_SPEC.md` | **통합 개발명세서** | NEXT |
+| 13 | [13_DEVELOPMENT_SPEC.md](./13_DEVELOPMENT_SPEC.md) | **통합 개발명세서** | CURRENT |
 | 14 | `14_API_SPEC.md` | Client API + Edge Function 계약 | NEXT |
 | 15 | `15_DATA_DICTIONARY.md` | 실제 schema/필드/관계 | NEXT |
 
@@ -139,7 +139,7 @@
 ## 7. 지금부터의 작성 순서
 
 1. 문서 구조 정리 / legacy 분리 — **DONE**
-2. `13_DEVELOPMENT_SPEC.md` — 통합 개발명세서
+2. `13_DEVELOPMENT_SPEC.md` — 통합 개발명세서 — **DONE**
 3. `14_API_SPEC.md` — 현재 코드/Edge Function 계약 정리
 4. `15_DATA_DICTIONARY.md` — 실제 Supabase schema 기준
 5. `16_QA_E2E.md` — 실사용자 E2E / RLS / Free-Pro 검증
