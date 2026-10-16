@@ -186,3 +186,7 @@ Persist `projects.manuscript_reviewed_at` and `projects.final_review_completed_a
 - `listNotifications(userId,limit=30)`, `getUnreadCount(userId)`, `markAsRead(notificationId)`, `markAllRead(userId)`, `createBadgeNotifications(userId,badges)`: `notifications` queries and mutations; currently badge insertion checks duplicate title client-side and is not atomic.
 
 **Live Supabase baseline:** MyChapter ACTIVE_HEALTHY; migrations through 014 present, public-table RLS flags enabled, Security Advisor zero lints. Endpoint payload/status checks for remaining Edge Function bodies and real multi-user execution still pending. Do not equate this with E2E passage.
+
+## 9. GAP-005 implemented source additions — 2026-10-16
+
+`src/lib/api/projects.ts` now exports `completeManuscriptReview(projectId,userId): Promise<Project>` and `completeFinalReview(projectId,userId): Promise<Project>`. Both write owned `projects` rows. Manuscript completion updates `manuscript_reviewed_at` and clears prior `final_review_completed_at`; Final Review completion requires prior non-null manuscript review. Both return the updated Project on successful DB `update().select().single()`. Mock paths included. **These are implemented source APIs, not yet E2E verified.**
