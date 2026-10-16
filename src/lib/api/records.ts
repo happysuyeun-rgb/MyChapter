@@ -91,14 +91,15 @@ export async function listRecords(
   return data ?? []
 }
 
-export async function getRecord(id: string): Promise<JournalRecord | null> {
-  if (isDevBypass()) return mockGetRecord(id)
+export async function getRecord(id: string, userId?: string): Promise<JournalRecord | null> {
+  if (isDevBypass()) {
+    const record = mockGetRecord(id)
+    return record && (!userId || record.user_id === userId) ? record : null
+  }
 
-  const { data, error } = await supabase
-    .from('records')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle()
+  let query = supabase.from('records').select('*').eq('id', id)
+  if (userId) query = query.eq('user_id', userId)
+  const { data, error } = await query.maybeSingle()
 
   if (error) throw error
   return data
