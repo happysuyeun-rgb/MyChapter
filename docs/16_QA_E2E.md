@@ -156,3 +156,11 @@ Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays t
 - **Not an E2E pass:** OAuth/email callbacks, automatic users-row bootstrap, notification preferences, record persistence and two-account ownership have not been executed under a real test login.
 - **Additional risk:** UI-only Free project creation limit may be bypassed by direct project insert unless database/API enforces it. A JavaScript loading guard alone is not an atomic idempotency lock.
 - **Next:** live account smoke tests and server-side project entitlement validation before asserting first-run complete.
+
+## 15. Phase B-4 real-account first-run verification (2026-10-16)
+
+- Source-reviewed first-run routes, OAuth initiation, authStore initialization, and onboarding/profile creation schema.
+- Live DB schema confirms `auth.users` AFTER INSERT trigger `on_auth_user_created` is present. Presence does **not** prove real profile bootstrapping.
+- Fixed `LoginPage` to surface OAuth initiation errors and disable duplicate OAuth clicks while request is pending; commit `14acff46`.
+- Browser-based authenticated E2E was **not** executed: no authorized disposable login session, verification inbox or production test credentials available through the connected developer tools. Do not invent a PASS.
+- Next executable smoke run: AUTH-01 email magic link → users profile → nickname/notification persisted → project create → free record save/reload; then question/photo modes → readiness fixtures → AI chapter → review → PDF v1. Save evidence and failures by step.
