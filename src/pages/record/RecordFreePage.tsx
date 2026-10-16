@@ -45,6 +45,17 @@ export function RecordFreePage() {
       setRecordNumber(count + 1)
 
       try {
+        const draft = await loadDraft(user.id, project.id, 'free')
+        if (draft) {
+          setContent(draft.content ?? '')
+          setTitle(draft.title ?? '')
+          setEmotions(draft.emotionTags ?? [])
+        }
+      } catch {
+        setError('임시저장 기록을 불러오지 못했어요. 다시 접속해 확인해주세요.')
+      }
+
+      try {
         const h = await generateFreewritingHint(project.id)
         setHint(h)
       } catch (err) {
@@ -53,11 +64,6 @@ export function RecordFreePage() {
         }
         setHint(getFallbackHint(project.type))
       }
-
-      const draft = await loadDraft(user.id, project.id, 'free')
-      if (draft?.content) setContent(draft.content)
-      if (draft?.title) setTitle(draft.title)
-      if (draft?.emotionTags) setEmotions(draft.emotionTags)
     }
 
     void init()
