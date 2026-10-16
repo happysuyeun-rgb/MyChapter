@@ -56,7 +56,7 @@
 | 12 | [12_DB_V2_CUTOVER_CHECKLIST.md](./12_DB_V2_CUTOVER_CHECKLIST.md) | DB v2 적용/검증 체크리스트 | ACTIVE |
 | 13 | [13_DEVELOPMENT_SPEC.md](./13_DEVELOPMENT_SPEC.md) | **통합 개발명세서** | CURRENT |
 | 14 | [14_API_SPEC.md](./14_API_SPEC.md) | Client API + Edge Function 계약 | WORKING (source-audited v0.1) |
-| 15 | `15_DATA_DICTIONARY.md` | 실제 schema/필드/관계 | NEXT |
+| 15 | [15_DATA_DICTIONARY.md](./15_DATA_DICTIONARY.md) | schema/필드/관계 — 원격 DB 대조 전 | WORKING (repository v0.1) |
 
 ### 개발명세서 작성 원칙
 
@@ -141,7 +141,7 @@
 1. 문서 구조 정리 / legacy 분리 — **DONE**
 2. `13_DEVELOPMENT_SPEC.md` — 통합 개발명세서 — **DONE**
 3. `14_API_SPEC.md` — 현재 코드/Edge Function 계약 정리 — **WORKING (v0.1, 추가 응답 계약 검증 필요)**
-4. `15_DATA_DICTIONARY.md` — 실제 Supabase schema 기준
+4. `15_DATA_DICTIONARY.md` — repository schema 기준 초안 **WORKING (v0.1, 실제 Supabase 확인 필요)**
 5. `16_QA_E2E.md` — 실사용자 E2E / RLS / Free-Pro 검증
 6. `17_RELEASE_RUNBOOK.md` — 출시/운영 절차
 7. 오래된 문서의 물리적 archive 이동은 마지막에 수행
