@@ -344,3 +344,7 @@ This is not a screen-code gap, but it blocks verification of:
 ## Lock rule
 
 05_SCREEN_SPEC.md v1.1 is the screen/UX target. When code differs from it, update code or explicitly revise the product decision; do not silently change the screen document to match accidental implementation.
+
+## Operational status recheck — 2026-10-16
+
+**BLOCK-001 status: RESOLVED AS ENVIRONMENT AVAILABILITY BLOCKER.** Direct Supabase project listing now reports MyChapter as `ACTIVE_HEALTHY`; live schema/migration inspection succeeds. The historical `INACTIVE` wording above documents an older state, not the current one. Production **real-user E2E remains pending**; database availability is not functional validation.
