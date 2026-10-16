@@ -123,7 +123,9 @@ Home/Library/Workspace show the same publication state/version as Completed Book
 
 ### GAP-005 · Workflow completion is inferred instead of persisted
 
-**Current**
+**Status: IMPLEMENTED IN CODE + DB / E2E PENDING** — 2026-10-16. Migration 015 applied; types, Project API, ManuscriptPage, FinalReviewPage, Workspace and mock fixtures patched. Refresh/login and build still unverified.
+
+**Previous state**
 
 - manuscript completion is inferred from all Chapter content existing
 - final review completion is inferred from published state / local checkbox state
