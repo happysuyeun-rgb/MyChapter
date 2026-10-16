@@ -19,6 +19,7 @@ import { useRecordStore } from '@/stores/recordStore'
 export function RecordPhotoPage() {
   const navigate = useNavigate()
   const createRequestId = useRef(crypto.randomUUID())
+  const uploadedPhotoPath = useRef<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const { user } = useAuthStore()
   const { project, loading } = useActiveProject()
@@ -61,6 +62,7 @@ export function RecordPhotoPage() {
   }, [project, user, editingRecord])
 
   const handleFile = (file: File) => {
+    uploadedPhotoPath.current = null
     setPhotoFile(file)
     setPhotoPreview(URL.createObjectURL(file))
   }
@@ -82,7 +84,10 @@ export function RecordPhotoPage() {
     try {
       let photoUrl = existingPhotoPath
       if (photoFile) {
-        photoUrl = await uploadRecordPhoto(user.id, project.id, photoFile)
+        if (!uploadedPhotoPath.current) {
+          uploadedPhotoPath.current = await uploadRecordPhoto(user.id, project.id, photoFile)
+        }
+        photoUrl = uploadedPhotoPath.current
       }
 
       const result = editingRecord
