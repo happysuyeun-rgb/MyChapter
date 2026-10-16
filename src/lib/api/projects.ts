@@ -140,3 +140,21 @@ export async function updateProjectCoverSelection(
   if (error) throw error
   return data
 }
+
+/** Explicit, owned workflow completion; only successful database writes count. */
+export async function completeManuscriptReview(projectId: string, userId: string): Promise<Project> {
+  const { data, error } = await supabase.from('projects')
+    .update({ manuscript_reviewed_at: new Date().toISOString(), final_review_completed_at: null })
+    .eq('id', projectId).eq('user_id', userId).select().single()
+  if (error) throw error
+  return data
+}
+
+export async function completeFinalReview(projectId: string, userId: string): Promise<Project> {
+  const { data, error } = await supabase.from('projects')
+    .update({ final_review_completed_at: new Date().toISOString() })
+    .eq('id', projectId).eq('user_id', userId).not('manuscript_reviewed_at', 'is', null)
+    .select().single()
+  if (error) throw error
+  return data
+}
