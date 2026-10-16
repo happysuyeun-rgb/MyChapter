@@ -4,6 +4,7 @@ import { Button } from '@/components/common'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { listChapters } from '@/lib/api/chapters'
 import { listRecords } from '@/lib/api/records'
+import { completeManuscriptReview } from '@/lib/api/projects'
 import { useAuthStore } from '@/stores/authStore'
 import type { Chapter } from '@/types/database'
 import { getBookReadiness } from '@/utils/bookReadiness'
@@ -16,6 +17,8 @@ export function ManuscriptPage() {
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [recordCount, setRecordCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user || !project) return
@@ -40,6 +43,20 @@ export function ManuscriptPage() {
   )
   const completedChapters = chapters.filter((chapter) => getChapterDisplayContent(chapter).trim().length > 0).length
   const manuscriptReady = chapters.length > 0 && completedChapters === chapters.length
+
+  const confirmManuscript = async () => {
+    if (!user || !project || !manuscriptReady || saving) return
+    setSaving(true)
+    setSaveError(null)
+    try {
+      await completeManuscriptReview(project.id, user.id)
+      navigate('/book/cover')
+    } catch {
+      setSaveError('원고 확인 상태를 저장하지 못했어요. 다시 시도해주세요.')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   if (projectLoading || loading || !project) {
     return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
@@ -96,7 +113,8 @@ export function ManuscriptPage() {
           </section>
         ) : (
           <div className="mt-6">
-            <Button disabled={!manuscriptReady} onClick={() => navigate('/book/cover')}>원고 확인 완료 · 표지 선택하기</Button>
+            <Button disabled={!manuscriptReady || saving} onClick={() => void confirmManuscript()}>{saving ? '저장 중...' : '원고 확인 완료 · 표지 선택하기'}</Button>
+            {saveError && <p role="alert" className="mt-2 text-center text-xs text-terracotta">{saveError}</p>}
             {!manuscriptReady && <p className="mt-2 text-center text-xs text-ink-muted">모든 챕터에 원고가 있어야 다음 단계로 갈 수 있어요.</p>}
           </div>
         )}
