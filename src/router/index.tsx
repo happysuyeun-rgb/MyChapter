@@ -30,6 +30,7 @@ import { RecordsListPage } from '@/pages/record/RecordsListPage'
 import { BookCoverPage, BookPage, ChapterEditPage, ChapterPreviewPage, FinalReviewPage, ManuscriptPage, PublishCompletePage, PublishedBookPage } from '@/pages/book'
 import { SplashPage } from '@/pages/splash/SplashPage'
 import { AuthGuard, GuestGuard, OnboardingGuard } from './guards'
+import { BookStageGuard } from './BookStageGuard'
 
 export const router = createBrowserRouter([
   {
@@ -76,11 +77,16 @@ export const router = createBrowserRouter([
               { path: '/records/:id', element: <RecordDetailPage /> },
               { path: '/records/:id/edit', element: <RecordEditPage /> },
 
-              { path: '/book/chapter/:id', element: <ChapterPreviewPage /> },
-              { path: '/book/chapter/:id/edit', element: <ChapterEditPage /> },
-              { path: '/book/manuscript', element: <ManuscriptPage /> },
-              { path: '/book/cover', element: <BookCoverPage /> },
-              { path: '/book/review', element: <FinalReviewPage /> },
+              {
+                element: <BookStageGuard />,
+                children: [
+                  { path: '/book/chapter/:id', element: <ChapterPreviewPage /> },
+                  { path: '/book/chapter/:id/edit', element: <ChapterEditPage /> },
+                  { path: '/book/manuscript', element: <ManuscriptPage /> },
+                  { path: '/book/cover', element: <BookCoverPage /> },
+                  { path: '/book/review', element: <FinalReviewPage /> },
+                ],
+              },
               { path: '/book/publish/complete', element: <PublishCompletePage /> },
               { path: '/publication/:id', element: <PublishedBookPage /> },
 
