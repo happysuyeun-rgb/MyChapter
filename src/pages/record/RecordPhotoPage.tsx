@@ -6,6 +6,7 @@ import { ExitConfirmModal } from '@/components/features/record/ExitConfirmModal'
 import { NavBar } from '@/components/layout/NavBar'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { clearRecordRequestId, getOrCreateRecordRequestId } from '@/lib/recordRequestId'
+import { clearPhotoAttempt, loadPhotoAttempt, savePhotoAttempt } from '@/lib/photoAttempt'
 import { deleteDraft, loadDraft, saveDraft } from '@/lib/api/drafts'
 import {
   createRecord,
@@ -30,6 +31,7 @@ export function RecordPhotoPage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [existingPhotoPath] = useState(editingRecord?.photo_url ?? null)
+  const [restoredPhotoPath, setRestoredPhotoPath] = useState<string | null>(null)
   const [recordNumber, setRecordNumber] = useState(editingRecord?.record_number ?? 1)
   const [saving, setSaving] = useState(false)
   const [showExit, setShowExit] = useState(false)
@@ -53,6 +55,15 @@ export function RecordPhotoPage() {
       const count = await getRecordCount(project.id)
       setRecordNumber(count + 1)
 
+      const requestId = getOrCreateRecordRequestId(user.id, project.id, 'photo')
+      const recoveredPath = loadPhotoAttempt(user.id, project.id, requestId)
+      if (recoveredPath) {
+        uploadedPhotoPath.current = recoveredPath
+        setRestoredPhotoPath(recoveredPath)
+        const preview = await getPhotoSignedUrl(recoveredPath)
+        if (preview) setPhotoPreview(preview)
+      }
+
       const draft = await loadDraft(user.id, project.id, 'photo')
       if (draft?.content) setCaption(draft.content)
       if (draft?.emotionTags) setEmotions(draft.emotionTags)
@@ -63,13 +74,15 @@ export function RecordPhotoPage() {
 
   const handleFile = (file: File) => {
     uploadedPhotoPath.current = null
+    setRestoredPhotoPath(null)
+    if (user && project) clearPhotoAttempt(user.id, project.id)
     setPhotoFile(file)
     setPhotoPreview(URL.createObjectURL(file))
   }
 
   const handleSave = async () => {
     if (!user || !project || saving) return
-    if (!photoFile && !existingPhotoPath) {
+    if (!photoFile && !existingPhotoPath && !restoredPhotoPath) {
       setError('사진을 추가해주세요.')
       return
     }
@@ -82,10 +95,11 @@ export function RecordPhotoPage() {
     setError('')
 
     try {
-      let photoUrl = existingPhotoPath
+      let photoUrl = existingPhotoPath ?? restoredPhotoPath
       if (photoFile) {
         if (!uploadedPhotoPath.current) {
           uploadedPhotoPath.current = await uploadRecordPhoto(user.id, project.id, photoFile)
+          if (!editingRecord) savePhotoAttempt(user.id, project.id, getOrCreateRecordRequestId(user.id, project.id, 'photo'), uploadedPhotoPath.current)
         }
         photoUrl = uploadedPhotoPath.current
       }
@@ -110,7 +124,10 @@ export function RecordPhotoPage() {
           )
 
       try { await deleteDraft(user.id, project.id, 'photo') } catch { /* saved record remains valid */ }
-      if (!editingRecord) clearRecordRequestId(user.id, project.id, 'photo')
+      if (!editingRecord) {
+        clearPhotoAttempt(user.id, project.id)
+        clearRecordRequestId(user.id, project.id, 'photo')
+      }
       setEditingRecord(null)
       setLastSave(result, project)
       navigate('/record/complete')
