@@ -177,3 +177,9 @@ Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays t
 - Draft-save exit action formerly navigated only on success but offered no catch/error. Added failure feedback while keeping editor content visible; commit `6ab1989a`.
 - **Still open:** Free draft is fetched only after AI hint request resolves: slow AI delays restoration, and draft read errors are not handled in that initialization path. An additional fix is needed.
 - **E2E pending:** authenticate, save draft, refresh, restore, edit and save, switch Book, verify no other Book record is updated, simulate draft API failure.
+
+## 18. Free-writing draft restore order — 2026-10-16
+
+- Changed `RecordFreePage` initialization to load the persisted draft **before** awaiting the AI hint. If draft retrieval fails, an inline recovery message appears; AI hint still uses its existing fallback and quota behavior.
+- GitHub commit: `93fa6628`.
+- **Static/code completion only. E2E pending:** draft save → leave → return → content/title/emotions restored; AI hint timeout; draft read failure; edit existing record must not apply another draft; fast typing before draft load; cross-project switch; error/retry behavior.
