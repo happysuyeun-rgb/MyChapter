@@ -164,3 +164,9 @@ Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays t
 - Fixed `LoginPage` to surface OAuth initiation errors and disable duplicate OAuth clicks while request is pending; commit `14acff46`.
 - Browser-based authenticated E2E was **not** executed: no authorized disposable login session, verification inbox or production test credentials available through the connected developer tools. Do not invent a PASS.
 - Next executable smoke run: AUTH-01 email magic link → users profile → nickname/notification persisted → project create → free record save/reload; then question/photo modes → readiness fixtures → AI chapter → review → PDF v1. Save evidence and failures by step.
+
+## 16. Phase B first-record saved-state consistency — 2026-10-16
+
+- Audited `createRecord`/`updateRecord` → `finalizeSave` → Free Record draft cleanup. Found false failure feedback: DB record could be persisted but subsequent badge notification or draft cleanup error was caught by the UI as if the save failed, risking duplicate resubmission.
+- `finalizeSave` now treats badge notification failure as non-blocking; commit `a9fe813f`. `RecordFreePage` now treats draft cleanup failure as non-blocking after persistence; commit `d65e428e`.
+- **Pending:** authenticated test with deliberately failing badge/draft APIs, record count reload after save, and verification that stale drafts never overwrite saved-record state. Do not claim E2E PASS.
