@@ -203,3 +203,10 @@ Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays t
 - Photo editor caches the successfully uploaded Storage path for the same selected file, preventing path mismatch and duplicate upload on retry. Selecting another file resets that cache.
 - Relevant commits: `2069df57`, `23976540`, `98853368`, `3b2a0b37`, `cbffea57`.
 - **Pending:** authorized account E2E with injected network timeouts; retries after full page refresh are not guaranteed idempotent (the UUID is component-local). Edits and badge events need separate idempotency policy. Do not claim E2E PASS from a ready build.
+
+## 22. Reload-stable create request identity — 2026-10-16
+
+- Added `src/lib/recordRequestId.ts`: scoped sessionStorage UUID for user + Book + record mode (24h TTL), no manuscript content stored. Editors reuse UUID on retry even after refresh, clear on confirmed save. Commits `52dc3308`, `27f1b4ab`, `de0850e9`, `16ca2350`.
+- The DB primary key rejects a second insert of the same UUID; createRecord reconciles matching existing rows. This improves idempotency across same-tab refresh, not cross-browser/device or sessionStorage loss.
+- **Known blocker for photo refresh:** selected File and upload path are component-local; if refreshed after an ambiguous photo submission, re-uploading creates a different photo path and the existing-row matching check safely rejects it. Needs durable photo attempt metadata + uploaded file recovery workflow, without persisting the image insecurely.
+- **Other limitations:** changed content with an outstanding ambiguous request is intentionally rejected to avoid silently treating different content as a retry; no authoritative real-user timeout/retry E2E executed.
