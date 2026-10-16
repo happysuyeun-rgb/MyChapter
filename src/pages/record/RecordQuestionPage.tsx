@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Textarea } from '@/components/common'
 import { EmotionTagPicker } from '@/components/features/record/EmotionTagPicker'
@@ -14,6 +14,7 @@ import { useRecordStore } from '@/stores/recordStore'
 
 export function RecordQuestionPage() {
   const navigate = useNavigate()
+  const createRequestId = useRef(crypto.randomUUID())
   const { user } = useAuthStore()
   const { showPaywall } = usePaywallStore()
   const { project, loading } = useActiveProject()
@@ -75,7 +76,7 @@ export function RecordQuestionPage() {
   }
 
   const handleSave = async () => {
-    if (!user || !project) return
+    if (!user || !project || saving) return
     if (content.trim().length < 10) {
       setError('최소 10자 이상 작성해주세요.')
       return
@@ -100,6 +101,7 @@ export function RecordQuestionPage() {
             {
               projectId: project.id,
               userId: user.id,
+              requestId: createRequestId.current,
               mode: 'question',
               content: content.trim(),
               questionText: question,
@@ -107,7 +109,7 @@ export function RecordQuestionPage() {
             }
           )
 
-      await deleteDraft(user.id, project.id, 'question')
+      try { await deleteDraft(user.id, project.id, 'question') } catch { /* saved record remains valid */ }
       setEditingRecord(null)
       setLastSave(result, project)
       navigate('/record/complete')
