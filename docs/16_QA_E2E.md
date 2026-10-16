@@ -139,3 +139,11 @@ Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays t
 - A failed latest version is reused and its `processing_started_at` resets on retry; fresh reservations stamp the start time.
 - Supabase Security Advisor shows zero warnings. SQL function introspection confirms timeout handling and lease reset.
 - **Risks:** a still-running function older than an hour could compete with a retry; safe finalization fencing/token and writing PDFs to attempt-scoped storage are not yet in place. Authenticated crash/retry E2E not performed.
+
+## 13. Phase A-2 — stale worker fencing + source recheck (2026-10-16)
+
+- Applied migrations `021_publication_attempt_fencing.sql` and `022_publication_finalize_lock_order.sql`. Each reservation is assigned a new `attempt_token` and a fingerprint of title/cover/ordered chapters; only matching tokens may finalize or fail a processing publication.
+- The server writes PDFs to attempt-specific paths. Atomic finalization rejects an altered Book or missing review approval, and a stale worker cannot publish its PDF or overwrite the current version path. Source-changing editor updates invalidate approval (migration 016).
+- Finalization uses project-before-publication lock order consistent with reservation. Nullable AI tagline supported.
+- Supabase `generate-pdf` **v9 ACTIVE**. Finalization RPC permitted for service_role only; authenticated users cannot finalize directly. Post-migration Security Advisor shows zero warnings.
+- **PENDING:** two-account authenticated E2E, generation-versus-edit race simulation, timed-out old attempt finishing after a retry, publication recovery, and real Free/Pro PDF rendering. Treat code+schema deployment as verified, not E2E completion.
