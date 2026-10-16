@@ -120,3 +120,13 @@
 Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays the specific rejection message. Deployment v7 fetched back from live project and confirmed to contain the guards.
 
 **Not yet proven:** authenticated E2E with two accounts, Free v1/Pro v2 PDF generation, payment entitlements, or concurrent publication. There is a TOCTOU window between the initial review check and PDF finalization; a separate atomic server-side reservation/recheck plan is required for race-safe publication and version allocation. These checks are not sufficient to declare full publication security and versioning complete.
+
+
+## 11. Atomic publication reservation — 2026-10-16
+
+- Migrations `017_atomic_publication_reservation.sql`, `018_free_publication_slot_lock.sql`, `019_private_publication_reservation.sql` applied to MyChapter live Supabase.
+- Version reservation now uses a database transaction with per-user advisory lock and project row lock. In-progress requests are rejected with `PUBLICATION_IN_PROGRESS`; failed latest version may be retried; Free users also cannot reserve a second processing Book concurrently.
+- Reservation enforces authenticated owner, persisted Ready/Manuscript/Final Review, matching cover, complete chapter titles/body, and Free/Pro published entitlement.
+- Privileged function lives in `private` schema, called via `public.reserve_book_publication` SECURITY INVOKER wrapper; anon EXECUTE is denied. Post-migration Security Advisor: **0 warnings**.
+- Production Edge Function `generate-pdf` **v8 ACTIVE** calls the reservation RPC; client shows in-progress conflict message.
+- **Pending before marking publication stable:** authenticated Free/Pro end-to-end PDF success, double-submit collision test, failed publication retry, crash/timeout orphaned processing reservation recovery, and content mutation while rendering (TOCTOU). Existing `processing` reservation has no recovery timeout; manual diagnostic is required for stuck attempts.
