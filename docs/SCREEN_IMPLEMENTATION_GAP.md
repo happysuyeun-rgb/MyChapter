@@ -350,3 +350,11 @@ This is not a screen-code gap, but it blocks verification of:
 ## Operational status recheck — 2026-10-16
 
 **BLOCK-001 status: RESOLVED AS ENVIRONMENT AVAILABILITY BLOCKER.** Direct Supabase project listing now reports MyChapter as `ACTIVE_HEALTHY`; live schema/migration inspection succeeds. The historical `INACTIVE` wording above documents an older state, not the current one. Production **real-user E2E remains pending**; database availability is not functional validation.
+
+## GAP-005 deployment verification — 2026-10-16
+
+- Vercel production deployment `dpl_4aWLNz4x3xaGdsb9s6QgiCy2kXfc` is **READY**, built from main commit `6eb0b65f9326f2e2d10e9906be4e824cbf0c4f73` containing milestone code and schema migration file. This confirms build/deployment, not actual authenticated workflow.
+- Supabase migration `workflow_review_milestones` successfully applied, both columns confirmed nullable timestamptz, post-change Security Advisor zero warnings.
+- Direct local `git clone` build is unavailable in this execution environment (network DNS failure); independent GitHub Actions run not observed.
+- **PENDING before RESOLVED:** authenticated real-user manuscript review save/refresh; final-review save/refresh; Workspace re-entry; user B blocked from modifying user A's Book; failed save feedback; stale checkboxes / content change invalidation policy.
+- **Important observed edge:** FinalReview local checkbox edits after saved review reset the local `reviewSaved`, but persisted `final_review_completed_at` remains set until a fresh confirmation. Product invalidation rules should be explicitly settled and tested. Do not claim full UX regression completion yet.
