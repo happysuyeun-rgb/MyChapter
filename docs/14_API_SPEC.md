@@ -172,3 +172,17 @@ Persist `projects.manuscript_reviewed_at` and `projects.final_review_completed_a
 - Reconcile any discovered gaps into `13_DEVELOPMENT_SPEC.md`, `SCREEN_IMPLEMENTATION_GAP.md`, and later `16_QA_E2E.md`.
 
 **Status rule:** promote this document from WORKING to CURRENT only after the outstanding code/schema audit. No source code, migration, or production database change was made while creating this document.
+
+## 8. Additional source-verified client contracts — 2026-10-16
+
+- `generateQuestion(projectId: string): Promise<string>`: invokes `generate-question` with `{project_id}`; reads `question`, maps `AI_LIMIT`, and provides a project-type fallback upon transport failure (final fallback uses legacy emotion question).
+- `generateFreewritingHint(projectId: string): Promise<string>`: invokes `generate-freewriting-hint` with `{project_id}`; reads `hint`, maps `AI_LIMIT`, falls back by project type.
+- `saveDraft(userId, projectId, mode, payload): Promise<void>`: upsert `record_drafts` on `user_id,project_id,mode`. `loadDraft` returns nullable payload. `deleteDraft` performs a scoped delete **without checking returned error** (existing behavior, not target).
+- `verifyPurchase(purchaseToken, productId, orderId?): Promise<SubscriptionPlan>`: invokes `verify-subscription` with `{purchase_token,product_id,order_id}`; consumes `plan` or reports `VERIFY_FAILED`. Client currently falls back to `pro` on an error-free response without `plan`; flag for validation hardening.
+- `getSubscriptionPlan(userId)`: defaults to `free` when no row/result; `getSubscription(userId)` returns plan, started_at, expires_at.
+- `updateNickname(userId,nickname)`, `updateProfileEmoji(userId,profileEmoji)`, `updateNotificationSettings(userId,settings)`: update `public.users`, return `UserProfile`.
+- `deleteAccount()`: invokes `delete-account` with `{confirm:true}`; rejects transport or body error.
+- `upsertDeviceToken(userId,fcmToken,platform='android')`: upsert `device_tokens` on `user_id,fcm_token`. `removeDeviceToken(userId,fcmToken)`: owned delete.
+- `listNotifications(userId,limit=30)`, `getUnreadCount(userId)`, `markAsRead(notificationId)`, `markAllRead(userId)`, `createBadgeNotifications(userId,badges)`: `notifications` queries and mutations; currently badge insertion checks duplicate title client-side and is not atomic.
+
+**Live Supabase baseline:** MyChapter ACTIVE_HEALTHY; migrations through 014 present, public-table RLS flags enabled, Security Advisor zero lints. Endpoint payload/status checks for remaining Edge Function bodies and real multi-user execution still pending. Do not equate this with E2E passage.
