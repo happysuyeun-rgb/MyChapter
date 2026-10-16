@@ -253,6 +253,10 @@ export async function generateBookPdf(
     error?: string
   } | null
 
+  if (body?.code === 'REVIEW_REQUIRED' || body?.code === 'COVER_MISMATCH' || body?.code === 'MANUSCRIPT_INCOMPLETE') {
+    throw new BookApiError(body.code, body.error ?? '원고와 최종 검수를 다시 확인해주세요.')
+  }
+
   if (body?.code === 'PUBLICATION_LIMIT' || body?.code === 'PDF_PRO_ONLY') {
     throw new BookApiError('PUBLICATION_LIMIT', body.error ?? 'Free 플랜의 첫 책 발행을 이미 사용했어요.')
   }
