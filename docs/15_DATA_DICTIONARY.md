@@ -191,3 +191,11 @@ This is a **proposed outline, not executed SQL**. Before implementation: confirm
 5. Sync with `14_API_SPEC.md` and `12_DB_V2_CUTOVER_CHECKLIST.md` after verification.
 
 **This file creates documentation only. No SQL was applied, no schema migrated, no source code deployed.**
+
+## 7. Live Supabase verification — 2026-10-16
+
+Project `MyChapter` is **ACTIVE_HEALTHY** (PostgreSQL 17). Live `public` table introspection confirms all 14 expected application tables present and RLS enabled. Every listed public table currently reports 0 rows. Applied migration history includes 001–006 and timestamped versions corresponding to 007–014; latest is `security_performance_hardening`. Security Advisor returned zero lints.
+
+Live `projects` column inventory confirms **neither** `manuscript_reviewed_at` nor `final_review_completed_at` exists; Migration 015 remains a target. Live user `notification_time` and project `notification_time` are SQL `time without time zone` (represented as strings in the client). `subscriptions.user_id` is unique, and `record_analysis.record_id` unique. Live `records.content` SQL check allows 1–5000 characters: mode-specific 10-character minimum is presently application policy, **not** an equivalent DB CHECK.
+
+**Scope of verification:** table existence/columns/RLS-enabled flags and migration inventory confirmed from Supabase introspection; row-level cross-account behavior, Storage policy runtime, and complete policy expressions have **not** been E2E-tested. This is not yet a production launch sign-off.
