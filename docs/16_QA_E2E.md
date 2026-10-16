@@ -183,3 +183,8 @@ Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays t
 - Changed `RecordFreePage` initialization to load the persisted draft **before** awaiting the AI hint. If draft retrieval fails, an inline recovery message appears; AI hint still uses its existing fallback and quota behavior.
 - GitHub commit: `93fa6628`.
 - **Static/code completion only. E2E pending:** draft save → leave → return → content/title/emotions restored; AI hint timeout; draft read failure; edit existing record must not apply another draft; fast typing before draft load; cross-project switch; error/retry behavior.
+
+## 19. Late draft hydration protection — 2026-10-16
+
+- `RecordFreePage` now marks local title/content/emotions interactions as touched and skips late draft hydration if edits began. Tracks initialization generation to ignore async responses after effect cleanup or project switch. Commit `305e978d`.
+- **Remaining limitations:** authenticated E2E is pending; concurrent data edits across tabs are not merged; synchronous `saving` state is not a DB idempotency key; a draft and live record should be verified with real sessions. Test slow draft response, typing first, project switching, leave/reenter, and edit an existing record.
