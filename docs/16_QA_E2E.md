@@ -170,3 +170,10 @@ Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays t
 - Audited `createRecord`/`updateRecord` → `finalizeSave` → Free Record draft cleanup. Found false failure feedback: DB record could be persisted but subsequent badge notification or draft cleanup error was caught by the UI as if the save failed, risking duplicate resubmission.
 - `finalizeSave` now treats badge notification failure as non-blocking; commit `a9fe813f`. `RecordFreePage` now treats draft cleanup failure as non-blocking after persistence; commit `d65e428e`.
 - **Pending:** authenticated test with deliberately failing badge/draft APIs, record count reload after save, and verification that stale drafts never overwrite saved-record state. Do not claim E2E PASS.
+
+## 17. Draft restore and owned record edit review — 2026-10-16
+
+- Verified that Free Record edit UI checks `editingRecord.user_id` and `editingRecord.project_id`, but the update API originally filtered only `id` and `user_id`. Added `project_id` predicate server-request-side to `updateRecord`; commit `cb7dd410`.
+- Draft-save exit action formerly navigated only on success but offered no catch/error. Added failure feedback while keeping editor content visible; commit `6ab1989a`.
+- **Still open:** Free draft is fetched only after AI hint request resolves: slow AI delays restoration, and draft read errors are not handled in that initialization path. An additional fix is needed.
+- **E2E pending:** authenticate, save draft, refresh, restore, edit and save, switch Book, verify no other Book record is updated, simulate draft API failure.
