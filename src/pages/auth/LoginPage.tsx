@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Provider } from '@supabase/supabase-js'
 import { FlatIcon } from '@/components/common'
@@ -12,15 +13,32 @@ function getOAuthRedirectUrl(): string {
 }
 
 async function signInWithOAuth(provider: Provider) {
-  await supabase.auth.signInWithOAuth({
+  const { error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
       redirectTo: getOAuthRedirectUrl(),
     },
   })
+  if (error) throw error
 }
 
 export function LoginPage() {
+  const [error, setError] = useState('')
+  const [pending, setPending] = useState<Provider | null>(null)
+
+  const handleOAuth = async (provider: Provider) => {
+    if (pending) return
+    setError('')
+    setPending(provider)
+    try {
+      await signInWithOAuth(provider)
+    } catch {
+      setError('로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.')
+    } finally {
+      setPending(null)
+    }
+  }
+
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface px-6 py-8">
       <header className="flex items-center justify-between border-b border-ink pb-5">
@@ -44,14 +62,16 @@ export function LoginPage() {
         <div className="mt-10 border-t border-border pt-5">
           <button
             type="button"
-            onClick={() => void signInWithOAuth('kakao')}
+            disabled={pending !== null}
+            onClick={() => void handleOAuth('kakao')}
             className="flex min-h-[50px] w-full items-center justify-between border-b border-border text-left text-sm font-semibold"
           >
             <span>카카오로 시작하기</span><span>→</span>
           </button>
           <button
             type="button"
-            onClick={() => void signInWithOAuth('google')}
+            disabled={pending !== null}
+            onClick={() => void handleOAuth('google')}
             className="flex min-h-[50px] w-full items-center justify-between border-b border-border text-left text-sm font-semibold"
           >
             <span>Google로 시작하기</span><span>→</span>
@@ -62,6 +82,7 @@ export function LoginPage() {
           >
             <span>이메일로 시작하기</span><span>→</span>
           </Link>
+          {error && <p role="alert" className="mt-4 text-sm text-danger">{error}</p>}
         </div>
       </main>
 
