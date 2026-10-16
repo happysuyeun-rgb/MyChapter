@@ -101,152 +101,40 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceRoleKey)
     adminForFailure = admin
 
-    const { data: subscription } = await admin
-      .from('subscriptions')
-      .select('plan')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    if (subscription?.plan !== 'pro') {
-      const { count: publishedCount, error: countError } = await admin
-        .from('publications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('status', 'published')
-
-      if (countError) throw countError
-
-      if ((publishedCount ?? 0) >= 1) {
-        return new Response(JSON.stringify({
-          code: 'PUBLICATION_LIMIT',
-          error: 'Free 플랜의 첫 책 발행을 이미 사용했어요.',
-        }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-    }
-
-    const { data: project } = await admin
-      .from('projects')
-      .select('*')
-      .eq('id', project_id)
-      .eq('user_id', user.id)
-      .single()
-
-    if (!project) {
-      return new Response(JSON.stringify({ error: 'Project not found' }), {
-        status: 404,
+    // Atomic reservation in the caller's JWT context: owns the book, verifies
+    // review prerequisites and Free/Pro entitlement, serializes concurrent calls.
+    const { data: reservation, error: reserveError } = await userClient.rpc(
+      'reserve_book_publication',
+      { p_project_id: project_id, p_cover_template_id: cover_template_id },
+    )
+    if (reserveError || !reservation?.id || !reservation?.version) {
+      const detail = reserveError?.message ?? 'PUBLICATION_RESERVATION_FAILED'
+      const code = ['UNAUTHORIZED', 'PROJECT_NOT_FOUND', 'REVIEW_REQUIRED',
+        'COVER_MISMATCH', 'MANUSCRIPT_INCOMPLETE', 'PUBLICATION_LIMIT',
+        'PUBLICATION_IN_PROGRESS'].find((item) => detail.includes(item))
+        ?? 'PUBLICATION_RESERVATION_FAILED'
+      const status = code === 'PUBLICATION_LIMIT' ? 402 :
+        code === 'PROJECT_NOT_FOUND' ? 404 :
+        code === 'UNAUTHORIZED' ? 401 : 409
+      return new Response(JSON.stringify({ code, error: code }), {
+        status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+    publicationId = reservation.id as string
+    const version = reservation.version as number
 
-    // Never rely on client route guards or checkboxes for publication authorization.
-    if (!project.ready_at || !project.manuscript_reviewed_at || !project.final_review_completed_at) {
-      return new Response(JSON.stringify({
-        code: 'REVIEW_REQUIRED',
-        error: '책 만들기 준비와 원고·최종 검수를 완료해주세요.',
-      }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    }
-
-    if ((project.selected_cover_id ?? project.cover_template_id) !== cover_template_id) {
-      return new Response(JSON.stringify({
-        code: 'COVER_MISMATCH',
-        error: '저장된 표지와 발행 요청이 달라요. 표지를 다시 확인해주세요.',
-      }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    }
-
+    const { data: project, error: projectError } = await admin
+      .from('projects').select('*').eq('id', project_id).eq('user_id', user.id).single()
+    if (projectError || !project) throw projectError ?? new Error('PROJECT_NOT_FOUND')
     const { data: chapters, error: chaptersError } = await admin
-      .from('chapters')
-      .select('*')
-      .eq('project_id', project_id)
+      .from('chapters').select('*').eq('project_id', project_id)
       .order('sort_order', { ascending: true })
-
-    if (chaptersError) throw chaptersError
-
-    if (!chapters?.length || chapters.some((chapter) => !getDisplayContent(chapter).trim() || !chapter.title.trim())) {
-      return new Response(JSON.stringify({ code: 'MANUSCRIPT_INCOMPLETE', error: '챕터와 원고 내용을 모두 확인해주세요.' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
+    if (chaptersError || !chapters?.length) throw chaptersError ?? new Error('MANUSCRIPT_INCOMPLETE')
     const { data: profile } = await admin
-      .from('users')
-      .select('nickname')
-      .eq('id', user.id)
-      .single()
-
+      .from('users').select('nickname').eq('id', user.id).maybeSingle()
     const authorName = project.author_name ?? profile?.nickname ?? '작가'
     const coverStyle = COVER_STYLES[cover_template_id] ?? COVER_STYLES.cover_01
-
-    const { data: latestPublication, error: latestError } = await admin
-      .from('publications')
-      .select('version')
-      .eq('project_id', project_id)
-      .eq('status', 'published')
-      .order('version', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    if (latestError) throw latestError
-
-    const version = (latestPublication?.version ?? 0) + 1
-    const tocSnapshot = chapters.map((chapter) => ({
-      chapter_number: chapter.chapter_number,
-      title: chapter.title,
-    }))
-
-    const { data: retryPublication, error: retryLookupError } = await admin
-      .from('publications')
-      .select('id')
-      .eq('project_id', project_id)
-      .eq('version', version)
-      .eq('status', 'failed')
-      .maybeSingle()
-
-    if (retryLookupError) throw retryLookupError
-
-    if (retryPublication) {
-      publicationId = retryPublication.id
-      const { error: retryUpdateError } = await admin
-        .from('publications')
-        .update({
-          status: 'processing',
-          title_snapshot: project.title,
-          subtitle_snapshot: project.subtitle,
-          author_snapshot: authorName,
-          cover_snapshot: { template_id: cover_template_id },
-          toc_snapshot: tocSnapshot,
-          pdf_path: null,
-          page_count: null,
-          error_code: null,
-          error_message: null,
-          published_at: null,
-        })
-        .eq('id', publicationId)
-
-      if (retryUpdateError) throw retryUpdateError
-    } else {
-      const { data: publication, error: publicationError } = await admin
-        .from('publications')
-        .insert({
-          project_id,
-          user_id: user.id,
-          version,
-          status: 'processing',
-          title_snapshot: project.title,
-          subtitle_snapshot: project.subtitle,
-          author_snapshot: authorName,
-          cover_snapshot: { template_id: cover_template_id },
-          toc_snapshot: tocSnapshot,
-        })
-        .select('id')
-        .single()
-
-      if (publicationError) throw publicationError
-      publicationId = publication.id
-    }
 
     const coverTagline = await generateGeminiText({
       systemInstruction: '전자책 표지용 한 줄 태그라인을 생성하세요. 25자 이내, 한국어, 따옴표 없이.',
