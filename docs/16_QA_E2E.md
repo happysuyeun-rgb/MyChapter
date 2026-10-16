@@ -188,3 +188,10 @@ Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays t
 
 - `RecordFreePage` now marks local title/content/emotions interactions as touched and skips late draft hydration if edits began. Tracks initialization generation to ignore async responses after effect cleanup or project switch. Commit `305e978d`.
 - **Remaining limitations:** authenticated E2E is pending; concurrent data edits across tabs are not merged; synchronous `saving` state is not a DB idempotency key; a draft and live record should be verified with real sessions. Test slow draft response, typing first, project switching, leave/reenter, and edit an existing record.
+
+## 20. Atomic record numbering — 2026-10-16
+
+- Verified `records_project_id_record_number_key` UNIQUE constraint exists; formerly the client queried max record number then inserted, which races across devices/tabs.
+- Applied `supabase/migrations/024_atomic_record_number.sql` to live DB: BEFORE INSERT trigger `records_assign_record_number` serializes each project's numbering through transaction-scoped advisory lock and assigns MAX+1 on the server. It checks the authorized user owns the book; client-submitted number is replaced. Commit `0c89cab7`.
+- Post-migration Security Advisor: zero lints. Existing UI may display a provisional count before saving; persisted `record_number` is authoritative.
+- **Pending E2E:** concurrent authenticated INSERTs to one project, editing and deletion gaps, cross-user insert, retry after failed network requests, and DB constraint behavior.
