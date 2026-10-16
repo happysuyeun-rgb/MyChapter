@@ -76,7 +76,7 @@
 |---|---|---|
 | [SCREEN_IMPLEMENTATION_GAP.md](./SCREEN_IMPLEMENTATION_GAP.md) | Screen Spec ↔ 현재 코드 차이 | ACTIVE |
 | [CHANGELOG_MVP.md](./CHANGELOG_MVP.md) | MVP 변경 이력 | ACTIVE |
-| `16_QA_E2E.md` | 기능/권한/실데이터 E2E | NEXT |
+| [16_QA_E2E.md](./16_QA_E2E.md) | 기능/권한/실데이터 E2E | ACTIVE (v0.1, live test pending) |
 | `17_RELEASE_RUNBOOK.md` | Vercel/Supabase/Android 배포 절차 | NEXT |
 
 ---
@@ -142,7 +142,7 @@
 2. `13_DEVELOPMENT_SPEC.md` — 통합 개발명세서 — **DONE**
 3. `14_API_SPEC.md` — 현재 코드/Edge Function 계약 정리 — **WORKING (v0.1, 추가 응답 계약 검증 필요)**
 4. `15_DATA_DICTIONARY.md` — repository schema 기준 초안 **WORKING (v0.1, 실제 Supabase 확인 필요)**
-5. `16_QA_E2E.md` — 실사용자 E2E / RLS / Free-Pro 검증
+5. `16_QA_E2E.md` — QA 체크리스트 작성 완료, **실사용자 E2E 진행 필요**
 6. `17_RELEASE_RUNBOOK.md` — 출시/운영 절차
 7. 오래된 문서의 물리적 archive 이동은 마지막에 수행
 
