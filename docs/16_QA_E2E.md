@@ -90,3 +90,13 @@
 - **PENDING E2E:** ready book with elapsed days + record count but NULL `ready_at`; reload Home and check DB updated; switch type to stricter rule and confirm Ready remains true; non-owner update rejected; concurrent client reads; failure handling.
 - **Risk:** time calculations use device-local day boundaries and real DB date rules may differ around timezone midnight; test in Asia/Seoul with rollover cases.
 - Do not mark this resolved until actual authenticated test and production build evidence are recorded.
+
+## 8. GAP-012 direct URL hardening — 2026-10-16
+
+**Code implemented / authenticated E2E pending:**
+- `getRecord(id,userId?)` and `getChapter(id,userId?)` support owner-filtered reads, and Record Detail/Edit, Chapter Preview/Edit pass the authenticated user ID.
+- `BookStageGuard` protects direct access to Manuscript, Cover and Final Review. It requires an active owned Book and readiness; Cover/Review require Chapters and saved manuscript confirmation; Review additionally requires selected Cover.
+- The `/publication/:id` viewer already uses `getPublishedBookById(user.id,id)`, which filters by user ID and published status. The publish-complete route already needs an in-memory publishResult, but does not yet validate this as a server-backed permission.
+- An authenticated user can still access Chapter Preview/Edit via direct URL when they own that Chapter even if their Book is not Ready; intended exception must be confirmed or a stricter chapter-stage rule added.
+- This is client navigation hardening, **not** a substitute for Supabase RLS or server-side Edge Function authorization.
+- **PENDING:** Vercel build status for new BookStageGuard commit; two-account deep-link tests, access before readiness, before manuscript confirmation, before cover selection, and direct publication URLs.
