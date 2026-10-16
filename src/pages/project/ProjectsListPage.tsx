@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { EmptyState } from '@/components/common'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
+import { listPublishedBooks } from '@/lib/api/books'
 import { getProjects } from '@/lib/api/projects'
 import { listRecords } from '@/lib/api/records'
+import { isDevBypass } from '@/lib/devBypass'
 import { useProjectLimit } from '@/hooks/useProjectLimit'
 import { useAuthStore } from '@/stores/authStore'
 import { usePaywallStore } from '@/stores/paywallStore'
@@ -33,13 +35,21 @@ export function ProjectsListPage() {
   useEffect(() => {
     if (!user) return
     const load = async () => {
-      const projectData = await getProjects(user.id)
+      const [projectData, publishedBooks] = await Promise.all([
+        getProjects(user.id),
+        isDevBypass() ? Promise.resolve([]) : listPublishedBooks(user.id),
+      ])
+      const publishedProjectIds = new Set(publishedBooks.map((book) => book.project_id))
+
       const withProgress = await Promise.all(projectData.map(async (project) => {
         const records = await listRecords(user.id, { projectId: project.id })
         const recordCount = records.length
         const readiness = getBookReadiness(project, recordCount)
+        const hasPublishedVersion = isDevBypass()
+          ? project.is_completed
+          : publishedProjectIds.has(project.id)
         const statusLabel: ProjectWithProgress['statusLabel'] =
-          project.is_completed ? '발행완료' : readiness.isReady ? '발행가능' : '진행중'
+          hasPublishedVersion ? '발행완료' : readiness.isReady ? '발행가능' : '진행중'
         return { ...project, recordCount, progress: readiness.score, statusLabel }
       }))
       setProjects(withProgress)
