@@ -139,7 +139,7 @@
 ## 7. 지금부터의 작성 순서
 
 1. 문서 구조 정리 / legacy 분리 — **DONE**
-2. `13_DEVELOPMENT_SPEC.md` — 통합 개발명세서 — **DONE**
+2. `13_DEVELOPMENT_SPEC.md` — 통합 개발명세서 — **DONE** — **DONE**
 3. `14_API_SPEC.md` — 현재 코드/Edge Function 계약 정리
 4. `15_DATA_DICTIONARY.md` — 실제 Supabase schema 기준
 5. `16_QA_E2E.md` — 실사용자 E2E / RLS / Free-Pro 검증
