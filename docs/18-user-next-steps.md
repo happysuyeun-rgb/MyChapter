@@ -3,7 +3,7 @@
 > **최종 갱신:** 2026-10-23  
 > **대상:** 서비스 담당자 (비개발자 포함)  
 > **전제:** 마이그레이션 001~006 ✅ · Edge Function 8개 배포 ✅ (스모크 확인됨)  
-> **관련:** `06-user-tasks.md`, `17-test-report.md`, `15-launch-roadmap.md`
+> **관련:** `06-user-tasks.md`, `17-test-report.md`, `15-launch-roadmap.md`, `20-error-cases.md`
 
 ---
 
@@ -341,6 +341,8 @@ Cursor에 아래 형식으로 보내면 빠르게 도와줍니다.
 |------|-----------|
 | **이 문서 (`18-user-next-steps.md`)** | **지금 할 일 따라하기** |
 | `17-test-report.md` | AI가 이미 테스트한 결과 |
+| `20-error-cases.md` | 기능별 에러 케이스·수정 우선순위 |
+| `21-screen-completeness.md` | MVP 화면 누락 여부·미개발 목록 |
 | `06-user-tasks.md` | Supabase·Vercel·Play 전체 작업 |
 | `15-launch-roadmap.md` | 출시 전체 우선순위 |
 | `16-dev-plan.md` | 개발 Wave / 코드 미완 목록 |

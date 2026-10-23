@@ -1,10 +1,13 @@
 # Screen Implementation Gap
 
-**Status:** Active implementation checklist  
-**Updated:** 2026-10-16  
+**Status:** Active implementation checklist (partially historical)  
+**Updated:** 2026-10-23  
 **Basis:** 05_SCREEN_SPEC.md v1.1 vs current main branch code
 
 This document contains only gaps found by comparing the final screen specification with current implementation. Do not add new product scope here.
+
+> **2026-10-23:** 최신 화면·미개발 판정은 **`21-screen-completeness.md`**, 에러 UX는 **`20-error-cases.md`**를 본다.  
+> 아래 GAP 중 다수는 RESOLVED이며, Notifications error-state(GAP-008) 등은 코드에서 이미 해소됐다.
 
 ## P0 — correctness / access / source-of-truth
 

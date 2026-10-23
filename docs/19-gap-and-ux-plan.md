@@ -3,7 +3,7 @@
 > **최종 갱신:** 2026-10-23  
 > **대상:** 제품·개발 (본인 문서 확인 중 AI가 병행 점검)  
 > **근거:** `docs/10`~`14` 화면명세, `00`/`04`/`08`, 현재 `src/` 코드  
-> **관련:** `16-dev-plan.md`, `07-dev-progress.md`, `DESIGN.md`, `.cursor/skills/mychapter-ui`
+> **관련:** `16-dev-plan.md`, `07-dev-progress.md`, `20-error-cases.md`, `21-screen-completeness.md`, `DESIGN.md`, `.cursor/skills/mychapter-ui`
 
 ### 진행 현황 (AI 구현)
 
@@ -23,9 +23,10 @@
 
 | 구분 | 상태 |
 |------|------|
+| MVP **화면** (라우트·페이지) | ✅ 누락 없음 → `21-screen-completeness.md` |
 | MVP 핵심 플로우 (로그인~기록~챕터~PDF) | 코드 ✅ · 실연동 E2E만 남음 |
-| 명세 vs 코드 **실제 누락** | Billing 네이티브, S-32, expand-caption, 복원구매, 푸시 세부 |
-| UX·디자인 | FlatIcon 일부만 적용 · 이모지·로딩·에러 피드백 불균일 |
+| 명세 vs 코드 **실제 누락** | Billing 네이티브, 복원 실연동, S-32, expand-caption, 푸시 세부 |
+| UX·에러 | ErrorState 4화면만 · 나머지는 `20-error-cases.md` |
 
 ---
 
@@ -37,11 +38,11 @@
 |----------------|-----------|------|
 | S-10b placeholder | ✅ `ProjectsListPage` + Pro 가드 | `ProjectsListPage.tsx` |
 | S-10 전체보기 Pro 미체크 | ✅ `isPro && projects.length > 1` | `HomePage.tsx` |
-| AI_LIMIT Paywall S-08만 | ✅ S-10, S-13, S-15, S-08 | Home / Question / Free / Complete |
-| CHAPTER_LIMIT UI 없음 | ✅ Banner + BookPage Paywall | `ChapterLimitBanner`, `BookPage` |
+| AI_LIMIT Paywall | 질문·자유 작성에서 Paywall 분기 (Home은 AI 미호출). Edge 402 body 전달은 `20` 참고 | `RecordQuestionPage`, `RecordFreePage` |
+| CHAPTER_LIMIT | **의도적 제거** — 코드·Edge에 없음 (첫 책 챕터 수 제한 철회) | — |
 | S-17 드래그 ❌ | ✅ `@dnd-kit` + `reorderChapters` | `BookPage.tsx` |
-| `generate-pdf` 미구현 | ✅ Edge + `generateBookPdf` | `BookCoverPage`, functions |
-| S-19 저장 실패 UI 없음 | ✅ Toast | `ChapterEditPage` |
+| `generate-pdf` 미구현 | ✅ Edge + FinalReview 발행 흐름 | `FinalReviewPage`, functions |
+| S-19 저장 실패 UI 없음 | ✅ Toast (재생성 실패는 아직 gap) | `ChapterEditPage` |
 
 → `10`/`12`/`08` 명세의 「구현 갭」표는 **2026-10-23 기준으로 낡은 상태**. 별도 명세 정리는 Wave와 분리해 진행 가능.
 
@@ -59,11 +60,11 @@
 
 | ID | 항목 | 설계 | 현재 | 비고 |
 |----|------|------|------|------|
-| G-10 | Play Billing 네이티브 | `MyChapterBilling` | JS `dev_`만 | **유일한 대형 코드 갭** |
-| G-11 | 구독 복원 (Restore) | S-P1 / 구독 화면 | ❌ 버튼·API 없음 | Play 필수에 가깝 |
+| G-10 | Play Billing 네이티브 | `MyChapterBilling` | JS `dev_`만 · Android 브리지 없음 | **유일한 대형 코드 갭** |
+| G-11 | 구독 복원 (Restore) | Play restore | 버튼+Toast 스텁만 | 실 API 미연동 |
 | G-12 | 로그아웃 시 FCM 토큰 삭제 | Phase 6 | `removeDeviceToken` 미호출 | |
-| G-13 | S-04 OS 알림 권한 | Capacitor Push 요청 | DB 플래그만 | 푸시 품질 |
-| G-14 | PDF 실패 Toast | 사용자 안내 | `console.error`만 | `BookCoverPage` |
+| G-13 | S-04 OS 알림 권한 | Capacitor Push 요청 | DB 플래그만 (푸시는 네이티브 init 시) | 푸시 품질 |
+| G-14 | PDF 실패 UI | 사용자 안내 | ✅ FinalReview 인라인 실패+재시도 | 구 gap 해소 |
 
 #### P2 — MVP 후 / 설계상 선택
 
@@ -74,9 +75,9 @@
 | G-22 | Capacitor Camera | 네이티브 촬영 | `<input file>` |
 | G-23 | Pro 만료 Cron 강등 | `expires_at` | 클라이언트 캐시만 |
 | G-24 | 탈퇴 전 PDF 일괄 다운로드 | 선택 | ❌ |
-| G-25 | 마이 메뉴 이용약관 | S-W3 | 개인정보만 (로그인은 둘 다) |
-| G-26 | 이메일 OTP 실패 UI | 에러 표시 | 실패해도 `sent=true` |
-| G-27 | Splash 프로젝트 0개 분기 | S-09 유도 | 둘 다 `/home` (EmptyState로 흡수) |
+| G-25 | 마이 메뉴 이용약관 | S-W3 | Settings에 둘 다 있음 (My는 개인정보만) |
+| G-26 | 이메일 OTP 실패 UI | 에러 표시 | ✅ inline, `sent=false` (해소) |
+| G-27 | Splash 프로젝트 0개 분기 | S-09 유도 | `/home` EmptyState로 흡수 (의도) |
 
 #### P3 — MVP 제외
 
@@ -92,10 +93,10 @@
 
 | ID | 이슈 | 영향 | 권장 |
 |----|------|------|------|
-| B-01 | Splash `count > 0 ? '/home' : '/home'` | 분기 무의미 | `/project/new` 또는 홈 Empty 유지 명시 |
-| B-02 | Email OTP 에러 무시 | 사용자 혼란 | 실패 Toast + sent 유지 안 함 |
-| B-03 | PDF 실패 무반응 | 출판 실패 인지 불가 | Toast |
-| B-04 | 명세 문서 갭 표 outdated | 우선순위 오판 | `10`/`12`/`08` 갭 표 갱신 |
+| B-01 | Splash 프로젝트 수 분기 | 현재는 세션/온보딩만 분기 후 `/home` | Empty로 흡수 유지 OK |
+| B-02 | Email OTP | ✅ 해소 (inline) | — |
+| B-03 | PDF 실패 | ✅ FinalReview 인라인 | — |
+| B-04 | 명세 문서 갭 표 outdated | 우선순위 오판 | `05`/`21`/`20` 우선, 구 `10`~`14`는 참고만 |
 
 ---
 
@@ -268,3 +269,5 @@
 | 2026-10-23 | 최초 작성 — 명세 vs 코드 재검증, UX 진단, Wave U0~U4 계획 |
 | 2026-10-23 | Wave U0·U1 코드 반영 (Toast·약관·FlatIcon 통일) |
 | 2026-10-23 | Wave U2 반영 (LoadingBlock·구독 비교·온보딩/완료 폴리싱) |
+| 2026-10-23 | 에러 케이스 전수 점검은 `20-error-cases.md`로 분리 |
+| 2026-10-23 | 화면 누락 재검증 → `21-screen-completeness.md`; CHAPTER_LIMIT·G-11~14·G-26 표기 교정 |

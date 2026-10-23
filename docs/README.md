@@ -86,6 +86,8 @@
 | **[17-test-report.md](./17-test-report.md)** | **로컬 스모크 테스트 리포트** | 담당자 + Cursor | 2026-10-23 |
 | **[18-user-next-steps.md](./18-user-next-steps.md)** | **본인 할 일 상세 따라하기** | **서비스 담당자 (지금)** | 2026-10-23 |
 | **[19-gap-and-ux-plan.md](./19-gap-and-ux-plan.md)** | **기능 누락 재점검 + UX·디자인 개선 계획** | 제품·개발 | 2026-10-23 |
+| **[20-error-cases.md](./20-error-cases.md)** | **기능별 에러 케이스 (코드 점검)** | QA·개발 | 2026-10-23 |
+| **[21-screen-completeness.md](./21-screen-completeness.md)** | **화면 완성도·미개발 점검** | 제품·개발 | 2026-10-23 |
 | **[06-play-store-listing-draft.md](./06-play-store-listing-draft.md)** | **Play 스토어 등록정보 초안** | 사용자 + Cursor | 2026-10-23 |
 | **[07-manual-setup-checklist.md](./07-manual-setup-checklist.md)** | **수동 설정 체크리스트** (Secrets, Vercel, Play 등) | 사용자 | 2026-10-23 |
 
@@ -195,3 +197,5 @@
 | 2026-10-23 | `17-test-report.md` — build·Edge 프로브·UI 스모크 |
 | 2026-10-23 | `18-user-next-steps.md` — 본인 할 일 상세 가이드 |
 | 2026-10-23 | `19-gap-and-ux-plan.md` — 명세 갭 재검증·UX Wave U0~U4 |
+| 2026-10-23 | `20-error-cases.md` — 기능별 에러 케이스 코드 점검 |
+| 2026-10-23 | `21-screen-completeness.md` — MVP 화면 누락 없음·미개발 P0~P2 |
