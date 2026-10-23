@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, FlatIcon } from '@/components/common'
+import { Button, ErrorState, FlatIcon, LoadingBlock } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import {
   listNotifications,
@@ -33,12 +33,17 @@ export function NotificationsPage() {
   const { user } = useAuthStore()
   const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   const load = useCallback(async () => {
     if (!user) return
+    setLoading(true)
+    setError(false)
     try {
       const data = await listNotifications(user.id)
       setNotifications(data)
+    } catch {
+      setError(true)
     } finally {
       setLoading(false)
     }
@@ -74,7 +79,12 @@ export function NotificationsPage() {
       />
 
       {loading ? (
-        <div className="flex flex-1 items-center justify-center text-sm text-ink-muted">로딩 중...</div>
+        <LoadingBlock label="알림을 불러오는 중..." />
+      ) : error ? (
+        <ErrorState
+          title="알림을 불러오지 못했어요"
+          onRetry={() => void load()}
+        />
       ) : notifications.length === 0 ? (
         <div className="flex flex-1 flex-col justify-center px-7">
           <div className="border-y border-ink py-8">

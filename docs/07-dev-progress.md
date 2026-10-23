@@ -1,8 +1,8 @@
 # MyChapter — 개발 진행 현황 (AI 구현 기준)
 
 > **작성 기준:** Cursor AI가 코드베이스에 구현한 내용  
-> **최종 갱신:** 2026-06-23  
-> **본인이 할 일:** `docs/06-user-tasks.md` · **출시 순서:** `docs/15-launch-roadmap.md`
+> **최종 갱신:** 2026-10-23  
+> **본인이 할 일:** `docs/06-user-tasks.md` · **출시 순서:** `docs/15-launch-roadmap.md` · **잔여 계획:** `docs/16-dev-plan.md`
 
 ---
 
@@ -74,7 +74,8 @@
 | 자유 일기 + hint | S-15 | ✅ | |
 | 저장 완료 + 배지 | S-16 | ✅ | |
 | 기록 목록 | S-30 | ✅ | |
-| 기록 상세 + 바텀시트 | S-31, S-32 | ✅ | |
+| 기록 상세 + 바텀시트 | S-31 | ✅ | 수정·삭제 |
+| 기록→챕터 이동 | S-32 | ❌ | ActionSheet에 이동 UI 없음 (`16-dev-plan` B2) |
 | 기록 수정 | — | ✅ | |
 | `generate-freewriting-hint` | — | ✅ | 배포 🔄 |
 | 스트릭·배지 유틸 | — | ✅ | |
@@ -93,10 +94,10 @@
 | 출판 완료 | S-21 | ✅ | |
 | `generate-chapter` | — | ✅ | 배포 🔄 |
 | `regenerate-chapter` | — | ✅ | 배포 🔄 |
-| PDF 출판 (Pro) | — | 🔄 | `generate-pdf` Edge 연동, **배포·006 SQL 필요** |
+| PDF 출판 (Pro) | — | 🔄 | 코드·006 Storage ✅, **Function 배포만 남음** |
 | `generate-pdf` Edge Function | — | ✅ | pdf-lib, Storage `published-pdfs` |
 | 챕터 드래그 재정렬 (S-17) | — | ✅ | `reorderChapters()` |
-| 기록 챕터 이동 (S-32) | — | ❌ | |
+| 기록 챕터 이동 (S-32) | — | ❌ | Wave 3 (`16-dev-plan`) |
 
 ---
 
@@ -135,15 +136,15 @@
 
 | Function | 코드 | 배포 | 상태 |
 |----------|------|------|------|
-| `generate-question` | ✅ | 🔄 | |
-| `generate-freewriting-hint` | ✅ | 🔄 | |
-| `generate-chapter` | ✅ | 🔄 | |
-| `regenerate-chapter` | ✅ | 🔄 | |
-| `verify-subscription` | ✅ | 🔄 | |
-| `delete-account` | ✅ | 🔄 | |
-| `send-daily-reminder` | ✅ | 🔄 | |
-| `generate-pdf` | ✅ | 🔄 | 006 Storage SQL + 배포 |
-| `expand-caption` | ❌ | — | 미구현 |
+| `generate-question` | ✅ | ✅ | 2026-10-23 프로브 |
+| `generate-freewriting-hint` | ✅ | ✅ | 2026-10-23 프로브 |
+| `generate-chapter` | ✅ | ✅ | 2026-10-23 프로브 |
+| `regenerate-chapter` | ✅ | ✅ | 2026-10-23 프로브 |
+| `verify-subscription` | ✅ | ✅ | 2026-10-23 프로브 |
+| `delete-account` | ✅ | ✅ | 2026-10-23 프로브 |
+| `send-daily-reminder` | ✅ | ✅ | 2026-10-23 프로브 |
+| `generate-pdf` | ✅ | ✅ | 2026-10-23 프로브 |
+| `expand-caption` | ❌ | — | 미구현 (404) |
 
 ---
 
@@ -160,14 +161,15 @@
 AI가 코드를 작성했지만 **본인 Supabase/외부 설정**이 필요한 항목:
 
 1. ~~**Supabase 마이그레이션 001~006 SQL 실행**~~ ✅ (2026-06-23)
-2. **Edge Function 8개 배포** + Secrets 등록
-3. **`.env.local` / Vercel 환경 변수**
+2. ~~**Edge Function 8개 배포**~~ ✅ 원격 프로브 확인 (2026-10-23, `17-test-report`) — **Secrets 값 확인은 남음**
+3. **`.env.local` / Vercel 환경 변수** + `VITE_DEV_BYPASS=false`
 4. **Kakao / Google OAuth** Redirect URL
-5. **Anthropic API Key**
-6. **Firebase** + `google-services.json` + Cron
-7. **Play Billing** 실결제 (현재 dev 모드)
-8. **Vercel 프로덕션 배포**
-9. **Android AAB 빌드** + Play Console
+5. **Firebase** + `google-services.json` + Cron *(베타 후 가능)*
+6. **Play Billing** 실결제 — 네이티브 브릿지 코드 미완 (B1)
+7. **Vercel 프로덕션 배포**
+8. **Android AAB 빌드** + Play Console
+
+상세 Wave 계획 → **`16-dev-plan.md`**
 
 ---
 
@@ -213,6 +215,8 @@ public/legal/          ✅ privacy, terms
 
 | 문서 | 내용 |
 |------|------|
+| **`16-dev-plan.md`** | **잔여 점검·Wave 0~3 개발 계획** |
+| **`19-gap-and-ux-plan.md`** | **명세 갭 재검증·UX/디자인 개선 Wave** |
 | **`15-launch-roadmap.md`** | **출시 로드맵·P0~P3 우선순위** |
 | `06-user-tasks.md` | **본인**이 할 일 |
 | `11-agent-workflow.md` | AI 에이전트 프롬프트 |
@@ -230,3 +234,5 @@ public/legal/          ✅ privacy, terms
 | 2026-06-12 | generate-pdf, S-17 드래그, S-10b 반영 |
 | 2026-06-23 | 출시 로드맵 문서 연동, UI 폴리싱(Paywall·Empty) 반영 |
 | 2026-06-23 | Supabase 마이그레이션 001~006 적용 완료 |
+| 2026-10-23 | 잔여 점검·`16-dev-plan` 연동, S-32/PDF/Secrets 표기 정정 |
+| 2026-10-23 | 스모크 테스트: Edge 8개 배포 확인, bypass API 갭(drafts/books/hints 등) 수정 |

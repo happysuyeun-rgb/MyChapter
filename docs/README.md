@@ -1,12 +1,14 @@
 # MY CHAPTER 문서 인덱스
 
 **Status:** CURRENT  
-**Updated:** 2026-10-16
+**Updated:** 2026-10-23
 
 이 문서는 MY CHAPTER 저장소의 문서 구조와 우선순위를 정의한다.
 
 > 원칙: 같은 정책을 여러 문서에서 다시 정의하지 않는다.  
 > 상세 문서는 한 곳만 Source of Truth로 두고, 다른 문서는 링크/참조만 한다.
+
+> **지금 본인이 할 일:** → **[18-user-next-steps.md](./18-user-next-steps.md)** (Secrets → bypass off → E2E)
 
 ---
 
@@ -68,6 +70,25 @@
 - API request/response → 14 참조
 - 개발명세서는 **어떻게 구현하고 연결하는지**를 설명한다.
 
+### 런치 운영 문서 (소문자 하이픈 시리즈)
+
+아래 문서는 출시 준비/운영 작업용이다. 제품 정책의 기준은 위 `00~15` 대문자 문서이며, 충돌 시 대문자 문서가 우선한다.
+
+| 문서 | 설명 | 대상 | 최종 갱신 |
+|------|------|------|-----------|
+| **[06-user-tasks.md](./06-user-tasks.md)** | **직접 해야 하는 일** (Supabase, Vercel, Play 등) | **서비스 담당자** | — |
+| **[07-dev-progress.md](./07-dev-progress.md)** | AI 구현 현황 (완료 / 연동 필요 / 미완) | 담당자 + 개발자 | 2026-06-23 |
+| **[08-development-specification.md](./08-development-specification.md)** | **개발명세서** (통합 기술 문서) | 전체 | — |
+| **[09-supabase-setup.md](./09-supabase-setup.md)** | Supabase + **마이그레이션 적용** | Supabase 연결 시 필수 | — |
+| **[11-agent-workflow.md](./11-agent-workflow.md)** | AI 에이전트 프롬프트·출시 체크리스트 요약 | 담당자 + Cursor | 2026-06-23 |
+| **[15-launch-roadmap.md](./15-launch-roadmap.md)** | **출시 로드맵·우선순위·2주 일정** | **담당자 (시작점)** | 2026-10-23 |
+| **[16-dev-plan.md](./16-dev-plan.md)** | **잔여 점검·Wave 0~3 개발 계획** | **개발 진행 시 필독** | 2026-10-23 |
+| **[17-test-report.md](./17-test-report.md)** | **로컬 스모크 테스트 리포트** | 담당자 + Cursor | 2026-10-23 |
+| **[18-user-next-steps.md](./18-user-next-steps.md)** | **본인 할 일 상세 따라하기** | **서비스 담당자 (지금)** | 2026-10-23 |
+| **[19-gap-and-ux-plan.md](./19-gap-and-ux-plan.md)** | **기능 누락 재점검 + UX·디자인 개선 계획** | 제품·개발 | 2026-10-23 |
+| **[06-play-store-listing-draft.md](./06-play-store-listing-draft.md)** | **Play 스토어 등록정보 초안** | 사용자 + Cursor | 2026-10-23 |
+| **[07-manual-setup-checklist.md](./07-manual-setup-checklist.md)** | **수동 설정 체크리스트** (Secrets, Vercel, Play 등) | 사용자 | 2026-10-23 |
+
 ---
 
 ## 4. QA / Release / Progress
@@ -120,6 +141,13 @@
 
 향후 물리적으로 `docs/archive/2026-06/`로 이동할 수 있으나, 기존 링크 파손을 피하기 위해 현재 단계에서는 **Deprecated 표시 + 인덱스 분리**를 우선한다.
 
+### 출시 작업 진행 순서
+
+1. **[18-user-next-steps.md](./18-user-next-steps.md)** — **지금 본인이 할 일 (상세)**
+2. **[16-dev-plan.md](./16-dev-plan.md)** — 뭐가 남았는지·Wave 계획
+3. **[15-launch-roadmap.md](./15-launch-roadmap.md)** — P0부터 출시 순서
+4. [06-user-tasks.md](./06-user-tasks.md) — Supabase·Vercel·Play 전체
+
 ---
 
 ## 6. 문서 상태 표기
@@ -157,3 +185,13 @@
 - 화면 behavior가 바뀌면 05_SCREEN_SPEC와 SCREEN_IMPLEMENTATION_GAP을 함께 갱신한다.
 - 출시 전 E2E 결과는 16_QA_E2E에 남긴다.
 - 비밀키/토큰/서비스 계정 JSON은 문서에 기록하지 않는다.
+
+### 런치 문서 변경 이력
+
+| 날짜 | 내용 |
+|------|------|
+| 2026-06-23 | `15-launch-roadmap.md`, `11-agent-workflow.md` 추가; 문서 작성 규칙·날짜 표기 도입 |
+| 2026-10-23 | `16-dev-plan.md` 추가 — 잔여 점검·개발 Wave 계획 |
+| 2026-10-23 | `17-test-report.md` — build·Edge 프로브·UI 스모크 |
+| 2026-10-23 | `18-user-next-steps.md` — 본인 할 일 상세 가이드 |
+| 2026-10-23 | `19-gap-and-ux-plan.md` — 명세 갭 재검증·UX Wave U0~U4 |

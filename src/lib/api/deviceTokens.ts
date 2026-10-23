@@ -1,3 +1,4 @@
+import { isDevBypass } from '@/lib/devBypass'
 import { supabase } from '@/lib/supabase'
 
 export async function upsertDeviceToken(
@@ -5,6 +6,8 @@ export async function upsertDeviceToken(
   fcmToken: string,
   platform: 'android' | 'ios' = 'android',
 ): Promise<void> {
+  if (isDevBypass()) return
+
   const { error } = await supabase.from('device_tokens').upsert(
     {
       user_id: userId,
@@ -19,6 +22,8 @@ export async function upsertDeviceToken(
 }
 
 export async function removeDeviceToken(userId: string, fcmToken: string): Promise<void> {
+  if (isDevBypass()) return
+
   const { error } = await supabase
     .from('device_tokens')
     .delete()

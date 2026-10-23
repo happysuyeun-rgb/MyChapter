@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { EmptyState, FlatIcon, ProgressBar } from '@/components/common'
+import { EmptyState, ErrorState, FlatIcon, LoadingBlock, ProgressBar } from '@/components/common'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { getUnreadCount } from '@/lib/api/notifications'
 import { getPublishedBook, type PublishedBook } from '@/lib/api/books'
@@ -61,8 +61,15 @@ export function HomePage() {
     return () => { cancelled = true }
   }, [user, activeProjectId, setActiveProject, retryKey])
 
-  if (loading) return <div className="flex flex-1 items-center justify-center text-sm text-ink-muted">로딩 중...</div>
-  if (loadError) return <div className="flex flex-1 flex-col items-center justify-center gap-4 px-5 text-center"><p className="text-sm text-ink-muted">홈 정보를 불러오지 못했어요.</p><button type="button" className="min-h-11 border-b border-ink text-sm font-semibold" onClick={() => setRetryKey((k) => k + 1)}>다시 시도</button></div>
+  if (loading) return <LoadingBlock label="홈을 불러오는 중..." />
+  if (loadError) {
+    return (
+      <ErrorState
+        title="홈을 불러오지 못했어요"
+        onRetry={() => setRetryKey((k) => k + 1)}
+      />
+    )
+  }
   if (projects.length === 0) return <EmptyState variant="home" />
 
   const project = projects.find((item) => item.id === activeProjectId) ?? projects[0]

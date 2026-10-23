@@ -1,7 +1,8 @@
 # MyChapter — 설계 결정 사항 (Design Decisions)
 
 > 화면설계서 v1.1 + Cursor 프롬프트 v1.0 검토 후 확정한 미정의 항목  
-> 작성일: 2026-06-12
+> 작성일: 2026-06-12  
+> **최종 갱신:** 2026-10-23
 
 ---
 
@@ -86,10 +87,21 @@ VITE_SUPABASE_ANON_KEY=
 VITE_PRIVACY_POLICY_URL=https://mychapter.app/privacy
 VITE_TERMS_URL=https://mychapter.app/terms
 
-# Edge Functions (Supabase Secrets) — 프론트에 Claude Key 금지
-ANTHROPIC_API_KEY=
+# Edge Functions (Supabase Secrets) — 프론트에 AI Key 금지
+GOOGLE_AI_API_KEY=                 # Gemini (실제 구현)
+SERVICE_ROLE_KEY=
+BILLING_DEV_BYPASS=true            # 테스트용
 GOOGLE_PLAY_SERVICE_ACCOUNT_JSON=  # Phase 5
 ```
+
+---
+
+## 갱신 이력
+
+| 날짜 | 내용 |
+|------|------|
+| 2026-06-12 | 최초 작성 |
+| 2026-10-23 | Edge Secrets를 Gemini(`GOOGLE_AI_API_KEY`) 기준으로 정정 |
 
 ---
 

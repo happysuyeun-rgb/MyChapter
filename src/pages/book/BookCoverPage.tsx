@@ -10,6 +10,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useBookStore } from '@/stores/bookStore'
 import { useProjectStore } from '@/stores/projectStore'
 import { usePaywallStore } from '@/stores/paywallStore'
+import { useToastStore } from '@/stores/toastStore'
 import { listRecords } from '@/lib/api/records'
 import { getBookReadiness } from '@/utils/bookReadiness'
 
@@ -20,6 +21,7 @@ export function BookCoverPage() {
   const { selectedCoverId, setSelectedCoverId } = useBookStore()
   const { setActiveProject } = useProjectStore()
   const { showPaywall } = usePaywallStore()
+  const { showToast } = useToastStore()
   const [isPro, setIsPro] = useState(false)
   const [coverConfirmed, setCoverConfirmed] = useState(false)
   const [readinessChecked, setReadinessChecked] = useState(false)
@@ -50,6 +52,7 @@ export function BookCoverPage() {
       setCoverConfirmed(true)
     } catch {
       // Keep the preview responsive; persistence will be retried on the next selection.
+      showToast('표지를 저장하지 못했어요. 다시 선택해주세요.')
     }
   }
 

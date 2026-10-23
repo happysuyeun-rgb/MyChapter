@@ -1,3 +1,4 @@
+import { isDevBypass } from '@/lib/devBypass'
 import { supabase } from '@/lib/supabase'
 import { getSubscriptionPlan } from './subscriptions'
 import type { Chapter, Database, Project } from '@/types/database'
@@ -34,6 +35,8 @@ export interface BookExportData {
 }
 
 export async function getPublishedBook(projectId: string): Promise<PublishedBook | null> {
+  if (isDevBypass()) return null
+
   const { data, error } = await supabase
     .from('publications')
     .select('*')

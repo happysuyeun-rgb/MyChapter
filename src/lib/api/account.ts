@@ -1,6 +1,9 @@
+import { isDevBypass } from '@/lib/devBypass'
 import { supabase } from '@/lib/supabase'
 
 export async function deleteAccount(): Promise<void> {
+  if (isDevBypass()) return
+
   const response = await supabase.functions.invoke('delete-account', {
     body: { confirm: true },
   })

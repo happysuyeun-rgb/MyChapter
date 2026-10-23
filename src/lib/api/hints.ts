@@ -1,4 +1,5 @@
 import { ApiError } from '@/lib/api/questions'
+import { isDevBypass } from '@/lib/devBypass'
 import { supabase } from '@/lib/supabase'
 import type { ProjectType } from '@/types/database'
 
@@ -21,6 +22,11 @@ export function getFallbackHint(projectType: ProjectType): string {
 }
 
 export async function generateFreewritingHint(projectId: string): Promise<string> {
+  if (isDevBypass()) {
+    void projectId
+    return getFallbackHint('emotion')
+  }
+
   const response = await supabase.functions.invoke('generate-freewriting-hint', {
     body: { project_id: projectId },
   })

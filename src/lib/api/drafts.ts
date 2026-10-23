@@ -1,3 +1,4 @@
+import { isDevBypass } from '@/lib/devBypass'
 import { supabase } from '@/lib/supabase'
 import type { Json, RecordModeInstance } from '@/types/database'
 
@@ -15,6 +16,8 @@ export async function saveDraft(
   mode: RecordModeInstance,
   payload: DraftPayload,
 ): Promise<void> {
+  if (isDevBypass()) return
+
   const { error } = await supabase.from('record_drafts').upsert(
     {
       user_id: userId,
@@ -34,6 +37,8 @@ export async function loadDraft(
   projectId: string,
   mode: RecordModeInstance,
 ): Promise<DraftPayload | null> {
+  if (isDevBypass()) return null
+
   const { data, error } = await supabase
     .from('record_drafts')
     .select('payload')
@@ -51,6 +56,8 @@ export async function deleteDraft(
   projectId: string,
   mode: RecordModeInstance,
 ): Promise<void> {
+  if (isDevBypass()) return
+
   await supabase
     .from('record_drafts')
     .delete()

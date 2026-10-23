@@ -1,8 +1,9 @@
 # MyChapter — 직접 해야 하는 일 (비개발자 가이드)
 
-> **최종 갱신:** 2026-06-23  
+> **최종 갱신:** 2026-10-23  
 > **대상:** 서비스 운영·출시를 직접 진행하는 담당자  
 > **전제:** 코드 구현은 Cursor AI가 완료했으며, 아래 항목은 **외부 서비스 계정·설정·업로드**가 필요합니다.  
+> **지금 바로 따라하기:** [`18-user-next-steps.md`](./18-user-next-steps.md) — Secrets · bypass · E2E 상세  
 > **출시 순서:** [`15-launch-roadmap.md`](./15-launch-roadmap.md) — 무엇부터 할지 한눈에 보기
 
 ---
@@ -331,3 +332,4 @@ Google Play Developer API + 서비스 계정 연동 → Supabase `verify-subscri
 | 2026-06-23 | `15-launch-roadmap.md` 링크 추가, 최종 갱신 날짜 표기 |
 | 2026-06-23 | 마이그레이션 001~006 완료, Edge Function 8개 목록 보완 |
 | 2026-06-23 | §2.5~2.6 Secrets·배포 절차 상세 (`GOOGLE_AI_API_KEY`, `npx supabase`) |
+| 2026-10-23 | `18-user-next-steps.md` 링크 — 본인 다음 할 일 상세 가이드 |

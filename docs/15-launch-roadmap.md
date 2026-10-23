@@ -1,8 +1,8 @@
 # MyChapter — 출시 로드맵 & 우선순위 가이드
 
-> **최종 갱신:** 2026-06-23  
+> **최종 갱신:** 2026-10-23  
 > **대상:** 서비스 담당자 + Cursor AI  
-> **관련:** `06-user-tasks.md`, `07-dev-progress.md`, `11-agent-workflow.md`
+> **관련:** `06-user-tasks.md`, `07-dev-progress.md`, `11-agent-workflow.md`, **`16-dev-plan.md`**, **`17-test-report.md`**
 
 ---
 
@@ -30,7 +30,7 @@ MyChapter는 **코드 구현은 대부분 완료**되었고, 현재 병목은 **
 | **마이그레이션 001~006** | **✅ 적용 완료** | `scripts/*_idempotent.sql` 로 적용 |
 | `VITE_DEV_BYPASS` | `true` | **다음:** `false`로 전환 후 E2E |
 | `VITE_BILLING_DEV_MODE` | `true` | 결제 dev 모드 |
-| Edge Function 배포 | 🔄 **다음 단계** | 8개 배포 + Secrets |
+| Edge Function 배포 | ✅ 응답 확인 (2026-10-23) | 8개 HTTP 응답 OK — Secrets·실연동 E2E가 다음 |
 | OAuth (Kakao/Google) | 🔄 | Redirect URL 설정 |
 | Vercel 프로덕션 | 🔄 | `mychapter.app` |
 | Firebase / FCM | 🔄 | 푸시 알림 (베타 후 가능) |
@@ -46,7 +46,8 @@ MyChapter는 **코드 구현은 대부분 완료**되었고, 현재 병목은 **
 | # | 할 일 | 담당 | 완료 | 참고 |
 |---|--------|------|------|------|
 | 1 | Supabase 마이그레이션 001~006 적용 | 본인 | ☑ | `scripts/001~006_idempotent.sql` |
-| 2 | Edge Function 8개 배포 + Secrets (`ANTHROPIC_API_KEY` 등) | 본인 | ☐ | `06-user-tasks.md` §2.5~2.6 |
+| 2 | Edge Function 8개 배포 | 본인 | ☑ | 프로브로 배포 확인 (`17-test-report.md`) |
+| 2b | Secrets 값 확인 (`GOOGLE_AI_API_KEY` 등) | 본인 | ☐ | `06-user-tasks.md` §2.5 |
 | 3 | `.env.local`에서 `VITE_DEV_BYPASS=false` 전환 | 본인 | ☐ | mock 차단 해제 |
 | 4 | **E2E 최소 성공 기준** 통과 | 본인 | ☐ | 아래 체크리스트 |
 
@@ -59,10 +60,10 @@ MyChapter는 **코드 구현은 대부분 완료**되었고, 현재 병목은 **
 → 홈에서 AI 질문 확인 → 기록 1개 작성·저장 → 기록 목록에 표시
 ```
 
-**다음에 할 일:** Edge Function 배포 → Secrets 등록 → `VITE_DEV_BYPASS=false` → E2E 테스트
+**다음에 할 일:** → **[`18-user-next-steps.md`](./18-user-next-steps.md)** 따라하기
 
-- Edge Function 미배포 → `06-user-tasks.md` §2.5~2.6
-- OAuth 미설정 → §2.4 Redirect URL
+- Secrets 확인 → `VITE_DEV_BYPASS=false` → 실연동 E2E
+- 스모크 결과 → `17-test-report.md`
 
 ---
 
@@ -174,8 +175,8 @@ Growth Hacker 역할로 MyChapter Play 스토어 출시 전략을 짜줘.
 
 | 상황 | 추천 |
 |------|------|
-| 지금 뭘 해야 할지 모르겠다 | **P0 #2** — Edge Function 8개 배포 + Secrets |
-| 마이그레이션은 끝났다 | `VITE_DEV_BYPASS=false` 후 E2E |
+| 지금 뭘 해야 할지 모르겠다 | **P0 #2b** — Secrets 확인 후 `DEV_BYPASS=false` E2E |
+| Function은 배포됐다 | Secrets + 실로그인 E2E |
 | 베타를 빨리 보여주고 싶다 | P0~P1만 완료 후 3~5명 초대 (푸시는 나중에) |
 | 스토어 출시가 급하다 | P2 #12~14 병렬 (AAB + Billing 브릿지) |
 | UI가 아쉽다 | P0 통과 후 `DESIGN.md` + `mychapter-ui` skill로 폴리싱 |
@@ -190,6 +191,7 @@ Growth Hacker 역할로 MyChapter Play 스토어 출시 전략을 짜줘.
 | [07-dev-progress.md](./07-dev-progress.md) | 코드 **구현 현황** |
 | [09-supabase-setup.md](./09-supabase-setup.md) | 마이그레이션·Edge Function 상세 |
 | [11-agent-workflow.md](./11-agent-workflow.md) | AI 에이전트 프롬프트·체크리스트 |
+| [16-dev-plan.md](./16-dev-plan.md) | 잔여 점검·Wave 0~3 개발 계획 |
 | [DESIGN.md](../DESIGN.md) | UI 디자인 참고 (Notion) |
 
 ---
@@ -200,3 +202,5 @@ Growth Hacker 역할로 MyChapter Play 스토어 출시 전략을 짜줘.
 |------|------|
 | 2026-06-23 | 최초 작성 — P0~P3 로드맵, 2주 일정, 담당 구분 |
 | 2026-06-23 | 마이그레이션 001~006 적용 완료 (`scripts/*_idempotent.sql`) |
+| 2026-10-23 | Secrets 명칭 정정(Gemini), `16-dev-plan.md` 연동 |
+| 2026-10-23 | Edge Function 배포 확인·`17-test-report` 반영, 다음 액션을 Secrets+E2E로 조정 |

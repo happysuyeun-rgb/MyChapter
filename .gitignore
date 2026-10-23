@@ -31,3 +31,10 @@ dist-ssr
 # Capacitor
 android/app/build
 android/.gradle
+
+# Secrets (Firebase / signing) — never commit real keys
+android/app/google-services.json
+android/app/*.jks
+android/app/*.keystore
+*.keystore
+*-service-account.json

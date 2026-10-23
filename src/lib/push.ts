@@ -18,6 +18,21 @@ export async function initPushNotifications(
     return
   }
 
+  if (Capacitor.getPlatform() === 'android') {
+    // send-daily-reminder Edge Function sends with channelId: 'daily_reminder'.
+    // On Android 8+, a notification sent to a channel that doesn't exist on
+    // the device is silently dropped, so this channel must be created before
+    // the first push arrives.
+    await PushNotifications.createChannel({
+      id: 'daily_reminder',
+      name: '오늘의 질문 알림',
+      description: '매일 기록을 남기라는 리마인더 알림입니다.',
+      importance: 4,
+      visibility: 0,
+      vibration: true,
+    })
+  }
+
   await PushNotifications.addListener('registration', (token) => {
     void upsertDeviceToken(userId, token.value)
   })

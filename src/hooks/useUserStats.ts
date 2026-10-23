@@ -27,28 +27,31 @@ export function useUserStats() {
     if (!user) return
 
     const load = async () => {
-      const [records, projects] = await Promise.all([
-        listRecords(user.id),
-        getProjects(user.id),
-      ])
+      try {
+        const [records, projects] = await Promise.all([
+          listRecords(user.id),
+          getProjects(user.id),
+        ])
 
-      const chapterLists = await Promise.all(
-        projects.map((p) => listChapters(p.id)),
-      )
-      const chapterCount = chapterLists.reduce((sum, list) => sum + list.length, 0)
+        const chapterLists = await Promise.all(
+          projects.map((p) => listChapters(p.id)),
+        )
+        const chapterCount = chapterLists.reduce((sum, list) => sum + list.length, 0)
 
-      const bookResults = await Promise.all(
-        projects.map((p) => getPublishedBook(p.id)),
-      )
-      const bookCount = bookResults.filter(Boolean).length
+        const bookResults = await Promise.all(
+          projects.map((p) => getPublishedBook(p.id)),
+        )
+        const bookCount = bookResults.filter(Boolean).length
 
-      setStats({
-        recordCount: records.length,
-        chapterCount,
-        bookCount,
-        streak: calculateStreak(records),
-      })
-      setLoading(false)
+        setStats({
+          recordCount: records.length,
+          chapterCount,
+          bookCount,
+          streak: calculateStreak(records),
+        })
+      } finally {
+        setLoading(false)
+      }
     }
 
     setLoading(true)

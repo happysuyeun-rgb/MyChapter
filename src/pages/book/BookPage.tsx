@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Button, EmptyState, ProgressBar } from '@/components/common'
+import { Button, EmptyState, ErrorState, LoadingBlock, ProgressBar } from '@/components/common'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import {
   ChapterApiError,
@@ -104,6 +104,7 @@ export function BookPage() {
   const [unassignedCount, setUnassignedCount] = useState(0)
   const [chapterRecordCounts, setChapterRecordCounts] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [reordering, setReordering] = useState(false)
@@ -117,16 +118,23 @@ export function BookPage() {
   const load = async () => {
     if (!user || !project) return
 
-    const [chapterData, pending, relationCounts] = await Promise.all([
-      listChapters(project.id),
-      getUnassignedRecordCount(project.id),
-      getChapterRecordCountMap(project.id),
-    ])
+    setLoading(true)
+    setError(false)
+    try {
+      const [chapterData, pending, relationCounts] = await Promise.all([
+        listChapters(project.id),
+        getUnassignedRecordCount(project.id),
+        getChapterRecordCountMap(project.id),
+      ])
 
-    setChapters(chapterData)
-    setUnassignedCount(pending)
-    setChapterRecordCounts(relationCounts)
-    setLoading(false)
+      setChapters(chapterData)
+      setUnassignedCount(pending)
+      setChapterRecordCounts(relationCounts)
+    } catch {
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -136,7 +144,6 @@ export function BookPage() {
       return
     }
 
-    setLoading(true)
     void load()
   }, [project, projectLoading, user])
 
@@ -186,10 +193,15 @@ export function BookPage() {
   }
 
   if (projectLoading || loading) {
+    return <LoadingBlock label="책을 불러오는 중..." />
+  }
+
+  if (error) {
     return (
-      <div className="flex flex-1 items-center justify-center text-sm text-ink-muted">
-        로딩 중...
-      </div>
+      <ErrorState
+        title="책을 불러오지 못했어요"
+        onRetry={() => void load()}
+      />
     )
   }
 

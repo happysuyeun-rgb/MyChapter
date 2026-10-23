@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { EmptyState } from '@/components/common'
+import { EmptyState, ErrorState, LoadingBlock } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { useProjectList } from '@/hooks/useActiveProject'
 import { listRecords } from '@/lib/api/records'
@@ -37,27 +37,45 @@ export function RecordsListPage() {
   const [records, setRecords] = useState<JournalRecord[]>([])
   const [filterProjectId, setFilterProjectId] = useState<string | 'all'>('all')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     if (!user) return
 
     const load = async () => {
-      const data = await listRecords(user.id, {
-        projectId: filterProjectId === 'all' ? undefined : filterProjectId,
-        limit: 50,
-      })
-      setRecords(data)
-      setLoading(false)
+      setError(false)
+      try {
+        const data = await listRecords(user.id, {
+          projectId: filterProjectId === 'all' ? undefined : filterProjectId,
+          limit: 50,
+        })
+        setRecords(data)
+      } catch {
+        setError(true)
+      } finally {
+        setLoading(false)
+      }
     }
 
     setLoading(true)
     void load()
-  }, [user, filterProjectId])
+  }, [user, filterProjectId, reloadKey])
 
   const groups = useMemo(() => groupByMonth(records), [records])
 
   if (projectsLoading || loading) {
-    return <div className="flex flex-1 items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
+    return <LoadingBlock label="기록을 불러오는 중..." className="bg-surface" />
+  }
+
+  if (error) {
+    return (
+      <ErrorState
+        title="기록을 불러오지 못했어요"
+        className="bg-surface"
+        onRetry={() => setReloadKey((k) => k + 1)}
+      />
+    )
   }
 
   if (records.length === 0 && filterProjectId === 'all' && projects.length === 0) {
