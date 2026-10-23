@@ -24,7 +24,12 @@ export function SubscriptionPage() {
 
   useEffect(() => {
     if (!user) return
-    void getSubscription(user.id).then((sub) => setExpiresAt(sub.expires_at))
+    void getSubscription(user.id)
+      .then((sub) => setExpiresAt(sub.expires_at))
+      .catch(() => {
+        // Keep plan badge from useSubscription; only skip renewal date.
+        setExpiresAt(null)
+      })
   }, [user])
 
   const handleRestore = () => {

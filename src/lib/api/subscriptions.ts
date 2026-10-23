@@ -1,3 +1,4 @@
+import { resolveFunctionPayload } from '@/lib/api/functionInvoke'
 import { isDevBypass } from '@/lib/devBypass'
 import {
   mockGetSubscription,
@@ -25,11 +26,15 @@ export class SubscriptionApiError extends Error {
 export async function getSubscriptionPlan(userId: string): Promise<SubscriptionPlan> {
   if (isDevBypass()) return mockGetSubscriptionPlan()
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('subscriptions')
     .select('plan')
     .eq('user_id', userId)
     .maybeSingle()
+
+  // Network/RLS failures must not be treated as Free (false Paywall).
+  // A missing row is a legitimate Free plan.
+  if (error) throw error
 
   return data?.plan ?? 'free'
 }
@@ -37,11 +42,13 @@ export async function getSubscriptionPlan(userId: string): Promise<SubscriptionP
 export async function getSubscription(userId: string): Promise<SubscriptionInfo> {
   if (isDevBypass()) return mockGetSubscription()
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('subscriptions')
     .select('plan, started_at, expires_at')
     .eq('user_id', userId)
     .maybeSingle()
+
+  if (error) throw error
 
   return {
     plan: data?.plan ?? 'free',
@@ -65,18 +72,21 @@ export async function verifyPurchase(
     },
   })
 
-  const body = response.data as {
+  const { data, errorBody, error } = await resolveFunctionPayload<{
     plan?: SubscriptionPlan
     error?: string
     code?: string
-  } | null
+  }>(response)
 
-  if (response.error || body?.error) {
-    throw new SubscriptionApiError(
-      body?.code ?? 'VERIFY_FAILED',
-      body?.error ?? '결제 검증에 실패했어요.',
-    )
+  const code = errorBody?.code ?? data?.code
+  const message = errorBody?.error ?? data?.error
+
+  if (error || message) {
+    if (code === 'INVALID_PURCHASE') {
+      throw new SubscriptionApiError('INVALID_PURCHASE', message ?? '유효하지 않은 구매 정보예요.')
+    }
+    throw new SubscriptionApiError(code ?? 'VERIFY_FAILED', message ?? '결제 검증에 실패했어요.')
   }
 
-  return body?.plan ?? 'pro'
+  return data?.plan ?? 'pro'
 }

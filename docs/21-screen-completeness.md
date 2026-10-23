@@ -50,24 +50,30 @@ U-02 Preview, U-03 Confirm, U-04 Publishing, U-06 Failed, B-06 Manuscript Edit, 
 
 ## 3. 진짜 미개발 (코드 기준)
 
-### P0 — 출시 전
+### P0 — 출시 전 (본인·네이티브)
 
 | 항목 | 근거 |
 |------|------|
 | Play Billing 네이티브 브리지 | `billing.ts`가 `MyChapterBilling` 기대, Android `MainActivity`에 구현 없음 |
 | Production에서 Dev billing 차단 | `VITE_BILLING_DEV_MODE` / 서버 `BILLING_DEV_BYPASS` 확인 필요 |
 | 실연동 E2E | Secrets·OAuth·bypass off — `18-user-next-steps.md` |
-| 사진·텍스트 입력 정책 | 파일 크기/해상도, 자유일기 제목 max 미확정 (`05` GAP) |
+
+### P0 — 코드로 반영됨 (2026-10-23)
+
+| 항목 | 처리 |
+|------|------|
+| 사진·제목 입력 가드 | 사진 10MB·image/* · 자유일기 제목 max 50 |
+| Edge `code` 파싱 | `functionInvoke.ts` |
+| 구독 Free 오탐 | 조회 실패 시 이전 플랜 유지 |
+| FCM 로그아웃 정리 | `removeAllDeviceTokens` |
+| ErrorState·Settings·쓰기 catch | 주요 화면 적용 |
 
 ### P1 — 스토어·품질
 
 | 항목 | 현재 |
 |------|------|
-| 구독 복원 | 버튼은 있으나 Toast 스텁만 |
-| 로그아웃 시 FCM 토큰 삭제 | `removeDeviceToken` 미호출 |
+| 구독 복원 | 버튼은 있으나 Toast 스텁만 (**Billing 네이티브 후**) |
 | Pro 표지 서버 강제 | 클라만 차단 — 서버 검증 재확인 필요 |
-| 로드 실패 ErrorState 확대 | 서재·작업실·상세·원고·표지·완성한 책 등 |
-| Settings 저장 실패 피드백 | try/catch·문구 없음 |
 | Legal iframe 실패 UI | 대체 화면 없음 |
 
 ### P2 — 출시 후 / 선택
@@ -112,3 +118,4 @@ U-02 Preview, U-03 Confirm, U-04 Publishing, U-06 Failed, B-06 Manuscript Edit, 
 | 날짜 | 내용 |
 |------|------|
 | 2026-10-23 | `05` ↔ 라우터 전수 대조. MVP 화면 누락 없음 판정, 미개발 P0~P2 정리 |
+| 2026-10-23 | AI 가능 갭 코드 반영 (에러 파싱·ErrorState·FCM·입력 가드). 남은 P0는 Billing·E2E·Secrets |

@@ -10,7 +10,7 @@ interface SubscriptionState {
   reset: () => void
 }
 
-export const useSubscriptionStore = create<SubscriptionState>((set) => ({
+export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   plan: 'free',
   loading: false,
 
@@ -18,9 +18,15 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
 
   refreshPlan: async (userId) => {
     set({ loading: true })
-    const plan = await getSubscriptionPlan(userId)
-    set({ plan, loading: false })
-    return plan
+    try {
+      const plan = await getSubscriptionPlan(userId)
+      set({ plan, loading: false })
+      return plan
+    } catch {
+      // Keep last known plan instead of silently downgrading to Free.
+      set({ loading: false })
+      return get().plan
+    }
   },
 
   reset: () => set({ plan: 'free', loading: false }),

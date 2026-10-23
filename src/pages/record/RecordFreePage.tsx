@@ -175,6 +175,7 @@ export function RecordFreePage() {
             value={title}
             onChange={(e) => { touched.current = true; setTitle(e.target.value) }}
             placeholder="제목을 입력해주세요"
+            maxLength={50}
             className="w-full bg-transparent font-serif text-[22px] font-bold tracking-[-0.02em] text-ink outline-none placeholder:text-ink-faint"
           />
         </div>

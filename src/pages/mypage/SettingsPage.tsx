@@ -22,32 +22,50 @@ export function SettingsPage() {
   const [emojiOpen, setEmojiOpen] = useState(false)
   const [nickname, setNickname] = useState(profile?.nickname ?? '')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   const notificationTime = profile?.notification_time?.slice(0, 5) ?? '21:00'
 
   const handleNotificationToggle = async () => {
     if (!user || !profile) return
-    const updated = await updateNotificationSettings(user.id, {
-      notification_enabled: !profile.notification_enabled,
-    })
-    setProfile(updated)
+    try {
+      const updated = await updateNotificationSettings(user.id, {
+        notification_enabled: !profile.notification_enabled,
+      })
+      setProfile(updated)
+      setError('')
+    } catch {
+      setError('알림 설정을 저장하지 못했어요. 잠시 후 다시 시도해주세요.')
+    }
   }
 
   const handleTimeChange = async (time: string) => {
     if (!user) return
-    const updated = await updateNotificationSettings(user.id, {
-      notification_time: `${time}:00`,
-    })
-    setProfile(updated)
+    try {
+      const updated = await updateNotificationSettings(user.id, {
+        notification_time: `${time}:00`,
+      })
+      setProfile(updated)
+      setError('')
+    } catch {
+      setError('알림 시간을 저장하지 못했어요. 잠시 후 다시 시도해주세요.')
+    }
   }
 
   const handleNicknameSave = async () => {
-    if (!user || !/^[a-zA-Z0-9가-힣]{2,10}$/.test(nickname)) return
+    if (!user) return
+    if (!/^[a-zA-Z0-9가-힣]{2,10}$/.test(nickname)) {
+      setError('닉네임은 2~10자의 한글·영문·숫자만 가능해요.')
+      return
+    }
     setSaving(true)
     try {
       const updated = await updateNickname(user.id, nickname)
       setProfile(updated)
       setNicknameOpen(false)
+      setError('')
+    } catch {
+      setError('닉네임을 저장하지 못했어요. 잠시 후 다시 시도해주세요.')
     } finally {
       setSaving(false)
     }
@@ -55,9 +73,14 @@ export function SettingsPage() {
 
   const handleEmojiSelect = async (emoji: string) => {
     if (!user) return
-    const updated = await updateProfileEmoji(user.id, emoji)
-    setProfile(updated)
-    setEmojiOpen(false)
+    try {
+      const updated = await updateProfileEmoji(user.id, emoji)
+      setProfile(updated)
+      setEmojiOpen(false)
+      setError('')
+    } catch {
+      setError('프로필 표시를 저장하지 못했어요. 잠시 후 다시 시도해주세요.')
+    }
   }
 
   return (
@@ -70,6 +93,12 @@ export function SettingsPage() {
           <h1 className="mt-2 font-serif text-[26px] font-bold tracking-[-0.03em]">설정</h1>
           <p className="mt-2 text-xs leading-5 text-ink-muted">기록 리듬과 계정 정보를 조용히 관리해요.</p>
         </header>
+
+        {error && !nicknameOpen && !emojiOpen && (
+          <p role="alert" className="mt-4 text-sm text-danger">
+            {error}
+          </p>
+        )}
 
         <Section index="01" title="알림">
           <Row
@@ -95,13 +124,17 @@ export function SettingsPage() {
             value={profile?.nickname ?? '-'}
             onClick={() => {
               setNickname(profile?.nickname ?? '')
+              setError('')
               setNicknameOpen(true)
             }}
           />
           <Row
             label="프로필 표시"
             value={profile?.profile_emoji ?? '선택 안 함'}
-            onClick={() => setEmojiOpen(true)}
+            onClick={() => {
+              setError('')
+              setEmojiOpen(true)
+            }}
           />
         </Section>
 
@@ -142,6 +175,11 @@ export function SettingsPage() {
           maxLength={10}
           placeholder="2~10자"
         />
+        {error && nicknameOpen && (
+          <p role="alert" className="mt-3 text-sm text-danger">
+            {error}
+          </p>
+        )}
         <Button className="mt-5" disabled={saving} onClick={() => void handleNicknameSave()}>저장</Button>
       </Modal>
 
@@ -158,6 +196,11 @@ export function SettingsPage() {
             </button>
           ))}
         </div>
+        {error && emojiOpen && (
+          <p role="alert" className="mt-3 text-sm text-danger">
+            {error}
+          </p>
+        )}
       </Modal>
     </div>
   )

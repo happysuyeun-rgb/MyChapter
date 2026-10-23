@@ -1,3 +1,4 @@
+import { resolveFunctionPayload } from '@/lib/api/functionInvoke'
 import { isDevBypass } from '@/lib/devBypass'
 import { supabase } from '@/lib/supabase'
 import { getSubscriptionPlan } from './subscriptions'
@@ -246,7 +247,7 @@ export async function generateBookPdf(
     body: { project_id: projectId, cover_template_id: coverTemplateId },
   })
 
-  const body = response.data as {
+  const { data: body, errorBody, error } = await resolveFunctionPayload<{
     pdf_url?: string
     storage_path?: string
     page_count?: number
@@ -254,22 +255,25 @@ export async function generateBookPdf(
     version?: number
     code?: string
     error?: string
-  } | null
+  }>(response)
 
-  if (body?.code === 'PUBLICATION_IN_PROGRESS') {
+  const code = errorBody?.code ?? body?.code
+  const message = errorBody?.error ?? body?.error
+
+  if (code === 'PUBLICATION_IN_PROGRESS') {
     throw new BookApiError('PUBLICATION_IN_PROGRESS', '이미 PDF를 제작하고 있어요. 완료 상태를 확인한 뒤 다시 시도해주세요.')
   }
 
-  if (body?.code === 'REVIEW_REQUIRED' || body?.code === 'COVER_MISMATCH' || body?.code === 'MANUSCRIPT_INCOMPLETE') {
-    throw new BookApiError(body.code, body.error ?? '원고와 최종 검수를 다시 확인해주세요.')
+  if (code === 'REVIEW_REQUIRED' || code === 'COVER_MISMATCH' || code === 'MANUSCRIPT_INCOMPLETE') {
+    throw new BookApiError(code, message ?? '원고와 최종 검수를 다시 확인해주세요.')
   }
 
-  if (body?.code === 'PUBLICATION_LIMIT' || body?.code === 'PDF_PRO_ONLY') {
-    throw new BookApiError('PUBLICATION_LIMIT', body.error ?? 'Free 플랜의 첫 책 발행을 이미 사용했어요.')
+  if (code === 'PUBLICATION_LIMIT' || code === 'PDF_PRO_ONLY') {
+    throw new BookApiError('PUBLICATION_LIMIT', message ?? 'Free 플랜의 첫 책 발행을 이미 사용했어요.')
   }
 
-  if (response.error || body?.error || !body?.pdf_url || !body?.publication_id || !body?.version) {
-    throw new BookApiError('PDF_GENERATE_FAILED', body?.error ?? 'PDF 생성에 실패했어요.')
+  if (error || message || !body?.pdf_url || !body?.publication_id || !body?.version) {
+    throw new BookApiError('PDF_GENERATE_FAILED', message ?? 'PDF 생성에 실패했어요.')
   }
 
   return {

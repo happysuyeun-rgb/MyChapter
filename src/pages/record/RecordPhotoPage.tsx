@@ -18,6 +18,8 @@ import {
 import { useAuthStore } from '@/stores/authStore'
 import { useRecordStore } from '@/stores/recordStore'
 
+const MAX_PHOTO_BYTES = 10 * 1024 * 1024
+
 export function RecordPhotoPage() {
   const navigate = useNavigate()
   const uploadedPhotoPath = useRef<string | null>(null)
@@ -73,6 +75,15 @@ export function RecordPhotoPage() {
   }, [project, user, editingRecord])
 
   const handleFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setError('이미지 파일만 선택할 수 있어요.')
+      return
+    }
+    if (file.size > MAX_PHOTO_BYTES) {
+      setError('사진 용량은 10MB 이하로 해주세요.')
+      return
+    }
+    setError('')
     uploadedPhotoPath.current = null
     setRestoredPhotoPath(null)
     if (user && project) clearPhotoAttempt(user.id, project.id)
@@ -88,6 +99,10 @@ export function RecordPhotoPage() {
     }
     if (caption.trim().length < 1 || caption.length > 100) {
       setError('캡션은 1~100자로 작성해주세요.')
+      return
+    }
+    if (photoFile && (!photoFile.type.startsWith('image/') || photoFile.size > MAX_PHOTO_BYTES)) {
+      setError('사진 용량은 10MB 이하로 해주세요.')
       return
     }
 
@@ -165,6 +180,7 @@ export function RecordPhotoPage() {
           onChange={(e) => {
             const file = e.target.files?.[0]
             if (file) handleFile(file)
+            e.target.value = ''
           }}
         />
         <button
@@ -211,7 +227,10 @@ export function RecordPhotoPage() {
           void saveDraft(user.id, project.id, 'photo', {
             content: caption,
             emotionTags: emotions,
-          }).then(() => navigate(-1))
+          }).then(() => navigate(-1)).catch(() => {
+            setShowExit(false)
+            setError('임시저장에 실패했어요. 작성한 내용은 유지됩니다.')
+          })
         }}
       />
     </div>

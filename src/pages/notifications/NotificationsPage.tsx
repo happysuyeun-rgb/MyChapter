@@ -9,6 +9,7 @@ import {
   type AppNotification,
 } from '@/lib/api/notifications'
 import { useAuthStore } from '@/stores/authStore'
+import { useToastStore } from '@/stores/toastStore'
 
 const TYPE_LABEL: Record<string, string> = {
   daily_question: 'RECORD',
@@ -31,6 +32,7 @@ function formatRelativeTime(iso: string): string {
 export function NotificationsPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  const { showToast } = useToastStore()
   const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -55,16 +57,24 @@ export function NotificationsPage() {
 
   const handleTap = async (notification: AppNotification) => {
     if (!notification.is_read) {
-      await markAsRead(notification.id)
-      setNotifications((prev) => prev.map((n) => n.id === notification.id ? { ...n, is_read: true } : n))
+      try {
+        await markAsRead(notification.id)
+        setNotifications((prev) => prev.map((n) => n.id === notification.id ? { ...n, is_read: true } : n))
+      } catch {
+        showToast('알림 상태를 변경하지 못했어요. 잠시 후 다시 시도해주세요.')
+      }
     }
     if (notification.link) navigate(notification.link)
   }
 
   const handleMarkAll = async () => {
     if (!user) return
-    await markAllRead(user.id)
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
+    try {
+      await markAllRead(user.id)
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
+    } catch {
+      showToast('모두 읽음 처리에 실패했어요. 잠시 후 다시 시도해주세요.')
+    }
   }
 
   const unreadCount = notifications.filter((n) => !n.is_read).length

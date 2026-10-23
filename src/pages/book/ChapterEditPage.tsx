@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Button, Input, Modal, Textarea } from '@/components/common'
+import { Button, ErrorState, Input, LoadingBlock, Modal, Textarea } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { getChapter, regenerateChapter, updateChapterContent } from '@/lib/api/chapters'
 import { useAuthStore } from '@/stores/authStore'
@@ -20,23 +20,39 @@ export function ChapterEditPage() {
   const [saving, setSaving] = useState(false)
   const [regenerating, setRegenerating] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [loadError, setLoadError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
     if (!id || !user) return
+    let cancelled = false
+    setLoadError(false)
 
-    void getChapter(id, user.id).then((data) => {
-      if (!data) {
-        navigate('/book', { replace: true })
-        return
-      }
-      setChapter(data)
-      setTitle(data.title)
-      setContent(getChapterDisplayContent(data))
-    })
-  }, [id, user, navigate])
+    getChapter(id, user.id)
+      .then((data) => {
+        if (cancelled) return
+        if (!data) {
+          navigate('/book', { replace: true })
+          return
+        }
+        setChapter(data)
+        setTitle(data.title)
+        setContent(getChapterDisplayContent(data))
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true)
+      })
+    return () => { cancelled = true }
+  }, [id, user, navigate, retryKey])
+
+  const canSave = Boolean(title.trim() && content.trim())
 
   const handleSave = async () => {
-    if (!chapter) return
+    if (!chapter || saving || regenerating) return
+    if (!canSave) {
+      showToast('챕터 제목과 원고를 모두 입력해주세요.')
+      return
+    }
     setSaving(true)
     try {
       const updated = await updateChapterContent(chapter.id, title.trim(), content.trim())
@@ -58,13 +74,31 @@ export function ChapterEditPage() {
       setChapter(updated)
       setTitle(updated.title)
       setContent(getChapterDisplayContent(updated))
+    } catch (err) {
+      showToast(err instanceof Error && err.message ? err.message : '챕터 재생성에 실패했어요. 다시 시도해주세요.')
     } finally {
       setRegenerating(false)
     }
   }
 
+  if (loadError) {
+    return (
+      <div className="flex min-h-dvh flex-col bg-surface">
+        <NavBar title="원고 편집" leftLabel="←" />
+        <ErrorState
+          title="원고를 불러오지 못했어요"
+          onRetry={() => setRetryKey((k) => k + 1)}
+        />
+      </div>
+    )
+  }
+
   if (!chapter) {
-    return <div className="flex flex-1 items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
+    return (
+      <div className="flex min-h-dvh flex-col bg-surface">
+        <LoadingBlock label="원고를 불러오는 중..." />
+      </div>
+    )
   }
 
   return (
@@ -123,7 +157,7 @@ export function ChapterEditPage() {
       </main>
 
       <div className="border-t border-border bg-surface px-5 py-4 safe-bottom">
-        <Button disabled={saving || regenerating || !title.trim() || !content.trim()} onClick={() => void handleSave()}>
+        <Button disabled={saving || regenerating || !canSave} onClick={() => void handleSave()}>
           {saving ? '저장 중...' : '편집 내용 저장하기'}
         </Button>
       </div>

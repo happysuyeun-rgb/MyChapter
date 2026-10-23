@@ -1,3 +1,4 @@
+import { resolveFunctionPayload } from '@/lib/api/functionInvoke'
 import { isDevBypass } from '@/lib/devBypass'
 import { mockGenerateQuestion } from '@/mocks'
 import { supabase } from '@/lib/supabase'
@@ -40,15 +41,19 @@ export async function generateQuestion(projectId: string): Promise<string> {
     body: { project_id: projectId },
   })
 
-  const body = response.data as { question?: string; code?: string; error?: string } | null
+  const { data, errorBody, error } = await resolveFunctionPayload<{
+    question?: string
+    code?: string
+    error?: string
+  }>(response)
 
-  if (body?.code === 'AI_LIMIT') {
+  if ((errorBody?.code ?? data?.code) === 'AI_LIMIT') {
     throw new ApiError('AI_LIMIT', '이번 달 AI 질문 한도에 도달했어요.')
   }
 
-  if (body?.question) return body.question
+  if (data?.question) return data.question
 
-  if (response.error) {
+  if (error) {
     const { data: project } = await supabase
       .from('projects')
       .select('type')

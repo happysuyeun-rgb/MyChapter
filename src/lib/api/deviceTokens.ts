@@ -32,3 +32,12 @@ export async function removeDeviceToken(userId: string, fcmToken: string): Promi
 
   if (error) throw error
 }
+
+/** Clears every FCM token for the user (logout / account switch). */
+export async function removeAllDeviceTokens(userId: string): Promise<void> {
+  if (isDevBypass()) return
+
+  const { error } = await supabase.from('device_tokens').delete().eq('user_id', userId)
+
+  if (error) throw error
+}

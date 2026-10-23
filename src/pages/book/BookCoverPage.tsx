@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/common'
+import { Button, ErrorState, LoadingBlock } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { COVER_TEMPLATES } from '@/constants/coverTemplates'
 import { getSubscriptionPlan } from '@/lib/api/subscriptions'
@@ -17,7 +17,7 @@ import { getBookReadiness } from '@/utils/bookReadiness'
 export function BookCoverPage() {
   const navigate = useNavigate()
   const { user, profile } = useAuthStore()
-  const { project, loading: projectLoading } = useActiveProject()
+  const { project, loading: projectLoading, error: projectError, retry: retryProject } = useActiveProject()
   const { selectedCoverId, setSelectedCoverId } = useBookStore()
   const { setActiveProject } = useProjectStore()
   const { showPaywall } = usePaywallStore()
@@ -25,20 +25,30 @@ export function BookCoverPage() {
   const [isPro, setIsPro] = useState(false)
   const [coverConfirmed, setCoverConfirmed] = useState(false)
   const [readinessChecked, setReadinessChecked] = useState(false)
+  const [loadError, setLoadError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
     if (!user || !project) return
-    void Promise.all([getSubscriptionPlan(user.id), listRecords(user.id, { projectId: project.id })]).then(([plan, records]) => {
-      setIsPro(plan === 'pro')
-      if (!getBookReadiness(project, records.length).isReady) navigate('/project/workspace', { replace: true })
-      const persistedCover = project.selected_cover_id ?? project.cover_template_id
-      if (persistedCover) {
-        setSelectedCoverId(persistedCover)
-        setCoverConfirmed(true)
-      }
-      setReadinessChecked(true)
-    })
-  }, [user, project, navigate])
+    let cancelled = false
+    setLoadError(false)
+    Promise.all([getSubscriptionPlan(user.id), listRecords(user.id, { projectId: project.id })])
+      .then(([plan, records]) => {
+        if (cancelled) return
+        setIsPro(plan === 'pro')
+        if (!getBookReadiness(project, records.length).isReady) navigate('/project/workspace', { replace: true })
+        const persistedCover = project.selected_cover_id ?? project.cover_template_id
+        if (persistedCover) {
+          setSelectedCoverId(persistedCover)
+          setCoverConfirmed(true)
+        }
+        setReadinessChecked(true)
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true)
+      })
+    return () => { cancelled = true }
+  }, [user, project, navigate, retryKey, setSelectedCoverId])
 
   const handleSelect = async (id: string, proOnly: boolean) => {
     if (!user || !project) return
@@ -56,8 +66,27 @@ export function BookCoverPage() {
     }
   }
 
+  if (projectError || loadError) {
+    return (
+      <div className="flex min-h-dvh flex-col bg-surface">
+        <NavBar title="표지 선택" leftLabel="‹ 뒤로" />
+        <ErrorState
+          title="표지 정보를 불러오지 못했어요"
+          onRetry={() => {
+            if (projectError) retryProject()
+            if (loadError) setRetryKey((k) => k + 1)
+          }}
+        />
+      </div>
+    )
+  }
+
   if (projectLoading || !project || !readinessChecked) {
-    return <div className="flex flex-1 items-center justify-center text-sm text-ink-muted">로딩 중...</div>
+    return (
+      <div className="flex min-h-dvh flex-col bg-surface">
+        <LoadingBlock label="표지 정보를 불러오는 중..." />
+      </div>
+    )
   }
 
   const selectedTemplate = COVER_TEMPLATES.find((t) => t.id === selectedCoverId) ?? COVER_TEMPLATES[0]

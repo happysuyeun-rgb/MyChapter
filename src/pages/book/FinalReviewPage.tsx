@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/common'
+import { Button, ErrorState, LoadingBlock } from '@/components/common'
 import { COVER_TEMPLATES } from '@/constants/coverTemplates'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { canPublishBook, downloadPdfFromUrl, generateBookPdf, BookApiError } from '@/lib/api/books'
@@ -18,8 +18,8 @@ import { getBookReadiness } from '@/utils/bookReadiness'
 export function FinalReviewPage() {
   const navigate = useNavigate()
   const { user, profile } = useAuthStore()
-  const { project, loading: projectLoading } = useActiveProject()
-  const { selectedCoverId, setPublishResult, publishStage, publishError, setPublishStage } = useBookStore()
+  const { project, loading: projectLoading, error: projectError, retry: retryProject } = useActiveProject()
+  const { selectedCoverId, setPublishResult, publishStage, publishError, setPublishStage, resetPublishState } = useBookStore()
   const { showPaywall } = usePaywallStore()
   const { setActiveProject } = useProjectStore()
   const [chapters, setChapters] = useState<Chapter[]>([])
@@ -32,34 +32,68 @@ export function FinalReviewPage() {
   const [reviewSaving, setReviewSaving] = useState(false)
   const [reviewError, setReviewError] = useState<string | null>(null)
   const [readinessChecked, setReadinessChecked] = useState(false)
+  const [loadError, setLoadError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
+
+  useEffect(() => {
+    resetPublishState()
+  }, [resetPublishState])
 
   useEffect(() => {
     if (!user || !project) return
-    void Promise.all([
+    let cancelled = false
+    setLoadError(false)
+    Promise.all([
       listChapters(project.id),
       listRecords(user.id, { projectId: project.id }),
       getSubscriptionPlan(user.id),
       canPublishBook(user.id),
-    ]).then(([chapterData, records, plan, canPublish]) => {
-      setChapters(chapterData)
-      setReviewSaved(Boolean(project.final_review_completed_at))
-      if (project.final_review_completed_at) setChecks({ cover: true, toc: true, manuscript: true })
-      setRecordCount(records.length)
-      setIsPro(plan === 'pro')
-      setAllowed(canPublish)
-      if (!getBookReadiness(project, records.length).isReady) {
-        navigate('/project/workspace', { replace: true })
-        return
-      }
-      if (!(project.selected_cover_id ?? project.cover_template_id)) {
-        navigate('/book/cover', { replace: true })
-        return
-      }
-      setReadinessChecked(true)
-    })
-  }, [user, project, navigate])
+    ])
+      .then(([chapterData, records, plan, canPublish]) => {
+        if (cancelled) return
+        setChapters(chapterData)
+        setReviewSaved(Boolean(project.final_review_completed_at))
+        if (project.final_review_completed_at) setChecks({ cover: true, toc: true, manuscript: true })
+        setRecordCount(records.length)
+        setIsPro(plan === 'pro')
+        setAllowed(canPublish)
+        if (!getBookReadiness(project, records.length).isReady) {
+          navigate('/project/workspace', { replace: true })
+          return
+        }
+        if (!(project.selected_cover_id ?? project.cover_template_id)) {
+          navigate('/book/cover', { replace: true })
+          return
+        }
+        setReadinessChecked(true)
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true)
+      })
+    return () => { cancelled = true }
+  }, [user, project, navigate, retryKey])
 
-  if (projectLoading || !project || !readinessChecked) return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
+  if (projectError || loadError) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <ErrorState
+          title="최종 검수 정보를 불러오지 못했어요"
+          onRetry={() => {
+            if (projectError) retryProject()
+            if (loadError) setRetryKey((k) => k + 1)
+          }}
+        />
+      </div>
+    )
+  }
+
+  if (projectLoading || !project || !readinessChecked) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <LoadingBlock label="최종 검수 정보를 불러오는 중..." />
+      </div>
+    )
+  }
 
   const effectiveCoverId = project.selected_cover_id ?? project.cover_template_id ?? selectedCoverId
   const cover = COVER_TEMPLATES.find((item) => item.id === effectiveCoverId)
@@ -121,9 +155,13 @@ export function FinalReviewPage() {
       if (error instanceof BookApiError && error.code === 'PUBLICATION_LIMIT') {
         setPublishStage('idle')
         showPaywall()
+      } else if (error instanceof BookApiError && error.code === 'PUBLICATION_IN_PROGRESS') {
+        setPublishStage('error', error.message)
       } else if (error instanceof BookApiError && ['REVIEW_REQUIRED', 'COVER_MISMATCH', 'MANUSCRIPT_INCOMPLETE'].includes(error.code)) {
         setPublishStage('error', error.message)
         setReviewSaved(false)
+      } else if (error instanceof BookApiError) {
+        setPublishStage('error', error.message || 'PDF 생성 중 문제가 발생했어요. 다시 시도해주세요.')
       } else {
         setPublishStage('error', 'PDF 생성 중 문제가 발생했어요. 다시 시도해주세요.')
       }

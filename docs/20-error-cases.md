@@ -276,3 +276,4 @@
 | 날짜 | 내용 |
 |------|------|
 | 2026-10-23 | 코드 전수 점검 후 초안 작성. Edge code 전달·무한 로딩·구독 free 위장을 최우선으로 표기 |
+| 2026-10-23 | **코드 반영:** `functionInvoke`로 Edge 4xx body 파싱 · ErrorState 확대 · Settings/삭제/재생성 catch · 구독 조회 실패 시 Free 위장 제거 · 로그아웃 시 device token 삭제 · 사진 10MB 가드 |

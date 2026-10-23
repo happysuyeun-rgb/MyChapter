@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Modal } from '@/components/common'
+import { ErrorState, LoadingBlock, Modal } from '@/components/common'
 import { RecordActionSheet } from '@/components/features/record/RecordActionSheet'
 import { NavBar } from '@/components/layout/NavBar'
 import { deleteRecord, getPhotoSignedUrl, getRecord } from '@/lib/api/records'
@@ -27,42 +27,62 @@ export function RecordDetailPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [loadError, setLoadError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
+  const [deleteError, setDeleteError] = useState('')
 
   useEffect(() => {
     if (!id || !user) return
+    let cancelled = false
 
     const load = async () => {
-      const data = await getRecord(id, user.id)
-      if (!data) {
-        navigate('/records', { replace: true })
-        return
-      }
-      setRecord(data)
+      setLoadError(false)
+      try {
+        const data = await getRecord(id, user.id)
+        if (cancelled) return
+        if (!data) {
+          navigate('/records', { replace: true })
+          return
+        }
+        setRecord(data)
 
-      if (data.photo_url) {
-        const url = await getPhotoSignedUrl(data.photo_url)
-        setPhotoUrl(url)
-      }
+        if (data.photo_url) {
+          const url = await getPhotoSignedUrl(data.photo_url)
+          if (cancelled) return
+          setPhotoUrl(url)
+        }
 
-      if (data.chapter_id) {
-        const { data: ch } = await supabase
-          .from('chapters')
-          .select('*')
-          .eq('id', data.chapter_id)
-          .maybeSingle()
-        setChapter(ch)
+        if (data.chapter_id) {
+          const { data: ch, error } = await supabase
+            .from('chapters')
+            .select('*')
+            .eq('id', data.chapter_id)
+            .maybeSingle()
+          if (error) throw error
+          if (cancelled) return
+          setChapter(ch)
+        }
+      } catch {
+        if (!cancelled) setLoadError(true)
       }
     }
 
     void load()
-  }, [id, user, navigate])
+    return () => { cancelled = true }
+  }, [id, user, navigate, retryKey])
 
   const handleDelete = async () => {
     if (!record || !user) return
     setDeleting(true)
-    await deleteRecord(record.id, user.id)
-    setDeleting(false)
-    navigate('/records', { replace: true })
+    setDeleteError('')
+    try {
+      await deleteRecord(record.id, user.id)
+      navigate('/records', { replace: true })
+    } catch {
+      setDeleteError('기록을 삭제하지 못했어요. 잠시 후 다시 시도해주세요.')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const handleEdit = () => {
@@ -76,8 +96,24 @@ export function RecordDetailPage() {
     navigate(routes[record.mode])
   }
 
+  if (loadError) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <NavBar title="기록" leftLabel="←" />
+        <ErrorState
+          title="기록을 불러오지 못했어요"
+          onRetry={() => setRetryKey((k) => k + 1)}
+        />
+      </div>
+    )
+  }
+
   if (!record) {
-    return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <LoadingBlock label="기록을 불러오는 중..." />
+      </div>
+    )
   }
 
   const dateLabel = new Date(record.created_at).toLocaleDateString('ko-KR', {
@@ -152,8 +188,20 @@ export function RecordDetailPage() {
         onDelete={() => setDeleteOpen(true)}
       />
 
-      <Modal open={deleteOpen} onClose={() => setDeleteOpen(false)} title="기록 삭제">
+      <Modal
+        open={deleteOpen}
+        onClose={() => {
+          setDeleteOpen(false)
+          setDeleteError('')
+        }}
+        title="기록 삭제"
+      >
         <p className="mb-5 text-center text-sm text-ink-muted">이 페이지를 삭제하면 복구할 수 없어요.</p>
+        {deleteError && (
+          <p role="alert" className="mb-4 text-center text-sm text-danger">
+            {deleteError}
+          </p>
+        )}
         <button
           type="button"
           disabled={deleting}

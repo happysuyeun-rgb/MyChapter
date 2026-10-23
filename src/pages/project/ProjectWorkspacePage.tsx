@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ProgressBar } from '@/components/common'
+import { ErrorState, LoadingBlock, ProgressBar } from '@/components/common'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { getPublishedBook } from '@/lib/api/books'
@@ -13,35 +13,70 @@ import { getBookReadiness } from '@/utils/bookReadiness'
 export function ProjectWorkspacePage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const { project, loading: projectLoading } = useActiveProject()
+  const { project, loading: projectLoading, error: projectError, retry: retryProject } = useActiveProject()
   const [recordCount, setRecordCount] = useState(0)
   const [chapterCount, setChapterCount] = useState(0)
   const [manuscriptComplete, setManuscriptComplete] = useState(false)
   const [finalReviewComplete, setFinalReviewComplete] = useState(false)
   const [publishedVersion, setPublishedVersion] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
     if (!user || !project) return
-    void Promise.all([
+    let cancelled = false
+    setLoadError(false)
+    Promise.all([
       listRecords(user.id, { projectId: project.id }),
       listChapters(project.id),
       isDevBypass() ? Promise.resolve(null) : getPublishedBook(project.id),
-    ]).then(([records, chapters, publication]) => {
-      setRecordCount(records.length)
-      setChapterCount(chapters.length)
-      setManuscriptComplete(Boolean(project.manuscript_reviewed_at))
-      setFinalReviewComplete(Boolean(project.final_review_completed_at))
-      setPublishedVersion(
-        isDevBypass() && project.is_completed
-          ? 1
-          : publication?.version ?? null,
-      )
-      setLoading(false)
-    })
-  }, [user, project])
+    ])
+      .then(([records, chapters, publication]) => {
+        if (cancelled) return
+        setRecordCount(records.length)
+        setChapterCount(chapters.length)
+        setManuscriptComplete(Boolean(project.manuscript_reviewed_at))
+        setFinalReviewComplete(Boolean(project.final_review_completed_at))
+        setPublishedVersion(
+          isDevBypass() && project.is_completed
+            ? 1
+            : publication?.version ?? null,
+        )
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [user, project, retryKey])
 
-  if (projectLoading || loading || !project) return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
+  if (projectError || loadError) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <ErrorState
+          title="책 작업실을 불러오지 못했어요"
+          onRetry={() => {
+            if (projectError) retryProject()
+            if (loadError) {
+              setLoading(true)
+              setRetryKey((k) => k + 1)
+            }
+          }}
+        />
+      </div>
+    )
+  }
+
+  if (projectLoading || loading || !project) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <LoadingBlock label="책 작업실을 불러오는 중..." />
+      </div>
+    )
+  }
 
   const readiness = getBookReadiness(project, recordCount)
   const progress = readiness.score

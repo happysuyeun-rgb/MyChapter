@@ -3,6 +3,11 @@ import { PushNotifications } from '@capacitor/push-notifications'
 import { upsertDeviceToken } from '@/lib/api/deviceTokens'
 
 let initialized = false
+let lastFcmToken: string | null = null
+
+export function getLastFcmToken(): string | null {
+  return lastFcmToken
+}
 
 export async function initPushNotifications(
   userId: string,
@@ -23,18 +28,25 @@ export async function initPushNotifications(
     // On Android 8+, a notification sent to a channel that doesn't exist on
     // the device is silently dropped, so this channel must be created before
     // the first push arrives.
-    await PushNotifications.createChannel({
-      id: 'daily_reminder',
-      name: '오늘의 질문 알림',
-      description: '매일 기록을 남기라는 리마인더 알림입니다.',
-      importance: 4,
-      visibility: 0,
-      vibration: true,
-    })
+    try {
+      await PushNotifications.createChannel({
+        id: 'daily_reminder',
+        name: '오늘의 질문 알림',
+        description: '매일 기록을 남기라는 리마인더 알림입니다.',
+        importance: 4,
+        visibility: 0,
+        vibration: true,
+      })
+    } catch (err) {
+      console.error('Push channel create error:', err)
+    }
   }
 
   await PushNotifications.addListener('registration', (token) => {
-    void upsertDeviceToken(userId, token.value)
+    lastFcmToken = token.value
+    void upsertDeviceToken(userId, token.value).catch((err) => {
+      console.error('Push token upsert error:', err)
+    })
   })
 
   await PushNotifications.addListener('registrationError', (err) => {
@@ -54,4 +66,5 @@ export async function initPushNotifications(
 
 export function resetPushState(): void {
   initialized = false
+  lastFcmToken = null
 }

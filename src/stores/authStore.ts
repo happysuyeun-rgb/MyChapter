@@ -8,6 +8,8 @@ import {
   DEV_MOCK_USER,
   isDevBypass,
 } from '@/lib/devBypass'
+import { removeAllDeviceTokens } from '@/lib/api/deviceTokens'
+import { resetPushState } from '@/lib/push'
 import { supabase } from '@/lib/supabase'
 import { useProjectStore } from '@/stores/projectStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
@@ -55,35 +57,38 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     initPromise = (async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      set({ session, user: session?.user ?? null })
-
-      if (session?.user) {
-        const { data } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .maybeSingle()
-        set({ profile: data })
-      }
-
-      supabase.auth.onAuthStateChange(async (_event, session) => {
-        if (isDevBypass()) return
-
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
         set({ session, user: session?.user ?? null })
+
         if (session?.user) {
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from('users')
             .select('*')
             .eq('id', session.user.id)
             .maybeSingle()
-          set({ profile: data })
-        } else {
-          set({ profile: null })
+          // Keep session even if profile fetch fails; Splash/guards handle null nickname.
+          if (!error) set({ profile: data })
         }
-      })
 
-      set({ initialized: true })
+        supabase.auth.onAuthStateChange(async (_event, session) => {
+          if (isDevBypass()) return
+
+          set({ session, user: session?.user ?? null })
+          if (session?.user) {
+            const { data, error } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .maybeSingle()
+            if (!error) set({ profile: data })
+          } else {
+            set({ profile: null })
+          }
+        })
+      } finally {
+        set({ initialized: true })
+      }
     })()
 
     try {
@@ -100,6 +105,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       applyMockAuth(set)
       return
     }
+
+    const userId = get().user?.id
+    if (userId) {
+      try {
+        await removeAllDeviceTokens(userId)
+      } catch (err) {
+        console.error('Failed to clear device tokens on sign out:', err)
+      }
+    }
+    resetPushState()
 
     await supabase.auth.signOut()
     useSubscriptionStore.getState().reset()

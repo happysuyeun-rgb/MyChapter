@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/common'
+import { Button, ErrorState, LoadingBlock } from '@/components/common'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { listChapters } from '@/lib/api/chapters'
 import { listRecords } from '@/lib/api/records'
@@ -15,29 +15,39 @@ export function ManuscriptPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const { setActiveProject } = useProjectStore()
-  const { project, loading: projectLoading } = useActiveProject()
+  const { project, loading: projectLoading, error: projectError, retry: retryProject } = useActiveProject()
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [recordCount, setRecordCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user || !project) return
-    void Promise.all([
+    let cancelled = false
+    setLoadError(false)
+    Promise.all([
       listChapters(project.id),
       listRecords(user.id, { projectId: project.id }),
-    ]).then(([chapterData, records]) => {
-      const readiness = getBookReadiness(project, records.length)
-      if (!readiness.isReady) {
-        navigate('/project/workspace', { replace: true })
-        return
-      }
-      setChapters(chapterData)
-      setRecordCount(records.length)
-      setLoading(false)
-    })
-  }, [user, project, navigate])
+    ])
+      .then(([chapterData, records]) => {
+        if (cancelled) return
+        const readiness = getBookReadiness(project, records.length)
+        if (!readiness.isReady) {
+          navigate('/project/workspace', { replace: true })
+          return
+        }
+        setChapters(chapterData)
+        setRecordCount(records.length)
+        setLoading(false)
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true)
+      })
+    return () => { cancelled = true }
+  }, [user, project, navigate, retryKey])
 
   const manuscriptChars = useMemo(
     () => chapters.reduce((sum, chapter) => sum + getChapterDisplayContent(chapter).length, 0),
@@ -61,8 +71,26 @@ export function ManuscriptPage() {
     }
   }
 
+  if (projectError || loadError) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <ErrorState
+          title="원고를 불러오지 못했어요"
+          onRetry={() => {
+            if (projectError) retryProject()
+            if (loadError) setRetryKey((k) => k + 1)
+          }}
+        />
+      </div>
+    )
+  }
+
   if (projectLoading || loading || !project) {
-    return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <LoadingBlock label="원고를 불러오는 중..." />
+      </div>
+    )
   }
 
   return (

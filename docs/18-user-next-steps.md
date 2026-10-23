@@ -18,13 +18,21 @@
 ④ 로컬에서 E2E 테스트
 ```
 
+**AI가 이미 코드로 처리한 것** (본인 작업 불필요)
+
+| 항목 | 문서 |
+|------|------|
+| Edge Function 에러 `code` 파싱, ErrorState 확대, Settings 저장 피드백 | `20-error-cases.md` |
+| 로그아웃 시 FCM 토큰 삭제, 구독 조회 실패 시 Free 오탐 방지 | `21-screen-completeness.md` |
+| 사진 10MB·제목 길이 등 입력 가드 | 코드 반영 |
+
 **지금 하지 않아도 되는 것**
 
 | 항목 | 이유 |
 |------|------|
 | Edge Function 8개 재배포 | 이미 원격에서 응답 확인됨 (`17-test-report.md`) |
 | 마이그레이션 SQL 재실행 | 001~006 적용 완료 |
-| Firebase / Play Console | 베타·출시 단계 (나중에) |
+| Firebase / Play Console / Billing 네이티브 | 베타·출시 단계 (**본인+네이티브 작업**, 나중에) |
 
 ---
 

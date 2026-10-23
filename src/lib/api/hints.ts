@@ -1,3 +1,4 @@
+import { resolveFunctionPayload } from '@/lib/api/functionInvoke'
 import { ApiError } from '@/lib/api/questions'
 import { isDevBypass } from '@/lib/devBypass'
 import { supabase } from '@/lib/supabase'
@@ -31,13 +32,13 @@ export async function generateFreewritingHint(projectId: string): Promise<string
     body: { project_id: projectId },
   })
 
-  const body = response.data as { hint?: string; code?: string } | null
+  const { data, errorBody } = await resolveFunctionPayload<{ hint?: string; code?: string }>(response)
 
-  if (body?.code === 'AI_LIMIT') {
+  if ((errorBody?.code ?? data?.code) === 'AI_LIMIT') {
     throw new ApiError('AI_LIMIT', '이번 달 AI 글감 한도에 도달했어요.')
   }
 
-  if (body?.hint) return body.hint
+  if (data?.hint) return data.hint
 
   const { data: project } = await supabase
     .from('projects')

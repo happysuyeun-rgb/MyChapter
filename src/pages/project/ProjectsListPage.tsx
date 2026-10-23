@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { EmptyState } from '@/components/common'
+import { EmptyState, ErrorState, LoadingBlock } from '@/components/common'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { listPublishedBooks } from '@/lib/api/books'
 import { getProjects } from '@/lib/api/projects'
@@ -31,32 +31,44 @@ export function ProjectsListPage() {
   const [projects, setProjects] = useState<ProjectWithProgress[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<Filter>('전체')
+  const [loadError, setLoadError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
     if (!user) return
+    let cancelled = false
     const load = async () => {
-      const [projectData, publishedBooks] = await Promise.all([
-        getProjects(user.id),
-        isDevBypass() ? Promise.resolve([]) : listPublishedBooks(user.id),
-      ])
-      const publishedProjectIds = new Set(publishedBooks.map((book) => book.project_id))
+      setLoading(true)
+      setLoadError(false)
+      try {
+        const [projectData, publishedBooks] = await Promise.all([
+          getProjects(user.id),
+          isDevBypass() ? Promise.resolve([]) : listPublishedBooks(user.id),
+        ])
+        const publishedProjectIds = new Set(publishedBooks.map((book) => book.project_id))
 
-      const withProgress = await Promise.all(projectData.map(async (project) => {
-        const records = await listRecords(user.id, { projectId: project.id })
-        const recordCount = records.length
-        const readiness = getBookReadiness(project, recordCount)
-        const hasPublishedVersion = isDevBypass()
-          ? project.is_completed
-          : publishedProjectIds.has(project.id)
-        const statusLabel: ProjectWithProgress['statusLabel'] =
-          hasPublishedVersion ? '발행완료' : readiness.isReady ? '발행가능' : '진행중'
-        return { ...project, recordCount, progress: readiness.score, statusLabel }
-      }))
-      setProjects(withProgress)
-      setLoading(false)
+        const withProgress = await Promise.all(projectData.map(async (project) => {
+          const records = await listRecords(user.id, { projectId: project.id })
+          const recordCount = records.length
+          const readiness = getBookReadiness(project, recordCount)
+          const hasPublishedVersion = isDevBypass()
+            ? project.is_completed
+            : publishedProjectIds.has(project.id)
+          const statusLabel: ProjectWithProgress['statusLabel'] =
+            hasPublishedVersion ? '발행완료' : readiness.isReady ? '발행가능' : '진행중'
+          return { ...project, recordCount, progress: readiness.score, statusLabel }
+        }))
+        if (cancelled) return
+        setProjects(withProgress)
+      } catch {
+        if (!cancelled) setLoadError(true)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
     void load()
-  }, [user])
+    return () => { cancelled = true }
+  }, [user, retryKey])
 
   const handleSelect = (project: Project) => {
     setActiveProject(project)
@@ -81,7 +93,15 @@ export function ProjectsListPage() {
           ? '아직 발행한 책이 없어요.'
           : '아직 책이 없어요.'
 
-  if (loading) return <div className="flex flex-1 items-center justify-center text-sm text-ink-muted">로딩 중...</div>
+  if (loading) return <LoadingBlock label="서재를 불러오는 중..." />
+  if (loadError) {
+    return (
+      <ErrorState
+        title="서재를 불러오지 못했어요"
+        onRetry={() => setRetryKey((k) => k + 1)}
+      />
+    )
+  }
 
   return (
     <div className="flex flex-1 flex-col overflow-y-auto bg-surface">

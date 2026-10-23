@@ -1,3 +1,4 @@
+import { resolveFunctionPayload } from '@/lib/api/functionInvoke'
 import { isDevBypass } from '@/lib/devBypass'
 import {
   mockGenerateChapter,
@@ -131,22 +132,25 @@ export async function generateChapter(projectId: string): Promise<Chapter | null
     body: { project_id: projectId },
   })
 
-  const body = response.data as {
+  const { data, errorBody, error } = await resolveFunctionPayload<{
     chapter_id?: string
     code?: string
     error?: string
-  } | null
+  }>(response)
 
-  if (body?.code === 'NOT_ENOUGH_MATERIAL') {
-    throw new ChapterApiError('NOT_ENOUGH_MATERIAL', body.error ?? '챕터를 만들기 위한 기록이 조금 더 필요해요.')
+  const code = errorBody?.code ?? data?.code
+  const message = errorBody?.error ?? data?.error
+
+  if (code === 'NOT_ENOUGH_MATERIAL') {
+    throw new ChapterApiError('NOT_ENOUGH_MATERIAL', message ?? '챕터를 만들기 위한 기록이 조금 더 필요해요.')
   }
 
-  if (response.error || body?.error) {
-    throw new ChapterApiError(body?.code ?? 'CHAPTER_GENERATE_FAILED', body?.error ?? '챕터 생성에 실패했어요.')
+  if (error || message) {
+    throw new ChapterApiError(code ?? 'CHAPTER_GENERATE_FAILED', message ?? '챕터 생성에 실패했어요.')
   }
 
-  if (body?.chapter_id) {
-    return getChapter(body.chapter_id)
+  if (data?.chapter_id) {
+    return getChapter(data.chapter_id)
   }
 
   return null
@@ -194,8 +198,17 @@ export async function regenerateChapter(chapterId: string): Promise<Chapter> {
     body: { chapter_id: chapterId },
   })
 
-  if (response.error) {
-    throw new Error('챕터 재생성에 실패했어요.')
+  const { data, errorBody, error } = await resolveFunctionPayload<{
+    code?: string
+    error?: string
+  }>(response)
+
+  const message = errorBody?.error ?? data?.error
+  if (error || message) {
+    throw new ChapterApiError(
+      errorBody?.code ?? data?.code ?? 'CHAPTER_REGENERATE_FAILED',
+      message ?? '챕터 재생성에 실패했어요.',
+    )
   }
 
   const chapter = await getChapter(chapterId)

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { EmptyState } from '@/components/common'
+import { EmptyState, ErrorState, LoadingBlock } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { COVER_TEMPLATES } from '@/constants/coverTemplates'
 import { listPublishedBooks, type PublishedBookWithProject } from '@/lib/api/books'
@@ -11,23 +11,39 @@ export function CompletedBooksPage() {
   const { user } = useAuthStore()
   const [books, setBooks] = useState<PublishedBookWithProject[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
     if (!user) return
-    void listPublishedBooks(user.id)
-      .then((data) => setBooks(data))
-      .finally(() => setLoading(false))
-  }, [user])
-
-  if (loading) {
-    return <div className="flex flex-1 items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
-  }
+    let cancelled = false
+    setLoading(true)
+    setLoadError(false)
+    listPublishedBooks(user.id)
+      .then((data) => {
+        if (!cancelled) setBooks(data)
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [user, retryKey])
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
       <NavBar title="완성한 책" leftLabel="←" />
 
-      {books.length === 0 ? (
+      {loading ? (
+        <LoadingBlock label="발행한 책을 불러오는 중..." />
+      ) : loadError ? (
+        <ErrorState
+          title="발행한 책을 불러오지 못했어요"
+          onRetry={() => setRetryKey((k) => k + 1)}
+        />
+      ) : books.length === 0 ? (
         <EmptyState variant="book" />
       ) : (
         <main className="flex-1 overflow-y-auto px-5 pb-10 pt-6">
