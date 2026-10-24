@@ -92,7 +92,9 @@ export function RecordPhotoPage() {
     setPhotoPreview(URL.createObjectURL(file))
   }
 
-  const handleSave = async () => {
+  const [saveConflict, setSaveConflict] = useState(false)
+
+  const handleSave = async (saveAsNew = false) => {
     if (!user || !project || saving) return
     if (!photoFile && !existingPhotoPath && !restoredPhotoPath) {
       setError('사진을 추가해주세요.')
@@ -107,6 +109,12 @@ export function RecordPhotoPage() {
       return
     }
 
+    if (saveConflict && !saveAsNew) return
+    if (saveAsNew) {
+      clearRecordRequestId(user.id, project.id, 'photo')
+      clearPhotoAttempt(user.id, project.id)
+      setSaveConflict(false)
+    }
     setSaving(true)
     setError('')
 
@@ -144,9 +152,9 @@ export function RecordPhotoPage() {
           result = await createOnce()
         } catch (err) {
           if (!(err instanceof RecordRequestConflictError)) throw err
-          clearPhotoAttempt(user.id, project.id)
-          clearRecordRequestId(user.id, project.id, 'photo')
-          result = await createOnce()
+          setSaveConflict(true)
+          setError('이미 저장된 요청과 현재 내용이 달라요. 먼저 기록 목록에서 기존 저장 여부를 확인하거나, 아래 버튼으로 별도 새 기록을 저장해주세요.')
+          return
         }
       }
 
@@ -225,6 +233,7 @@ export function RecordPhotoPage() {
 
         <EmotionTagPicker selected={emotions} onChange={setEmotions} />
         {error && <p className="mt-3 text-sm text-danger">{error}</p>}
+        {saveConflict && <button type="button" disabled={saving} onClick={() => void handleSave(true)} className="mt-3 rounded border border-border px-4 py-3 text-sm font-semibold">별도 새 기록으로 저장</button>}
       </div>
 
       <ExitConfirmModal
