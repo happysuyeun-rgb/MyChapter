@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { Textarea } from '@/components/common'
 import { EmotionTagPicker } from '@/components/features/record/EmotionTagPicker'
 import { ExitConfirmModal } from '@/components/features/record/ExitConfirmModal'
+import { SaveConflictModal } from '@/components/features/record/SaveConflictModal'
 import { NavBar } from '@/components/layout/NavBar'
 import { useActiveProject } from '@/hooks/useActiveProject'
-import { clearRecordRequestId, getOrCreateRecordRequestId } from '@/lib/recordRequestId'
+import { useRecordCreateSave } from '@/hooks/useRecordCreateSave'
+import { clearRecordRequestId } from '@/lib/recordRequestId'
 import { deleteDraft, loadDraft, saveDraft } from '@/lib/api/drafts'
 import { generateFreewritingHint, getFallbackHint } from '@/lib/api/hints'
 import { ApiError } from '@/lib/api/questions'
-import { createRecord, getRecordCount, RecordRequestConflictError, updateRecord } from '@/lib/api/records'
+import { getRecordCount, updateRecord } from '@/lib/api/records'
 import { useAuthStore } from '@/stores/authStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { useRecordStore } from '@/stores/recordStore'
@@ -20,6 +22,15 @@ export function RecordFreePage() {
   const { showPaywall } = usePaywallStore()
   const { project, loading } = useActiveProject()
   const { editingRecord, setEditingRecord, setLastSave } = useRecordStore()
+  const {
+    conflictOpen,
+    error,
+    setError,
+    saveCreate,
+    openExisting,
+    saveAsNew,
+    clearConflict,
+  } = useRecordCreateSave()
 
   const [hint, setHint] = useState('')
   const [showHint, setShowHint] = useState(true)
@@ -29,7 +40,7 @@ export function RecordFreePage() {
   const [recordNumber, setRecordNumber] = useState(editingRecord?.record_number ?? 1)
   const [saving, setSaving] = useState(false)
   const [showExit, setShowExit] = useState(false)
-  const [error, setError] = useState('')
+  const [pageNumberHint, setPageNumberHint] = useState(true)
 
   const touched = useRef(false)
   const initialization = useRef(0)
@@ -42,12 +53,20 @@ export function RecordFreePage() {
     const init = async () => {
       if (editingRecord) {
         setRecordNumber(editingRecord.record_number)
+        setPageNumberHint(false)
         return
       }
 
-      const count = await getRecordCount(project.id)
-      if (initialization.current !== generation) return
-      setRecordNumber(count + 1)
+      try {
+        const count = await getRecordCount(project.id)
+        if (initialization.current !== generation) return
+        setRecordNumber(count + 1)
+        setPageNumberHint(true)
+      } catch {
+        if (initialization.current === generation) {
+          setError('기록 번호를 불러오지 못했어요. 저장은 가능해요.')
+        }
+      }
 
       try {
         const draft = await loadDraft(user.id, project.id, 'free')
@@ -57,27 +76,40 @@ export function RecordFreePage() {
           setEmotions(draft.emotionTags ?? [])
         }
       } catch {
-        if (initialization.current === generation) setError('임시저장 기록을 불러오지 못했어요. 다시 접속해 확인해주세요.')
+        if (initialization.current === generation) {
+          setError('임시저장 기록을 불러오지 못했어요. 다시 접속해 확인해주세요.')
+        }
       }
 
       try {
         const h = await generateFreewritingHint(project.id)
         if (initialization.current === generation) setHint(h)
       } catch (err) {
-        if (err instanceof ApiError && err.code === 'AI_LIMIT') {
-          showPaywall()
-        }
+        if (err instanceof ApiError && err.code === 'AI_LIMIT') showPaywall()
         if (initialization.current === generation) setHint(getFallbackHint(project.type))
       }
     }
 
     void init()
-    return () => { initialization.current++ }
-  }, [project, user, editingRecord, showPaywall])
+    return () => {
+      initialization.current++
+    }
+  }, [project, user, editingRecord, showPaywall, setError])
 
-  const [saveConflict, setSaveConflict] = useState(false)
+  const finishSave = async (result: Awaited<ReturnType<typeof updateRecord>>) => {
+    if (user && project) {
+      try {
+        await deleteDraft(user.id, project.id, 'free')
+      } catch {
+        /* saved record remains valid */
+      }
+    }
+    setEditingRecord(null)
+    setLastSave(result, project!)
+    navigate('/record/complete')
+  }
 
-  const handleSave = async (saveAsNew = false) => {
+  const handleSave = async () => {
     if (!user || !project || saving) return
     if (editingRecord && (editingRecord.user_id !== user.id || editingRecord.project_id !== project.id)) {
       setError('다른 책의 기록은 여기에서 수정할 수 없어요. 기록 목록에서 다시 열어주세요.')
@@ -92,11 +124,6 @@ export function RecordFreePage() {
       return
     }
 
-    if (saveConflict && !saveAsNew) return
-    if (saveAsNew) {
-      clearRecordRequestId(user.id, project.id, 'free')
-      setSaveConflict(false)
-    }
     setSaving(true)
     setError('')
 
@@ -105,48 +132,42 @@ export function RecordFreePage() {
       new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
 
     try {
-      const createOnce = () =>
-        createRecord({
-          projectId: project.id,
-          userId: user.id,
-          requestId: getOrCreateRecordRequestId(user.id, project.id, 'free'),
-          mode: 'free',
+      if (editingRecord) {
+        const result = await updateRecord(editingRecord.id, user.id, project.id, {
           content: content.trim(),
           title: recordTitle,
           emotionTags: emotions,
         })
-
-      let result
-      if (editingRecord) {
-        result = await updateRecord(
-          editingRecord.id,
-          user.id,
-          project.id,
-          { content: content.trim(), title: recordTitle, emotionTags: emotions },
-        )
+        await finishSave(result)
       } else {
-        try {
-          result = await createOnce()
-        } catch (err) {
-          if (!(err instanceof RecordRequestConflictError)) throw err
-          setSaveConflict(true)
-          setError('이미 저장된 요청과 현재 내용이 달라요. 먼저 기록 목록에서 기존 저장 여부를 확인하거나, 아래 버튼으로 별도 새 기록을 저장해주세요.')
-          return
-        }
+        await saveCreate({
+          userId: user.id,
+          projectId: project.id,
+          mode: 'free',
+          buildInput: (requestId) => ({
+            projectId: project.id,
+            userId: user.id,
+            requestId,
+            mode: 'free',
+            content: content.trim(),
+            title: recordTitle,
+            emotionTags: emotions,
+          }),
+          onSuccess: finishSave,
+        })
       }
-
-      // Draft cleanup is non-critical: an already persisted record must not be reported as a failed save.
-      try {
-        await deleteDraft(user.id, project.id, 'free')
-      } catch {
-        // Keep the saved result; cleanup can be retried separately.
-      }
-      if (!editingRecord) clearRecordRequestId(user.id, project.id, 'free')
-      setEditingRecord(null)
-      setLastSave(result, project)
-      navigate('/record/complete')
     } catch {
       setError('저장에 실패했어요. 다시 시도해주세요.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSaveAsNew = async () => {
+    if (!user || !project || saving) return
+    setSaving(true)
+    try {
+      await saveAsNew()
     } finally {
       setSaving(false)
     }
@@ -163,10 +184,14 @@ export function RecordFreePage() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
       <NavBar
-        title={`PAGE ${String(recordNumber).padStart(2, '0')}`}
+        title={
+          pageNumberHint
+            ? `예상 PAGE ${String(recordNumber).padStart(2, '0')}`
+            : `PAGE ${String(recordNumber).padStart(2, '0')}`
+        }
         leftLabel="✕"
         onLeftClick={() => (isDirty ? setShowExit(true) : navigate(-1))}
-        rightLabel={saving ? '...' : '저장'}
+        rightLabel={saving ? '저장 중...' : '저장'}
         rightAccent
         onRightClick={() => void handleSave()}
       />
@@ -177,11 +202,7 @@ export function RecordFreePage() {
               <p className="mb-1 text-[10px] font-semibold tracking-[0.16em] text-sage">PAGE'S NOTE · OPTIONAL</p>
               <p className="font-serif text-[14px] leading-6 text-ink-muted">{hint}</p>
             </div>
-            <button
-              type="button"
-              className="text-xs text-ink-faint"
-              onClick={() => setShowHint(false)}
-            >
+            <button type="button" className="text-xs text-ink-faint" onClick={() => setShowHint(false)}>
               닫기
             </button>
           </div>
@@ -191,7 +212,10 @@ export function RecordFreePage() {
           <input
             type="text"
             value={title}
-            onChange={(e) => { touched.current = true; setTitle(e.target.value) }}
+            onChange={(e) => {
+              touched.current = true
+              setTitle(e.target.value)
+            }}
             placeholder="제목을 입력해주세요"
             maxLength={50}
             className="w-full bg-transparent font-serif text-[22px] font-bold tracking-[-0.02em] text-ink outline-none placeholder:text-ink-faint"
@@ -200,7 +224,10 @@ export function RecordFreePage() {
 
         <Textarea
           value={content}
-          onChange={(e) => { touched.current = true; setContent(e.target.value) }}
+          onChange={(e) => {
+            touched.current = true
+            setContent(e.target.value)
+          }}
           placeholder="자유롭게 써보세요"
           className="min-h-[360px] border-0 bg-transparent px-0 font-serif text-[16px] leading-8 shadow-none focus:ring-0"
           maxLength={5000}
@@ -209,9 +236,21 @@ export function RecordFreePage() {
           {content.length}자
         </p>
 
-        <EmotionTagPicker selected={emotions} onChange={(value) => { touched.current = true; setEmotions(value) }} />
-        {error && <p className="mt-3 text-sm text-danger">{error}</p>}
-        {saveConflict && <button type="button" disabled={saving} onClick={() => void handleSave(true)} className="mt-3 rounded border border-border px-4 py-3 text-sm font-semibold">별도 새 기록으로 저장</button>}
+        <EmotionTagPicker
+          selected={emotions}
+          onChange={(value) => {
+            touched.current = true
+            setEmotions(value)
+          }}
+        />
+        {error && (
+          <p className="mt-3 text-sm text-danger" role="alert">
+            {error}
+          </p>
+        )}
+        {pageNumberHint && !editingRecord && (
+          <p className="mt-3 text-[11px] text-ink-faint">저장 후 확정 PAGE 번호가 표시됩니다.</p>
+        )}
       </div>
 
       <ExitConfirmModal
@@ -228,11 +267,20 @@ export function RecordFreePage() {
             content,
             title,
             emotionTags: emotions,
-          }).then(() => navigate(-1)).catch(() => {
-            setShowExit(false)
-            setError('임시저장에 실패했어요. 작성한 내용은 유지됩니다.')
           })
+            .then(() => navigate(-1))
+            .catch(() => {
+              setShowExit(false)
+              setError('임시저장에 실패했어요. 작성한 내용은 유지됩니다.')
+            })
         }}
+      />
+
+      <SaveConflictModal
+        open={conflictOpen}
+        onContinue={clearConflict}
+        onOpenExisting={openExisting}
+        onSaveAsNew={() => void handleSaveAsNew()}
       />
     </div>
   )

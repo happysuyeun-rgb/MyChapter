@@ -59,6 +59,16 @@ export function EmailLoginPage() {
                 <br />
                 메일 안의 링크를 누르면 MY CHAPTER로 돌아옵니다.
               </p>
+              <Button
+                variant="secondary"
+                className="mt-8"
+                onClick={() => {
+                  setSent(false)
+                  setError('')
+                }}
+              >
+                다른 이메일로 다시 입력
+              </Button>
             </div>
           </div>
         ) : (

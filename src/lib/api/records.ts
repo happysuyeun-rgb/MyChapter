@@ -1,4 +1,5 @@
 import { isDevBypass } from '@/lib/devBypass'
+import { resolveInsertFailure } from '@/lib/recordCreatePolicy'
 import {
   mockCreateRecord,
   mockDeleteRecord,
@@ -44,35 +45,28 @@ export interface SaveRecordResult {
   badgeTitles: string[]
 }
 
-/** Thrown when a reused create request UUID already points at a different payload. */
+/** Same request UUID already saved a different payload — do not auto-insert another row. */
 export class RecordRequestConflictError extends Error {
   readonly code = 'REQUEST_ID_CONTENT_MISMATCH'
+  readonly existing: JournalRecord
 
-  constructor(
-    message = '이전 저장 시도와 내용이 달라요. 새 요청으로 다시 저장합니다.',
-  ) {
-    super(message)
+  constructor(existing: JournalRecord) {
+    super('이미 저장된 기록이 있어요. 기존 기록을 열거나 새 기록으로 저장할 수 있어요.')
     this.name = 'RecordRequestConflictError'
+    this.existing = existing
   }
 }
 
-function tagsEqual(a: string[] | null | undefined, b: string[]): boolean {
-  const left = [...(a ?? [])].map(String).sort()
-  const right = [...b].map(String).sort()
-  if (left.length !== right.length) return false
-  return left.every((value, index) => value === right[index])
-}
+/** Insert may have succeeded but we cannot confirm — never invent a duplicate. */
+export class RecordLookupError extends Error {
+  readonly code = 'REQUEST_LOOKUP_FAILED'
 
-function isSameCreatePayload(existing: JournalRecord, input: CreateRecordInput): boolean {
-  // question_text may change after refresh (AI regenerates). Treat content identity as enough
-  // for ambiguous-response recovery so retries are not permanently blocked.
-  return (
-    existing.mode === input.mode &&
-    existing.content === input.content &&
-    existing.title === (input.title ?? null) &&
-    existing.photo_url === (input.photoUrl ?? null) &&
-    tagsEqual(existing.emotion_tags, input.emotionTags)
-  )
+  constructor(
+    message = '이전 저장 결과를 확인하지 못했어요. 네트워크를 확인한 뒤 다시 시도해주세요.',
+  ) {
+    super(message)
+    this.name = 'RecordLookupError'
+  }
 }
 
 function analyzeRecordInBackground(recordId: string): void {
@@ -189,14 +183,30 @@ export async function createRecord(input: CreateRecordInput): Promise<SaveRecord
       .eq('project_id', input.projectId)
       .maybeSingle()
 
-    if (!lookupError && existing && isSameCreatePayload(existing, input)) {
-      analyzeRecordInBackground(existing.id)
-      return finalizeSave(input.userId, input.projectId, existing)
-    }
+    const resolution = resolveInsertFailure({
+      existing: existing ?? null,
+      lookupFailed: Boolean(lookupError),
+      input: {
+        userId: input.userId,
+        projectId: input.projectId,
+        mode: input.mode,
+        content: input.content,
+        questionText: input.questionText,
+        title: input.title,
+        photoUrl: input.photoUrl,
+        emotionTags: input.emotionTags,
+      },
+    })
 
-    if (!lookupError && existing) {
-      // Same UUID already committed with a different payload — caller must mint a new request ID.
-      throw new RecordRequestConflictError()
+    if (resolution.kind === 'reuse') {
+      analyzeRecordInBackground(resolution.existing.id)
+      return finalizeSave(input.userId, input.projectId, resolution.existing)
+    }
+    if (resolution.kind === 'conflict') {
+      throw new RecordRequestConflictError(resolution.existing)
+    }
+    if (resolution.kind === 'lookup_failed') {
+      throw new RecordLookupError()
     }
 
     throw error
@@ -318,4 +328,41 @@ export async function getPhotoSignedUrl(path: string): Promise<string | null> {
 
   if (error) return null
   return data.signedUrl
+}
+
+/**
+ * Best-effort cleanup for temp uploads. Never deletes paths outside the caller's folder,
+ * and skips paths still referenced by another record owned by this user.
+ */
+export async function removeUnreferencedPhoto(
+  userId: string,
+  projectId: string,
+  path: string | null | undefined,
+): Promise<void> {
+  if (!path || isDevBypass()) return
+
+  const expectedPrefix = `${userId}/${projectId}/`
+  if (!path.startsWith(expectedPrefix)) {
+    console.error('Blocked photo cleanup outside owner folder:', path)
+    return
+  }
+
+  try {
+    const { count, error } = await supabase
+      .from('records')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('photo_url', path)
+
+    if (error) {
+      console.error('Photo reference check failed:', error)
+      return
+    }
+    if ((count ?? 0) > 0) return
+
+    const { error: removeError } = await supabase.storage.from('record-photos').remove([path])
+    if (removeError) console.error('Orphan photo remove failed:', removeError)
+  } catch (err) {
+    console.error('Orphan photo cleanup error:', err)
+  }
 }

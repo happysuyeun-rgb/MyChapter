@@ -29,3 +29,9 @@ export function getOrCreateRecordRequestId(userId: string, projectId: string, mo
 export function clearRecordRequestId(userId: string, projectId: string, mode: string): void {
   try { sessionStorage.removeItem(key(userId, projectId, mode)) } catch { /* storage unavailable */ }
 }
+
+/** Explicit "save as a new record" — never call on automatic conflict recovery. */
+export function mintNewRecordRequestId(userId: string, projectId: string, mode: string): string {
+  clearRecordRequestId(userId, projectId, mode)
+  return getOrCreateRecordRequestId(userId, projectId, mode)
+}
