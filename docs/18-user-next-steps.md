@@ -101,17 +101,25 @@ AI 질문·챕터·PDF·계정삭제 Function이 **키를 읽도록** Secrets를
 2. **Edge Functions** 클릭  
    *(메뉴 이름이 Secrets만 보이면 그 화면으로)*
 3. **Secrets** 탭 / **Manage secrets** / **Add new secret**
-4. 아래 **3개를 하나씩** 추가:
+4. AI·계정삭제 등에 **필수**로 아래 **2개**를 추가:
 
 | Name (이름, 정확히) | Value (값) | 비고 |
 |---------------------|------------|------|
 | `GOOGLE_AI_API_KEY` | 1-2에서 복사한 키 | Gemini AI용 |
 | `SERVICE_ROLE_KEY` | 1-1의 **service_role** 키 | `anon` 키 넣으면 안 됨 |
-| `BILLING_DEV_BYPASS` | `true` | 테스트 결제 허용 |
 
-5. 저장 후 목록에 세 이름이 보이는지 확인
+5. 저장 후 목록에 두 이름이 보이는지 확인
 
-**CLI로 넣는 방법 (선택)**
+**결제 우회 Secret (`BILLING_DEV_BYPASS`) — 운영에서 켜지 마세요**
+
+| 환경 | 지시 |
+|------|------|
+| **Production (운영)** | `BILLING_DEV_BYPASS`를 **`true`로 두지 않음** (없애거나 `false`). Vercel `VITE_BILLING_DEV_MODE`도 **`false`** |
+| 로컬·격리 테스트만 | 필요 시에만 `BILLING_DEV_BYPASS=true` + 앱 `VITE_BILLING_DEV_MODE=true` — **운영과 같은 프로젝트에 켜면 무료 Pro 승격 위험** |
+
+운영 Secret/환경변수는 Cursor·Work가 **승인 없이 변경하지 않습니다**.
+
+**CLI로 넣는 방법 (선택, AI Secrets만)**
 
 PowerShell:
 
@@ -121,7 +129,7 @@ npx supabase login
 npx supabase link --project-ref rdrafwfdwfzgcfiqkgug
 npx supabase secrets set GOOGLE_AI_API_KEY=여기에_AIza키
 npx supabase secrets set SERVICE_ROLE_KEY=여기에_service_role키
-npx supabase secrets set BILLING_DEV_BYPASS=true
+# BILLING_DEV_BYPASS=true 는 운영 프로젝트에 설정하지 마세요
 ```
 
 ### 1-4. (선택) Function 목록 눈으로 확인
@@ -347,7 +355,7 @@ Cursor에 아래 형식으로 보내면 빠르게 도와줍니다.
 
 | STEP | 내용 | 완료 |
 |------|------|------|
-| 1 | Secrets 3개 | ☐ (AI·PDF용 — 값 유효성 확인) |
+| 1 | Secrets (`GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`) | ☐ (AI·PDF용 — 값 유효성 확인; 운영에 billing bypass 금지) |
 | 2 | Email + Redirect URL | ☑ 운영 Magic Link PASS |
 | 3 | Production bypass off / 공개키 | ☑ 운영 검증됨 |
 | 4a | E2E 로그인 | ☑ 7/7 PASS |
@@ -378,3 +386,4 @@ Cursor에 아래 형식으로 보내면 빠르게 도와줍니다.
 |------|------|
 | 2026-10-23 | 최초 작성 — Secrets·Auth·bypass·E2E 단계별 가이드 |
 | 2026-10-24 | 운영 로그인 7/7 PASS 반영 · 다음 목표를 책·기록 E2E로 전환 |
+| 2026-10-24 | 운영 `BILLING_DEV_BYPASS` 금지 · AI Secrets 2개로 정리 |

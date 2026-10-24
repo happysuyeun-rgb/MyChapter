@@ -2,7 +2,8 @@
 
 > **최종 갱신:** 2026-10-24  
 > **운영 URL:** https://my-chapter.vercel.app  
-> **기준 커밋:** `7ab565a6`  
+> **로그인 LIVE 기준 커밋:** `7ab565a6`  
+> **저장소 tip (문서 갱신 시점):** `2d38c10` (`ci.yml` 포함)  
 > **관련:** `16_QA_E2E.md`, `17-test-report.md`, `18-user-next-steps.md`, `15-launch-roadmap.md`
 
 ---
@@ -46,15 +47,17 @@ Work를 통한 운영 검증. Supabase 요청 29건에서 4xx·5xx 없음.
 
 ---
 
-## 3. 저장 정합성 (코드 + 자동 테스트)
+## 3. 저장 정합성 · CI (BUILD — LIVE 아님)
 
 | 항목 | 결과 | 근거 |
 |------|------|------|
 | 요청 ID 충돌 시 자동 중복 생성 금지 | PASS — BUILD | `7ab565a` — 기존 열기 / 새 기록 명시 선택 |
-| vitest 회귀 | PASS — BUILD | 18건 (`npm test`) |
-| `npm run build` | PASS — BUILD | tip `7ab565a` 기준 |
+| vitest 회귀 (로컬/`npm test`) | PASS — BUILD | **18건** — 저장 정책 단위 테스트 |
+| GitHub Actions CI (`ci.yml`) | PASS — BUILD | tip `2d38c10` push — `npm ci` + `npm test` + `npm run build` · [run 40083741371](https://github.com/happysuyeun-rgb/MyChapter/actions/runs/40083741371) |
+| `npm run build` (CI job) | PASS — BUILD | Node 22 · placeholder `VITE_*` |
 
-실계정 책·기록 저장 E2E와는 **별개**. BUILD PASS ≠ LIVE PASS.
+**구분:** vitest 18건 = 저장 정합 회귀. CI = 동일 테스트 + 의존성 잠금(`npm ci`) + 프로덕션 빌드.  
+실계정 책·기록 E2E와는 **별개**. BUILD PASS ≠ LIVE PASS.
 
 ---
 
@@ -96,17 +99,24 @@ Work를 통한 운영 검증. Supabase 요청 29건에서 4xx·5xx 없음.
 
 ---
 
-## 6. 출시 차단(현재)
+## 6. 출시 차단 vs 선택
 
-실사용 출시 전에 반드시 LIVE로 닫아야 하는 항목:
+### 차단 (웹 MVP / 실사용 공개 전)
 
-1. **책 생성 → 3모드 기록 저장 → 새로고침 유지 → PAGE 정합** (§4)
-2. **AI 챕터·PDF 발행** (Secrets·Function 포함)
-3. **일반 사용자 메일 발송 신뢰성** (SMTP/커스텀 도메인 정책)
-4. **스토어 출시 시 OAuth** (해당 채널 사용 시)
-5. **Play Billing 네이티브** (Android 유료화 시)
+1. **책 생성 → 3모드 기록 저장 → 새로고침 유지 → PAGE 정합** (§4) — Work LIVE 대기
+2. **AI 챕터·PDF 발행 LIVE** (필수 Secret 이름: `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`)
+3. **운영에서 결제 우회 OFF** — `BILLING_DEV_BYPASS`≠true, `VITE_BILLING_DEV_MODE=false` (값 출력·변경은 승인 필요)
 
-인증 로그인 자체는 §2 기준으로 **출시 차단에서 제외**(이메일 Magic Link 경로).
+### 채널·플랫폼 선택 (이메일 웹만이면 당장 비차단)
+
+| 항목 | 비고 |
+|------|------|
+| Google / Kakao OAuth | 버튼 제공 시에만 필수 |
+| 일반 사용자 SMTP/커스텀 도메인 | 규모·전달률 이슈 시 |
+| Play Billing 네이티브 | Android 유료화 시 |
+| Firebase FCM | 푸시 베타 시 |
+
+인증 **이메일 Magic Link**는 §2 기준으로 **차단 목록에서 제외**.
 
 ---
 
@@ -115,3 +125,4 @@ Work를 통한 운영 검증. Supabase 요청 29건에서 4xx·5xx 없음.
 | 날짜 | 내용 |
 |------|------|
 | 2026-10-24 | 운영 로그인 7/7 PASS 반영, Work 다음 검증·차단 이슈 정리 |
+| 2026-10-24 | CI run 구분·차단/선택 분리·billing bypass 운영 금지 |

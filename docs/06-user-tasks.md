@@ -95,7 +95,7 @@ Dashboard → **Project Settings** → **Edge Functions** → **Secrets** (또�
 |--------|------|------|
 | `GOOGLE_AI_API_KEY` | ✅ AI 사용 시 | [Google AI Studio](https://aistudio.google.com/apikey) API 키 (Gemini) |
 | `SERVICE_ROLE_KEY` | ✅ | Dashboard → Settings → API → **service_role** 키 *(anon 아님)* |
-| `BILLING_DEV_BYPASS` | ✅ 테스트 시 | `true` *(앱의 `VITE_BILLING_DEV_MODE`와 맞춤)* |
+| `BILLING_DEV_BYPASS` | ❌ **운영 금지** / 로컬·격리 테스트만 | `true` 시 `dev_` 토큰으로 Pro 승격. **Production Secret에 true 두지 말 것**. 로컬만 `VITE_BILLING_DEV_MODE=true`와 맞춤 |
 | `CRON_SECRET` | 나중에 | 일일 알림 Cron용 임의 긴 문자열 |
 | `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | 출시 시 | Play 결제 검증 |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | 푸시 시 | FCM |
@@ -127,7 +127,7 @@ npx supabase link --project-ref rdrafwfdwfzgcfiqkgug
 ```bash
 npx supabase secrets set GOOGLE_AI_API_KEY=여기에_키
 npx supabase secrets set SERVICE_ROLE_KEY=여기에_service_role_키
-npx supabase secrets set BILLING_DEV_BYPASS=true
+# BILLING_DEV_BYPASS=true 는 운영 프로젝트에 설정하지 마세요 (로컬 격리 테스트 전용)
 ```
 
 **함수 8개 배포 (순서 무관, 하나씩 Run):**
@@ -279,7 +279,8 @@ Google Play Developer API + 서비스 계정 연동 → Supabase `verify-subscri
 - [x] Supabase 마이그레이션 001~006 적용 완료 (2026-06-23, `scripts/*_idempotent.sql`)
 - [x] Vercel Production 공개키·배포 (`my-chapter.vercel.app` @ `7ab565a6`, 2026-10-24 로그인 E2E)
 - [x] Edge Function 8개 배포 (원격 프로브 확인)
-- [ ] `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`, `BILLING_DEV_BYPASS` Secrets **값 유효성** 확인 (AI·PDF용)
+- [ ] `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY` Secrets **값 유효성** 확인 (AI·PDF용)
+- [ ] 운영: `BILLING_DEV_BYPASS`≠true · Vercel `VITE_BILLING_DEV_MODE=false` (결제 우회 금지)
 - [ ] 일반 사용자 대상 SMTP
 - [ ] Kakao / Google OAuth Provider
 
@@ -338,3 +339,4 @@ Google Play Developer API + 서비스 계정 연동 → Supabase `verify-subscri
 | 2026-06-23 | §2.5~2.6 Secrets·배포 절차 상세 (`GOOGLE_AI_API_KEY`, `npx supabase`) |
 | 2026-10-23 | `18-user-next-steps.md` 링크 — 본인 다음 할 일 상세 가이드 |
 | 2026-10-24 | 운영 이메일 로그인 PASS · 책·기록/OAuth/SMTP/AI·PDF는 미완료로 유지 |
+| 2026-10-24 | 운영 `BILLING_DEV_BYPASS` 금지 명시 (테스트 전용) |

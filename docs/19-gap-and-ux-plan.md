@@ -62,7 +62,7 @@
 |----|------|------|------|------|
 | G-10 | Play Billing 네이티브 | `MyChapterBilling` | JS `dev_`만 · Android 브리지 없음 | **유일한 대형 코드 갭** |
 | G-11 | 구독 복원 (Restore) | Play restore | 버튼+Toast 스텁만 | 실 API 미연동 |
-| G-12 | 로그아웃 시 FCM 토큰 삭제 | Phase 6 | `removeDeviceToken` 미호출 | |
+| G-12 | 로그아웃 시 FCM 토큰 삭제 | Phase 6 | ✅ `authStore` → `removeAllDeviceTokens` (코드 반영; FCM E2E는 Firebase 후) | |
 | G-13 | S-04 OS 알림 권한 | Capacitor Push 요청 | DB 플래그만 (푸시는 네이티브 init 시) | 푸시 품질 |
 | G-14 | PDF 실패 UI | 사용자 안내 | ✅ FinalReview 인라인 실패+재시도 | 구 gap 해소 |
 
@@ -220,22 +220,22 @@
 ## 6. 권장 실행 순서 (본인 + AI)
 
 ```
-지금 (본인)
-  └─ 18-user-next-steps: Secrets → bypass off → E2E
+지금 (Work / 본인)
+  └─ 18-user-next-steps STEP 4: 책·기록·PAGE E2E (로그인 LIVE는 완료)
+  └─ Secrets 값 유효성 (GOOGLE_AI / SERVICE_ROLE) — 운영 BILLING_DEV_BYPASS 금지
 
-동시에 / E2E 직후 (Cursor AI)
-  └─ Wave U0 패치 (OTP·PDF Toast·약관 메뉴)
-  └─ Wave U1 아이콘·로그인 폴리싱  (체감↑)
+이미 반영됨 (Cursor)
+  └─ Wave U0~U2 · 저장 정합 vitest 18 · GitHub Actions CI (`ci.yml`)
 
 베타 전
-  └─ Wave U2 로딩·에러
+  └─ AI 챕터 · PDF LIVE · 책·기록 LIVE 결과 반영
 
-스토어 전
-  └─ Wave U3 Billing + 복원 + 푸시 권한
+스토어 전 (선택·채널별)
+  └─ OAuth · 일반 SMTP · Wave U3 Billing + 복원 + 푸시
 ```
 
-**원칙:** 실연동 E2E가 깨진 상태에서 U1만 크게 하면 재작업 위험.  
-다만 U0(Toast·약관)은 E2E와 무관하게 바로 해도 안전.
+**원칙:** 책·기록 LIVE가 깨진 상태에서 UI만 크게 하면 재작업 위험.  
+이메일 로그인 LIVE PASS ≠ 책·기록·AI·PDF PASS.
 
 ---
 
@@ -272,3 +272,4 @@
 | 2026-10-23 | 에러 케이스 전수 점검은 `20-error-cases.md`로 분리 |
 | 2026-10-23 | 화면 누락 재검증 → `21-screen-completeness.md`; CHAPTER_LIMIT·G-11~14·G-26 표기 교정 |
 | 2026-10-24 | G-01 로그인 LIVE PASS 반영 · 책·기록 E2E는 PENDING |
+| 2026-10-24 | G-12 코드 반영 정정 · 실행 순서·billing bypass 운영 금지 명시 |

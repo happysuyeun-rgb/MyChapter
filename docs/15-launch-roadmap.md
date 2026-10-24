@@ -30,6 +30,7 @@ UI 폴리싱보다 **책 생성 → 3모드 기록 → PAGE 정합**을 먼저 �
 | Supabase 프로젝트 | ✅ 생성됨 | |
 | **마이그레이션 001~006** | **✅ 적용 완료** | `scripts/*_idempotent.sql` 로 적용 |
 | 저장 정합 (`7ab565a`) | ✅ BUILD | vitest 18 · 충돌 시 명시 UX |
+| GitHub Actions CI (`ci.yml`) | ✅ BUILD | tip `2d38c10` — [Actions run](https://github.com/happysuyeun-rgb/MyChapter/actions/runs/40083741371) (vitest≠LIVE) |
 | **운영 이메일 로그인 E2E** | **✅ 7/7 PASS — LIVE** | `my-chapter.vercel.app` |
 | 책·기록 저장 E2E | 🔄 PENDING | Work 다음 |
 | AI 챕터 · PDF E2E | 🔄 PENDING | |
@@ -51,7 +52,7 @@ UI 폴리싱보다 **책 생성 → 3모드 기록 → PAGE 정합**을 먼저 �
 |---|--------|------|------|------|
 | 1 | Supabase 마이그레이션 001~006 적용 | 본인 | ☑ | `scripts/001~006_idempotent.sql` |
 | 2 | Edge Function 8개 배포 | 본인 | ☑ | 프로브로 배포 확인 (`17-test-report.md`) |
-| 2b | Secrets 값 확인 (`GOOGLE_AI_API_KEY` 등) | 본인 | ☐ | AI·PDF용 — `06-user-tasks.md` §2.5 |
+| 2b | Secrets 값 확인 (`GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`) | 본인 | ☐ | AI·PDF용. **운영에 `BILLING_DEV_BYPASS=true` 금지** |
 | 3 | Production 공개키 · 이메일 Auth | 본인 | ☑ | 로그인 LIVE PASS |
 | 4a | **E2E 로그인** | Work | ☑ | 2026-10-24 · `22-e2e-status.md` |
 | 4b | **E2E 책·기록·PAGE** | Work | ☐ | `18-user-next-steps.md` STEP 4 |
@@ -208,3 +209,4 @@ Growth Hacker 역할로 MyChapter Play 스토어 출시 전략을 짜줘.
 | 2026-10-23 | Secrets 명칭 정정(Gemini), `16-dev-plan.md` 연동 |
 | 2026-10-23 | Edge Function 배포 확인·`17-test-report` 반영, 다음 액션을 Secrets+E2E로 조정 |
 | 2026-10-24 | 운영 로그인 LIVE PASS · Vercel Production ☑ · 다음을 책·기록 E2E로 조정 |
+| 2026-10-24 | CI `2d38c10` 반영 · 운영 billing bypass 금지 명시 |

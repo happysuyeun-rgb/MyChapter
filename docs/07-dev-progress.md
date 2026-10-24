@@ -125,7 +125,7 @@
 | FCM + `device_tokens` 클라이언트 | ✅ | `google-services.json` 본인 🔄 |
 | `send-daily-reminder` | ✅ | 배포 + Cron 🔄 |
 | 딥링크·OAuth 콜백 | ✅ | |
-| `vercel.json` | ✅ | Vercel 배포 본인 🔄 |
+| `vercel.json` | ✅ | Production 배포됨 (`my-chapter.vercel.app`, 로그인 LIVE PASS) |
 | Play 스토어 설명 초안 | ✅ | `store/play-store-listing.ko.txt` |
 | Play Console 업로드 | 🔄 | 본인 + 빌드 도움 |
 | 실제 FCM 푸시 E2E 테스트 | 🔄 | Firebase 설정 후 |
@@ -238,3 +238,4 @@ public/legal/          ✅ privacy, terms
 | 2026-10-23 | 잔여 점검·`16-dev-plan` 연동, S-32/PDF/Secrets 표기 정정 |
 | 2026-10-23 | 스모크 테스트: Edge 8개 배포 확인, bypass API 갭(drafts/books/hints 등) 수정 |
 | 2026-10-24 | 운영 이메일 로그인 LIVE PASS · 저장 정합 `7ab565a` · 다음=책·기록 E2E |
+| 2026-10-24 | Vercel Production 표기 정정 · tip `2d38c10` CI |
