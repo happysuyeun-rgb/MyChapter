@@ -44,6 +44,36 @@ export interface SaveRecordResult {
   badgeTitles: string[]
 }
 
+/** Thrown when a reused create request UUID already points at a different payload. */
+export class RecordRequestConflictError extends Error {
+  readonly code = 'REQUEST_ID_CONTENT_MISMATCH'
+
+  constructor(
+    message = '이전 저장 시도와 내용이 달라요. 새 요청으로 다시 저장합니다.',
+  ) {
+    super(message)
+    this.name = 'RecordRequestConflictError'
+  }
+}
+
+function tagsEqual(a: string[] | null | undefined, b: string[]): boolean {
+  const left = [...(a ?? [])].map(String).sort()
+  const right = [...b].map(String).sort()
+  if (left.length !== right.length) return false
+  return left.every((value, index) => value === right[index])
+}
+
+function isSameCreatePayload(existing: JournalRecord, input: CreateRecordInput): boolean {
+  // question_text may change after refresh (AI regenerates). Treat content identity as enough
+  // for ambiguous-response recovery so retries are not permanently blocked.
+  return (
+    existing.mode === input.mode &&
+    existing.content === input.content &&
+    existing.title === (input.title ?? null) &&
+    existing.photo_url === (input.photoUrl ?? null) &&
+    tagsEqual(existing.emotion_tags, input.emotionTags)
+  )
+}
 
 function analyzeRecordInBackground(recordId: string): void {
   void supabase.functions
@@ -151,14 +181,25 @@ export async function createRecord(input: CreateRecordInput): Promise<SaveRecord
 
   if (error) {
     // A timed-out response may hide a committed insert: look up this exact request ID.
-    const { data: existing, error: lookupError } = await supabase.from('records')
-      .select('*').eq('id', requestId).eq('user_id', input.userId)
-      .eq('project_id', input.projectId).maybeSingle()
-    if (lookupError || !existing || existing.mode !== input.mode ||
-      existing.content !== input.content || existing.question_text !== (input.questionText ?? null) ||
-      existing.title !== (input.title ?? null) || existing.photo_url !== (input.photoUrl ?? null) ||
-      JSON.stringify(existing.emotion_tags) !== JSON.stringify(input.emotionTags)) throw error
-    return finalizeSave(input.userId, input.projectId, existing)
+    const { data: existing, error: lookupError } = await supabase
+      .from('records')
+      .select('*')
+      .eq('id', requestId)
+      .eq('user_id', input.userId)
+      .eq('project_id', input.projectId)
+      .maybeSingle()
+
+    if (!lookupError && existing && isSameCreatePayload(existing, input)) {
+      analyzeRecordInBackground(existing.id)
+      return finalizeSave(input.userId, input.projectId, existing)
+    }
+
+    if (!lookupError && existing) {
+      // Same UUID already committed with a different payload — caller must mint a new request ID.
+      throw new RecordRequestConflictError()
+    }
+
+    throw error
   }
 
   analyzeRecordInBackground(data.id)

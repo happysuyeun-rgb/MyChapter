@@ -7,7 +7,7 @@ import { NavBar } from '@/components/layout/NavBar'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { clearRecordRequestId, getOrCreateRecordRequestId } from '@/lib/recordRequestId'
 import { deleteDraft, loadDraft, saveDraft } from '@/lib/api/drafts'
-import { createRecord, getRecordCount, updateRecord } from '@/lib/api/records'
+import { createRecord, getRecordCount, RecordRequestConflictError, updateRecord } from '@/lib/api/records'
 import { ApiError, generateQuestion, getFallbackQuestion } from '@/lib/api/questions'
 import { useAuthStore } from '@/stores/authStore'
 import { usePaywallStore } from '@/stores/paywallStore'
@@ -90,24 +90,34 @@ export function RecordQuestionPage() {
     setError('')
 
     try {
-      const result = isEdit && editingRecord
-        ? await updateRecord(
-            editingRecord.id,
-            user.id,
-            project.id,
-            { content: content.trim(), emotionTags: emotions, questionText: question }
-          )
-        : await createRecord(
-            {
-              projectId: project.id,
-              userId: user.id,
-              requestId: getOrCreateRecordRequestId(user.id, project.id, 'question'),
-              mode: 'question',
-              content: content.trim(),
-              questionText: question,
-              emotionTags: emotions,
-            }
-          )
+      const createOnce = () =>
+        createRecord({
+          projectId: project.id,
+          userId: user.id,
+          requestId: getOrCreateRecordRequestId(user.id, project.id, 'question'),
+          mode: 'question',
+          content: content.trim(),
+          questionText: question,
+          emotionTags: emotions,
+        })
+
+      let result
+      if (isEdit && editingRecord) {
+        result = await updateRecord(
+          editingRecord.id,
+          user.id,
+          project.id,
+          { content: content.trim(), emotionTags: emotions, questionText: question },
+        )
+      } else {
+        try {
+          result = await createOnce()
+        } catch (err) {
+          if (!(err instanceof RecordRequestConflictError)) throw err
+          clearRecordRequestId(user.id, project.id, 'question')
+          result = await createOnce()
+        }
+      }
 
       try { await deleteDraft(user.id, project.id, 'question') } catch { /* saved record remains valid */ }
       if (!editingRecord) clearRecordRequestId(user.id, project.id, 'question')
@@ -172,6 +182,7 @@ export function RecordQuestionPage() {
         open={showExit}
         onContinue={() => setShowExit(false)}
         onDiscard={() => {
+          if (user && project) clearRecordRequestId(user.id, project.id, 'question')
           setEditingRecord(null)
           navigate(-1)
         }}

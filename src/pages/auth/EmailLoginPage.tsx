@@ -23,9 +23,15 @@ export function EmailLoginPage() {
         options: { emailRedirectTo: `${window.location.origin}/splash` },
       })
       if (submitError) {
-        setError(submitError.status === 401
-          ? '인증 서버가 이메일 로그인 요청을 거부했어요(401). 서비스 인증키·Email 제공자 설정을 확인해주세요.'
-          : `로그인 링크 발송 실패: ${submitError.message} (${submitError.status ?? 'unknown'})`)
+        const status = submitError.status
+        const message = submitError.message?.toLowerCase() ?? ''
+        if (status === 401) {
+          setError('인증 서버가 이메일 로그인 요청을 거부했어요(401). 서비스 인증키·Email 제공자 설정을 확인해주세요.')
+        } else if (status === 429 || message.includes('rate limit')) {
+          setError('잠시 후 다시 시도해주세요. 이메일 발송 한도에 도달했어요.')
+        } else {
+          setError(`로그인 링크 발송 실패: ${submitError.message} (${status ?? 'unknown'})`)
+        }
         return
       }
       setSent(true)

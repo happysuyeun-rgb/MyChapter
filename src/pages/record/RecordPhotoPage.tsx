@@ -10,6 +10,7 @@ import { clearPhotoAttempt, loadPhotoAttempt, savePhotoAttempt } from '@/lib/pho
 import { deleteDraft, loadDraft, saveDraft } from '@/lib/api/drafts'
 import {
   createRecord,
+  RecordRequestConflictError,
   getPhotoSignedUrl,
   getRecordCount,
   updateRecord,
@@ -119,24 +120,35 @@ export function RecordPhotoPage() {
         photoUrl = uploadedPhotoPath.current
       }
 
-      const result = editingRecord
-        ? await updateRecord(
-            editingRecord.id,
-            user.id,
-            project.id,
-            { content: caption.trim(), emotionTags: emotions, photoUrl: photoUrl ?? undefined }
-          )
-        : await createRecord(
-            {
-              projectId: project.id,
-              userId: user.id,
-              requestId: getOrCreateRecordRequestId(user.id, project.id, 'photo'),
-              mode: 'photo',
-              content: caption.trim(),
-              photoUrl: photoUrl!,
-              emotionTags: emotions,
-            }
-          )
+      const createOnce = () =>
+        createRecord({
+          projectId: project.id,
+          userId: user.id,
+          requestId: getOrCreateRecordRequestId(user.id, project.id, 'photo'),
+          mode: 'photo',
+          content: caption.trim(),
+          photoUrl: photoUrl!,
+          emotionTags: emotions,
+        })
+
+      let result
+      if (editingRecord) {
+        result = await updateRecord(
+          editingRecord.id,
+          user.id,
+          project.id,
+          { content: caption.trim(), emotionTags: emotions, photoUrl: photoUrl ?? undefined },
+        )
+      } else {
+        try {
+          result = await createOnce()
+        } catch (err) {
+          if (!(err instanceof RecordRequestConflictError)) throw err
+          clearPhotoAttempt(user.id, project.id)
+          clearRecordRequestId(user.id, project.id, 'photo')
+          result = await createOnce()
+        }
+      }
 
       try { await deleteDraft(user.id, project.id, 'photo') } catch { /* saved record remains valid */ }
       if (!editingRecord) {
@@ -219,6 +231,11 @@ export function RecordPhotoPage() {
         open={showExit}
         onContinue={() => setShowExit(false)}
         onDiscard={() => {
+          if (user && project) {
+            clearPhotoAttempt(user.id, project.id)
+            clearRecordRequestId(user.id, project.id, 'photo')
+          }
+          uploadedPhotoPath.current = null
           setEditingRecord(null)
           navigate(-1)
         }}

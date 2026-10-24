@@ -9,7 +9,7 @@ import { clearRecordRequestId, getOrCreateRecordRequestId } from '@/lib/recordRe
 import { deleteDraft, loadDraft, saveDraft } from '@/lib/api/drafts'
 import { generateFreewritingHint, getFallbackHint } from '@/lib/api/hints'
 import { ApiError } from '@/lib/api/questions'
-import { createRecord, getRecordCount, updateRecord } from '@/lib/api/records'
+import { createRecord, getRecordCount, RecordRequestConflictError, updateRecord } from '@/lib/api/records'
 import { useAuthStore } from '@/stores/authStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { useRecordStore } from '@/stores/recordStore'
@@ -98,24 +98,34 @@ export function RecordFreePage() {
       new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
 
     try {
-      const result = editingRecord
-        ? await updateRecord(
-            editingRecord.id,
-            user.id,
-            project.id,
-            { content: content.trim(), title: recordTitle, emotionTags: emotions }
-          )
-        : await createRecord(
-            {
-              projectId: project.id,
-              userId: user.id,
-              requestId: getOrCreateRecordRequestId(user.id, project.id, 'free'),
-              mode: 'free',
-              content: content.trim(),
-              title: recordTitle,
-              emotionTags: emotions,
-            }
-          )
+      const createOnce = () =>
+        createRecord({
+          projectId: project.id,
+          userId: user.id,
+          requestId: getOrCreateRecordRequestId(user.id, project.id, 'free'),
+          mode: 'free',
+          content: content.trim(),
+          title: recordTitle,
+          emotionTags: emotions,
+        })
+
+      let result
+      if (editingRecord) {
+        result = await updateRecord(
+          editingRecord.id,
+          user.id,
+          project.id,
+          { content: content.trim(), title: recordTitle, emotionTags: emotions },
+        )
+      } else {
+        try {
+          result = await createOnce()
+        } catch (err) {
+          if (!(err instanceof RecordRequestConflictError)) throw err
+          clearRecordRequestId(user.id, project.id, 'free')
+          result = await createOnce()
+        }
+      }
 
       // Draft cleanup is non-critical: an already persisted record must not be reported as a failed save.
       try {
@@ -199,6 +209,7 @@ export function RecordFreePage() {
         open={showExit}
         onContinue={() => setShowExit(false)}
         onDiscard={() => {
+          if (user && project) clearRecordRequestId(user.id, project.id, 'free')
           setEditingRecord(null)
           navigate(-1)
         }}
