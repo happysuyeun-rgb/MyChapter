@@ -145,6 +145,13 @@ export async function generateChapter(projectId: string): Promise<Chapter | null
     throw new ChapterApiError('NOT_ENOUGH_MATERIAL', message ?? '챕터를 만들기 위한 기록이 조금 더 필요해요.')
   }
 
+  if (code === 'BOOK_NOT_READY') {
+    throw new ChapterApiError(
+      'BOOK_NOT_READY',
+      message ?? '아직 책 만들기 준비가 되지 않았어요. 기록과 기간이 충분히 쌓인 뒤 다시 시도해주세요.',
+    )
+  }
+
   if (code === 'AI_UNAVAILABLE') {
     throw new ChapterApiError(
       'AI_UNAVAILABLE',
