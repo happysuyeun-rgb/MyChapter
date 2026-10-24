@@ -181,11 +181,13 @@ export async function updateProjectCoverSelection(
 
   const { data: subscription } = await supabase
     .from('subscriptions')
-    .select('plan')
+    .select('plan, expires_at')
     .eq('user_id', userId)
     .maybeSingle()
 
-  const coverGate = evaluateCoverEntitlement(coverId, subscription?.plan)
+  const coverGate = evaluateCoverEntitlement(coverId, subscription?.plan, {
+    expiresAt: subscription?.expires_at,
+  })
   if (!coverGate.ok) {
     throw new Error('이 표지는 Pro에서 사용할 수 있어요.')
   }

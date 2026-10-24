@@ -14,13 +14,26 @@ import {
 import {
   COVER_PRO_ONLY_CODE,
   evaluateCoverEntitlement,
+  isActiveProPlan,
   isProOnlyCover,
 } from '../../supabase/functions/_shared/coverEntitlement.ts'
+import {
+  READY_AT_IMMUTABLE_CODE,
+  STARTED_AT_IMMUTABLE_CODE,
+  simulateDirectCoverUpdate,
+  simulateDirectReadyAtUpdate,
+  simulateDirectReadinessMinTamper,
+  simulateDirectStartedAtUpdate,
+} from '@/lib/projectSecurityGuards'
 
 const PROD_URL = `https://${PRODUCTION_SUPABASE_REF}.supabase.co`
 const STAGING_URL = 'https://staging-example.supabase.co'
 /** Fixed "now": 2026-10-24 */
 const NOW = Date.parse('2026-10-24T12:00:00.000Z')
+/** Exactly 30 inclusive calendar days before NOW → 2026-09-25 */
+const STARTED_30_DAYS = '2026-09-25T00:00:00.000Z'
+/** 29 inclusive calendar days before NOW → 2026-09-26 */
+const STARTED_29_DAYS = '2026-09-26T00:00:00.000Z'
 
 describe('chapter readiness gate (AUTH-01)', () => {
   it('rejects when ready_at missing even if volume looks high', () => {
@@ -67,6 +80,53 @@ describe('chapter readiness gate (AUTH-01)', () => {
       expect(result.minDays).toBe(DEFAULT_MIN_DAYS)
       expect(result.elapsedDays).toBeGreaterThanOrEqual(DEFAULT_MIN_DAYS)
     }
+  })
+
+  it('rejects at 19 records boundary (20 required)', () => {
+    const result = evaluateChapterReadinessGate({
+      readyAt: '2026-10-01T00:00:00.000Z',
+      recordCount: DEFAULT_MIN_RECORDS - 1,
+      startedAt: STARTED_30_DAYS,
+      nowMs: NOW,
+    })
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.meetsVolume).toBe(false)
+  })
+
+  it('allows at exact 20 records boundary', () => {
+    const result = evaluateChapterReadinessGate({
+      readyAt: '2026-10-01T00:00:00.000Z',
+      recordCount: DEFAULT_MIN_RECORDS,
+      startedAt: STARTED_30_DAYS,
+      nowMs: NOW,
+    })
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.elapsedDays).toBe(DEFAULT_MIN_DAYS)
+  })
+
+  it('rejects at 29 days boundary (30 required)', () => {
+    const result = evaluateChapterReadinessGate({
+      readyAt: '2026-10-01T00:00:00.000Z',
+      recordCount: DEFAULT_MIN_RECORDS,
+      startedAt: STARTED_29_DAYS,
+      nowMs: NOW,
+    })
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.elapsedDays).toBe(DEFAULT_MIN_DAYS - 1)
+      expect(result.meetsVolume).toBe(false)
+    }
+  })
+
+  it('allows at exact 30 days boundary', () => {
+    const result = evaluateChapterReadinessGate({
+      readyAt: '2026-10-01T00:00:00.000Z',
+      recordCount: DEFAULT_MIN_RECORDS,
+      startedAt: STARTED_30_DAYS,
+      nowMs: NOW,
+    })
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.elapsedDays).toBe(DEFAULT_MIN_DAYS)
   })
 })
 
@@ -137,5 +197,133 @@ describe('Pro cover entitlement (AUTH-02)', () => {
   it('allows Pro plan and Free covers', () => {
     expect(evaluateCoverEntitlement('cover_03', 'pro').ok).toBe(true)
     expect(evaluateCoverEntitlement('cover_01', 'free').ok).toBe(true)
+  })
+
+  it('blocks expired Pro on Pro covers', () => {
+    expect(isActiveProPlan('pro', '2026-10-01T00:00:00.000Z', NOW)).toBe(false)
+    expect(
+      evaluateCoverEntitlement('cover_03', 'pro', {
+        expiresAt: '2026-10-01T00:00:00.000Z',
+        nowMs: NOW,
+      }).ok,
+    ).toBe(false)
+  })
+
+  it('allows active Pro with future expires_at', () => {
+    expect(
+      evaluateCoverEntitlement('cover_04', 'pro', {
+        expiresAt: '2026-12-01T00:00:00.000Z',
+        nowMs: NOW,
+      }).ok,
+    ).toBe(true)
+  })
+
+  it('allows Pro with null expires_at (lifetime)', () => {
+    expect(evaluateCoverEntitlement('cover_03', 'pro', { expiresAt: null, nowMs: NOW }).ok).toBe(
+      true,
+    )
+  })
+})
+
+describe('direct API privilege bypass guards (DB-025 mirrors)', () => {
+  it('blocks Free REST UPDATE of selected_cover_id=cover_03', () => {
+    expect(
+      simulateDirectCoverUpdate({ coverId: 'cover_03', plan: 'free', nowMs: NOW }),
+    ).toEqual({ ok: false, code: COVER_PRO_ONLY_CODE })
+  })
+
+  it('blocks Free REST UPDATE of cover_04', () => {
+    expect(simulateDirectCoverUpdate({ coverId: 'cover_04', plan: 'free' }).ok).toBe(false)
+  })
+
+  it('allows Pro REST UPDATE of cover_03 when subscription active', () => {
+    expect(
+      simulateDirectCoverUpdate({
+        coverId: 'cover_03',
+        plan: 'pro',
+        expiresAt: '2026-12-01T00:00:00.000Z',
+        nowMs: NOW,
+      }).ok,
+    ).toBe(true)
+  })
+
+  it('blocks expired-Pro REST UPDATE of cover_03', () => {
+    expect(
+      simulateDirectCoverUpdate({
+        coverId: 'cover_03',
+        plan: 'pro',
+        expiresAt: '2026-09-01T00:00:00.000Z',
+        nowMs: NOW,
+      }),
+    ).toEqual({ ok: false, code: COVER_PRO_ONLY_CODE })
+  })
+
+  it('allows Free REST UPDATE of free covers', () => {
+    expect(simulateDirectCoverUpdate({ coverId: 'cover_01', plan: 'free' }).ok).toBe(true)
+  })
+
+  it('blocks ready_at stamp via REST when under 20/30', () => {
+    expect(
+      simulateDirectReadyAtUpdate({
+        readyAt: new Date(NOW).toISOString(),
+        previousReadyAt: null,
+        recordCount: 19,
+        startedAt: STARTED_30_DAYS,
+        nowMs: NOW,
+      }),
+    ).toEqual({ ok: false, code: BOOK_NOT_READY_CODE })
+  })
+
+  it('allows ready_at stamp via REST at exact 20/30', () => {
+    expect(
+      simulateDirectReadyAtUpdate({
+        readyAt: new Date(NOW).toISOString(),
+        previousReadyAt: null,
+        recordCount: 20,
+        startedAt: STARTED_30_DAYS,
+        nowMs: NOW,
+      }).ok,
+    ).toBe(true)
+  })
+
+  it('blocks clearing or rewriting ready_at via REST', () => {
+    expect(
+      simulateDirectReadyAtUpdate({
+        readyAt: null,
+        previousReadyAt: '2026-10-01T00:00:00.000Z',
+        recordCount: 50,
+        startedAt: STARTED_30_DAYS,
+        nowMs: NOW,
+      }),
+    ).toEqual({ ok: false, code: READY_AT_IMMUTABLE_CODE })
+
+    expect(
+      simulateDirectReadyAtUpdate({
+        readyAt: '2026-10-20T00:00:00.000Z',
+        previousReadyAt: '2026-10-01T00:00:00.000Z',
+        recordCount: 50,
+        startedAt: STARTED_30_DAYS,
+        nowMs: NOW,
+      }),
+    ).toEqual({ ok: false, code: READY_AT_IMMUTABLE_CODE })
+  })
+
+  it('blocks started_at backdate via REST', () => {
+    expect(
+      simulateDirectStartedAtUpdate({
+        previousStartedAt: '2026-10-01',
+        nextStartedAt: '2026-01-01',
+      }),
+    ).toEqual({ ok: false, code: STARTED_AT_IMMUTABLE_CODE })
+  })
+
+  it('restores type readiness mins when client weakens thresholds', () => {
+    const result = simulateDirectReadinessMinTamper('custom', {
+      minDays: 1,
+      minRecords: 1,
+    })
+    expect(result.wasWeakened).toBe(true)
+    expect(result.minDays).toBe(30)
+    expect(result.minRecords).toBe(20)
   })
 })

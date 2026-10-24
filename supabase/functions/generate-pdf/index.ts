@@ -109,11 +109,13 @@ Deno.serve(async (req) => {
 
     const { data: subscription } = await admin
       .from('subscriptions')
-      .select('plan')
+      .select('plan, expires_at')
       .eq('user_id', user.id)
       .maybeSingle()
 
-    const coverGate = evaluateCoverEntitlement(cover_template_id, subscription?.plan)
+    const coverGate = evaluateCoverEntitlement(cover_template_id, subscription?.plan, {
+      expiresAt: subscription?.expires_at,
+    })
     if (!coverGate.ok) {
       return new Response(JSON.stringify(coverProOnlyResponseBody()), {
         status: 403,
