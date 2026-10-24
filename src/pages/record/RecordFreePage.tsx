@@ -75,7 +75,9 @@ export function RecordFreePage() {
     return () => { initialization.current++ }
   }, [project, user, editingRecord, showPaywall])
 
-  const handleSave = async () => {
+  const [saveConflict, setSaveConflict] = useState(false)
+
+  const handleSave = async (saveAsNew = false) => {
     if (!user || !project || saving) return
     if (editingRecord && (editingRecord.user_id !== user.id || editingRecord.project_id !== project.id)) {
       setError('다른 책의 기록은 여기에서 수정할 수 없어요. 기록 목록에서 다시 열어주세요.')
@@ -90,6 +92,11 @@ export function RecordFreePage() {
       return
     }
 
+    if (saveConflict && !saveAsNew) return
+    if (saveAsNew) {
+      clearRecordRequestId(user.id, project.id, 'free')
+      setSaveConflict(false)
+    }
     setSaving(true)
     setError('')
 
@@ -122,8 +129,9 @@ export function RecordFreePage() {
           result = await createOnce()
         } catch (err) {
           if (!(err instanceof RecordRequestConflictError)) throw err
-          clearRecordRequestId(user.id, project.id, 'free')
-          result = await createOnce()
+          setSaveConflict(true)
+          setError('이미 저장된 요청과 현재 내용이 달라요. 먼저 기록 목록에서 기존 저장 여부를 확인하거나, 아래 버튼으로 별도 새 기록을 저장해주세요.')
+          return
         }
       }
 
@@ -203,6 +211,7 @@ export function RecordFreePage() {
 
         <EmotionTagPicker selected={emotions} onChange={(value) => { touched.current = true; setEmotions(value) }} />
         {error && <p className="mt-3 text-sm text-danger">{error}</p>}
+        {saveConflict && <button type="button" disabled={saving} onClick={() => void handleSave(true)} className="mt-3 rounded border border-border px-4 py-3 text-sm font-semibold">별도 새 기록으로 저장</button>}
       </div>
 
       <ExitConfirmModal
