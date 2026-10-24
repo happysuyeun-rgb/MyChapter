@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button, FlatIcon, Input } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
-import { supabase } from '@/lib/supabase'
+import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
 export function EmailLoginPage() {
   const [email, setEmail] = useState('')
@@ -11,22 +11,29 @@ export function EmailLoginPage() {
 
   const handleSubmit = async () => {
     if (!email.trim()) return
-    setLoading(true)
-    setError('')
-    const { error: submitError } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: {
-        emailRedirectTo: `${window.location.origin}/splash`,
-      },
-    })
-    setLoading(false)
-    if (submitError) {
-      setError(submitError.status === 401
-        ? '인증 서버가 요청을 거부했어요(401). 관리자에게 인증키 설정 확인이 필요해요.'
-        : `로그인 링크 발송 실패: ${submitError.message} (${submitError.status ?? 'unknown'})`)
+    if (!isSupabaseConfigured) {
+      setError('서비스 인증 설정이 누락됐어요. 운영 환경변수 설정을 확인해주세요.')
       return
     }
-    setSent(true)
+    setLoading(true)
+    setError('')
+    try {
+      const { error: submitError } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: { emailRedirectTo: `${window.location.origin}/splash` },
+      })
+      if (submitError) {
+        setError(submitError.status === 401
+          ? '인증 서버가 이메일 로그인 요청을 거부했어요(401). 서비스 인증키·Email 제공자 설정을 확인해주세요.'
+          : `로그인 링크 발송 실패: ${submitError.message} (${submitError.status ?? 'unknown'})`)
+        return
+      }
+      setSent(true)
+    } catch {
+      setError('인증 서버에 연결하지 못했어요. 네트워크 상태 또는 서비스 설정을 확인해주세요.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
