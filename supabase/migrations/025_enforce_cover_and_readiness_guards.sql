@@ -203,7 +203,6 @@ AS $$
 DECLARE
   v_user uuid := (select auth.uid());
   v_project public.projects%ROWTYPE;
-  v_plan text;
   v_version integer;
   v_latest public.publications%ROWTYPE;
   v_id uuid;
@@ -236,14 +235,15 @@ BEGIN
         error_message='PDF 발행 작업이 중단되어 재시도가 필요합니다.'
     WHERE user_id=v_user AND status='processing'
       AND COALESCE(processing_started_at,created_at) < now()-interval '1 hour';
-  SELECT plan::text INTO v_plan FROM public.subscriptions WHERE user_id=v_user;
-  IF COALESCE(v_plan,'free') <> 'pro' AND EXISTS
+  -- Active Pro only: plan=pro AND (expires_at IS NULL OR expires_at > now()).
+  -- Expired Pro shares Free's single publication entitlement.
+  IF NOT private.user_has_active_pro(v_user) AND EXISTS
     (SELECT 1 FROM public.publications WHERE user_id=v_user AND status='published') THEN
     RAISE EXCEPTION 'PUBLICATION_LIMIT';
   END IF;
-  -- Free entitlement must reserve its sole slot across *all* books, not
+  -- Free / expired-Pro entitlement must reserve its sole slot across *all* books, not
   -- only count completed publications (which leaves a concurrent gap).
-  IF COALESCE(v_plan,'free') <> 'pro' AND EXISTS
+  IF NOT private.user_has_active_pro(v_user) AND EXISTS
     (SELECT 1 FROM public.publications
      WHERE user_id=v_user AND status='processing' AND project_id<>p_project_id)
   THEN RAISE EXCEPTION 'PUBLICATION_IN_PROGRESS'; END IF;

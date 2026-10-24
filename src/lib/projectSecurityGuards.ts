@@ -6,6 +6,7 @@
 import {
   COVER_PRO_ONLY_CODE,
   evaluateCoverEntitlement,
+  isActiveProPlan,
   type CoverEntitlementOptions,
 } from '@/lib/coverEntitlement'
 import {
@@ -146,4 +147,40 @@ export function simulateDirectReadinessMinTamper(
   const wasWeakened =
     attempted.minDays < defaults.minDays || attempted.minRecords < defaults.minRecords
   return { ...defaults, wasWeakened }
+}
+
+export const PUBLICATION_LIMIT_CODE = 'PUBLICATION_LIMIT'
+export const PUBLICATION_IN_PROGRESS_CODE = 'PUBLICATION_IN_PROGRESS'
+
+export type SimulatedPublicationReserveInput = {
+  plan: string | null | undefined
+  expiresAt?: string | null
+  nowMs?: number
+  /** Existing published rows for this user (any project). */
+  publishedCount: number
+  /** Whether another project already holds a processing reservation. */
+  otherProjectProcessing?: boolean
+}
+
+/**
+ * Mirrors private.reserve_book_publication Free/expired-Pro slot checks
+ * (active Pro via user_has_active_pro).
+ */
+export function simulatePublicationEntitlement(
+  input: SimulatedPublicationReserveInput,
+):
+  | { ok: true; isActivePro: boolean }
+  | {
+      ok: false
+      code: typeof PUBLICATION_LIMIT_CODE | typeof PUBLICATION_IN_PROGRESS_CODE
+      isActivePro: boolean
+    } {
+  const isActivePro = isActiveProPlan(input.plan, input.expiresAt, input.nowMs)
+  if (!isActivePro && input.publishedCount > 0) {
+    return { ok: false, code: PUBLICATION_LIMIT_CODE, isActivePro }
+  }
+  if (!isActivePro && input.otherProjectProcessing) {
+    return { ok: false, code: PUBLICATION_IN_PROGRESS_CODE, isActivePro }
+  }
+  return { ok: true, isActivePro }
 }

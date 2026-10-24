@@ -18,12 +18,14 @@ import {
   isProOnlyCover,
 } from '../../supabase/functions/_shared/coverEntitlement.ts'
 import {
+  PUBLICATION_LIMIT_CODE,
   READY_AT_IMMUTABLE_CODE,
   STARTED_AT_IMMUTABLE_CODE,
   simulateDirectCoverUpdate,
   simulateDirectReadyAtUpdate,
   simulateDirectReadinessMinTamper,
   simulateDirectStartedAtUpdate,
+  simulatePublicationEntitlement,
 } from '@/lib/projectSecurityGuards'
 
 const PROD_URL = `https://${PRODUCTION_SUPABASE_REF}.supabase.co`
@@ -325,5 +327,70 @@ describe('direct API privilege bypass guards (DB-025 mirrors)', () => {
     expect(result.wasWeakened).toBe(true)
     expect(result.minDays).toBe(30)
     expect(result.minRecords).toBe(20)
+  })
+})
+
+describe('publication entitlement — active Pro vs expired Pro (AUTH-03)', () => {
+  it('allows Free first publication (no prior published)', () => {
+    expect(
+      simulatePublicationEntitlement({
+        plan: 'free',
+        publishedCount: 0,
+        nowMs: NOW,
+      }).ok,
+    ).toBe(true)
+  })
+
+  it('blocks Free second publication with PUBLICATION_LIMIT', () => {
+    expect(
+      simulatePublicationEntitlement({
+        plan: 'free',
+        publishedCount: 1,
+        nowMs: NOW,
+      }),
+    ).toEqual({ ok: false, code: PUBLICATION_LIMIT_CODE, isActivePro: false })
+  })
+
+  it('allows active Pro unlimited publications (prior published ok)', () => {
+    const result = simulatePublicationEntitlement({
+      plan: 'pro',
+      expiresAt: '2026-12-01T00:00:00.000Z',
+      publishedCount: 3,
+      nowMs: NOW,
+    })
+    expect(result).toEqual({ ok: true, isActivePro: true })
+  })
+
+  it('allows lifetime Pro (null expires_at) with prior published', () => {
+    expect(
+      simulatePublicationEntitlement({
+        plan: 'pro',
+        expiresAt: null,
+        publishedCount: 2,
+        nowMs: NOW,
+      }).ok,
+    ).toBe(true)
+  })
+
+  it('blocks expired Pro with prior published as PUBLICATION_LIMIT', () => {
+    expect(
+      simulatePublicationEntitlement({
+        plan: 'pro',
+        expiresAt: '2026-09-01T00:00:00.000Z',
+        publishedCount: 1,
+        nowMs: NOW,
+      }),
+    ).toEqual({ ok: false, code: PUBLICATION_LIMIT_CODE, isActivePro: false })
+  })
+
+  it('allows expired Pro first publication when no prior published', () => {
+    expect(
+      simulatePublicationEntitlement({
+        plan: 'pro',
+        expiresAt: '2026-09-01T00:00:00.000Z',
+        publishedCount: 0,
+        nowMs: NOW,
+      }).ok,
+    ).toBe(true)
   })
 })

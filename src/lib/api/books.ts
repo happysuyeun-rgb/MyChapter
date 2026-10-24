@@ -1,7 +1,8 @@
 import { resolveFunctionPayload } from '@/lib/api/functionInvoke'
 import { isDevBypass } from '@/lib/devBypass'
 import { supabase } from '@/lib/supabase'
-import { getSubscriptionPlan } from './subscriptions'
+import { isActiveProPlan } from '@/lib/coverEntitlement'
+import { getSubscription } from './subscriptions'
 import type { Chapter, Database, Project } from '@/types/database'
 import { getChapterDisplayContent } from '@/utils/chapterContent'
 
@@ -139,8 +140,8 @@ export async function getPublishedBookSignedUrl(storagePath: string): Promise<st
 }
 
 export async function canPublishBook(userId: string): Promise<boolean> {
-  const plan = await getSubscriptionPlan(userId)
-  if (plan === 'pro') return true
+  const subscription = await getSubscription(userId)
+  if (isActiveProPlan(subscription.plan, subscription.expires_at)) return true
 
   const { count, error } = await supabase
     .from('publications')
