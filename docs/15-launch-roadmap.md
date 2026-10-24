@@ -1,16 +1,17 @@
 # MyChapter — 출시 로드맵 & 우선순위 가이드
 
-> **최종 갱신:** 2026-10-23  
+> **최종 갱신:** 2026-10-24  
 > **대상:** 서비스 담당자 + Cursor AI  
-> **관련:** `06-user-tasks.md`, `07-dev-progress.md`, `11-agent-workflow.md`, **`16-dev-plan.md`**, **`17-test-report.md`**
+> **관련:** `06-user-tasks.md`, `07-dev-progress.md`, `11-agent-workflow.md`, **`16-dev-plan.md`**, **`17-test-report.md`**, **`22-e2e-status.md`**
 
 ---
 
 ## 요약
 
-MyChapter는 **코드 구현은 대부분 완료**되었고, 현재 병목은 **실서비스 인프라 연동**입니다.
+MyChapter는 **코드 구현은 대부분 완료**되었고, **운영 이메일 로그인은 2026-10-24에 LIVE PASS**입니다.  
+현재 병목은 **실계정 책·기록 저장 E2E**와 AI/PDF·OAuth·SMTP 잔여입니다.
 
-`VITE_DEV_BYPASS=true`로 mock만 사용 중이라면, UI 폴리싱보다 **Supabase 실연동 + 핵심 플로우 E2E**를 먼저 진행하는 것이 효율적입니다.
+UI 폴리싱보다 **책 생성 → 3모드 기록 → PAGE 정합**을 먼저 닫는 것이 효율적입니다. 현황: `22-e2e-status.md`.
 
 | 단계 | 기간 | 목표 |
 |------|------|------|
@@ -21,21 +22,24 @@ MyChapter는 **코드 구현은 대부분 완료**되었고, 현재 병목은 **
 
 ---
 
-## 현재 상태 (2026-06-23)
+## 현재 상태 (2026-10-24)
 
 | 항목 | 상태 | 비고 |
 |------|------|------|
 | 코드 (Phase 0~6) | ✅ 대부분 완료 | `07-dev-progress.md` 참고 |
-| Supabase 프로젝트 | ✅ 생성됨 | `.env.local`에 URL 설정됨 |
+| Supabase 프로젝트 | ✅ 생성됨 | |
 | **마이그레이션 001~006** | **✅ 적용 완료** | `scripts/*_idempotent.sql` 로 적용 |
-| `VITE_DEV_BYPASS` | `true` | **다음:** `false`로 전환 후 E2E |
-| `VITE_BILLING_DEV_MODE` | `true` | 결제 dev 모드 |
-| Edge Function 배포 | ✅ 응답 확인 (2026-10-23) | 8개 HTTP 응답 OK — Secrets·실연동 E2E가 다음 |
-| OAuth (Kakao/Google) | 🔄 | Redirect URL 설정 |
-| Vercel 프로덕션 | 🔄 | `mychapter.app` |
+| 저장 정합 (`7ab565a`) | ✅ BUILD | vitest 18 · 충돌 시 명시 UX |
+| **운영 이메일 로그인 E2E** | **✅ 7/7 PASS — LIVE** | `my-chapter.vercel.app` |
+| 책·기록 저장 E2E | 🔄 PENDING | Work 다음 |
+| AI 챕터 · PDF E2E | 🔄 PENDING | |
+| Edge Function 배포 | ✅ 응답 확인 | Secrets 값 유효성(AI) 확인 권장 |
+| OAuth (Kakao/Google) | 🔄 미완료 | |
+| 일반 사용자 SMTP | 🔄 미완료 | |
+| Vercel Production | ✅ | https://my-chapter.vercel.app @ `7ab565a6` |
 | Firebase / FCM | 🔄 | 푸시 알림 (베타 후 가능) |
 | Play Billing 실결제 | 🔄 | 네이티브 브릿지 P1 |
-| UI (Paywall·Empty) | ✅ | Notion 스타일 폴리싱 반영 |
+| UI (Paywall·Empty) | ✅ | |
 
 ---
 
@@ -47,23 +51,22 @@ MyChapter는 **코드 구현은 대부분 완료**되었고, 현재 병목은 **
 |---|--------|------|------|------|
 | 1 | Supabase 마이그레이션 001~006 적용 | 본인 | ☑ | `scripts/001~006_idempotent.sql` |
 | 2 | Edge Function 8개 배포 | 본인 | ☑ | 프로브로 배포 확인 (`17-test-report.md`) |
-| 2b | Secrets 값 확인 (`GOOGLE_AI_API_KEY` 등) | 본인 | ☐ | `06-user-tasks.md` §2.5 |
-| 3 | `.env.local`에서 `VITE_DEV_BYPASS=false` 전환 | 본인 | ☐ | mock 차단 해제 |
-| 4 | **E2E 최소 성공 기준** 통과 | 본인 | ☐ | 아래 체크리스트 |
+| 2b | Secrets 값 확인 (`GOOGLE_AI_API_KEY` 등) | 본인 | ☐ | AI·PDF용 — `06-user-tasks.md` §2.5 |
+| 3 | Production 공개키 · 이메일 Auth | 본인 | ☑ | 로그인 LIVE PASS |
+| 4a | **E2E 로그인** | Work | ☑ | 2026-10-24 · `22-e2e-status.md` |
+| 4b | **E2E 책·기록·PAGE** | Work | ☐ | `18-user-next-steps.md` STEP 4 |
 
 ### E2E 최소 성공 기준
 
-다음 흐름이 **에러 없이** 완료되어야 P0 통과입니다.
+**로그인 구간:** ✅ PASS (2026-10-24).
+
+**남은 P0 핵심 (아직 PENDING):**
 
 ```
-로그인 → 닉네임/알림 온보딩 → 첫 프로젝트 생성
-→ 홈에서 AI 질문 확인 → 기록 1개 작성·저장 → 기록 목록에 표시
+첫 책 생성 → 자유/질문/사진 저장 → 새로고침 유지 → 기록 ID·PAGE 정합
 ```
 
-**다음에 할 일:** → **[`18-user-next-steps.md`](./18-user-next-steps.md)** 따라하기
-
-- Secrets 확인 → `VITE_DEV_BYPASS=false` → 실연동 E2E
-- 스모크 결과 → `17-test-report.md`
+**다음에 할 일:** → **[`18-user-next-steps.md`](./18-user-next-steps.md)** STEP 4 · **[`22-e2e-status.md`](./22-e2e-status.md)**
 
 ---
 
@@ -73,11 +76,11 @@ MyChapter는 **코드 구현은 대부분 완료**되었고, 현재 병목은 **
 
 | # | 할 일 | 담당 | 완료 | 참고 |
 |---|--------|------|------|------|
-| 5 | Kakao / Google OAuth Redirect URL | 본인 | ☐ | `06-user-tasks.md` §4 |
-| 6 | Vercel 프로덕션 배포 + env 동기화 | 본인 | ☐ | `vercel.json` |
+| 5 | Kakao / Google OAuth Redirect URL | 본인 | ☐ | 미완료 — 로그인 PASS와 별개 |
+| 6 | Vercel 프로덕션 배포 + env 동기화 | 본인 | ☑ | `my-chapter.vercel.app` |
 | 7 | 약관 URL 실동작 확인 (`/privacy`, `/terms`) | 본인 | ☐ | `VITE_PRIVACY_POLICY_URL` |
-| 8 | 챕터 생성 → PDF 출판 (dev billing) E2E | 본인 | ☐ | Pro 플로우 |
-| 9 | 연동 중 발생 버그 수정 | Cursor AI | ☐ | P0 통과 후 |
+| 8 | 챕터 생성 → PDF 출판 (dev billing) E2E | 본인 | ☐ | Pro 플로우 · LIVE 미실시 |
+| 9 | 연동 중 발생 버그 수정 | Cursor AI | ☐ | 책·기록 E2E 결과 후 |
 
 ### P1에서 미루어도 되는 것
 
@@ -175,9 +178,9 @@ Growth Hacker 역할로 MyChapter Play 스토어 출시 전략을 짜줘.
 
 | 상황 | 추천 |
 |------|------|
-| 지금 뭘 해야 할지 모르겠다 | **P0 #2b** — Secrets 확인 후 `DEV_BYPASS=false` E2E |
-| Function은 배포됐다 | Secrets + 실로그인 E2E |
-| 베타를 빨리 보여주고 싶다 | P0~P1만 완료 후 3~5명 초대 (푸시는 나중에) |
+| 지금 뭘 해야 할지 모르겠다 | **P0 #4b** — 책·기록·PAGE E2E (`22-e2e-status`) |
+| Function은 배포됐다 | Secrets 확인 후 AI·PDF E2E |
+| 베타를 빨리 보여주고 싶다 | 책·기록 LIVE 통과 후 3~5명 초대 (푸시는 나중에) |
 | 스토어 출시가 급하다 | P2 #12~14 병렬 (AAB + Billing 브릿지) |
 | UI가 아쉽다 | P0 통과 후 `DESIGN.md` + `mychapter-ui` skill로 폴리싱 |
 
@@ -204,3 +207,4 @@ Growth Hacker 역할로 MyChapter Play 스토어 출시 전략을 짜줘.
 | 2026-06-23 | 마이그레이션 001~006 적용 완료 (`scripts/*_idempotent.sql`) |
 | 2026-10-23 | Secrets 명칭 정정(Gemini), `16-dev-plan.md` 연동 |
 | 2026-10-23 | Edge Function 배포 확인·`17-test-report` 반영, 다음 액션을 Secrets+E2E로 조정 |
+| 2026-10-24 | 운영 로그인 LIVE PASS · Vercel Production ☑ · 다음을 책·기록 E2E로 조정 |

@@ -1,8 +1,8 @@
 # MyChapter — 개발 진행 현황 (AI 구현 기준)
 
 > **작성 기준:** Cursor AI가 코드베이스에 구현한 내용  
-> **최종 갱신:** 2026-10-23  
-> **본인이 할 일:** `docs/06-user-tasks.md` · **출시 순서:** `docs/15-launch-roadmap.md` · **잔여 계획:** `docs/16-dev-plan.md`
+> **최종 갱신:** 2026-10-24  
+> **본인이 할 일:** `docs/06-user-tasks.md` · **E2E 현황:** `docs/22-e2e-status.md` · **출시 순서:** `docs/15-launch-roadmap.md` · **잔여 계획:** `docs/16-dev-plan.md`
 
 ---
 
@@ -35,7 +35,7 @@
 | 화면/기능 | ID | 상태 | 비고 |
 |-----------|-----|------|------|
 | 스플래시 분기 | S-01 | ✅ | |
-| 로그인 (Kakao/Google/이메일) | S-02, S-02e | ✅ | OAuth **Supabase 설정 필요** 🔄 |
+| 로그인 (Kakao/Google/이메일) | S-02, S-02e | ✅ | **이메일 운영 E2E PASS** (2026-10-24) · OAuth·SMTP 일반화 🔄 |
 | 닉네임 | S-03 | ✅ | |
 | 알림 권한 | S-04 | ✅ | |
 | 마이페이지 | S-23 | ✅ | Phase 5에서 통계 추가 |
@@ -162,12 +162,13 @@ AI가 코드를 작성했지만 **본인 Supabase/외부 설정**이 필요한 �
 
 1. ~~**Supabase 마이그레이션 001~006 SQL 실행**~~ ✅ (2026-06-23)
 2. ~~**Edge Function 8개 배포**~~ ✅ 원격 프로브 확인 (2026-10-23, `17-test-report`) — **Secrets 값 확인은 남음**
-3. **`.env.local` / Vercel 환경 변수** + `VITE_DEV_BYPASS=false`
-4. **Kakao / Google OAuth** Redirect URL
-5. **Firebase** + `google-services.json` + Cron *(베타 후 가능)*
-6. **Play Billing** 실결제 — 네이티브 브릿지 코드 미완 (B1)
-7. **Vercel 프로덕션 배포**
-8. **Android AAB 빌드** + Play Console
+3. ~~**Vercel Production + 이메일 로그인**~~ ✅ LIVE 7/7 PASS (2026-10-24, `22-e2e-status`)
+4. **실계정 책·기록·PAGE E2E** — Work 다음
+5. **Kakao / Google OAuth** · **일반 SMTP**
+6. **Firebase** + `google-services.json` + Cron *(베타 후 가능)*
+7. **Play Billing** 실결제 — 네이티브 브릿지 코드 미완 (B1)
+8. **AI 챕터 · PDF LIVE E2E**
+9. **Android AAB 빌드** + Play Console
 
 상세 Wave 계획 → **`16-dev-plan.md`**
 
@@ -236,3 +237,4 @@ public/legal/          ✅ privacy, terms
 | 2026-06-23 | Supabase 마이그레이션 001~006 적용 완료 |
 | 2026-10-23 | 잔여 점검·`16-dev-plan` 연동, S-32/PDF/Secrets 표기 정정 |
 | 2026-10-23 | 스모크 테스트: Edge 8개 배포 확인, bypass API 갭(drafts/books/hints 등) 수정 |
+| 2026-10-24 | 운영 이메일 로그인 LIVE PASS · 저장 정합 `7ab565a` · 다음=책·기록 E2E |

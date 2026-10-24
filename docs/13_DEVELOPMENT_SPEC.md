@@ -1371,7 +1371,7 @@ Do not mark GAP-005 resolved until refresh persistence is actually verified.
 5. Record number max+1 is race-prone.
 6. Chapter reorder is not atomic.
 7. Record Analysis has no explicit retry/status model.
-8. Production OAuth E2E is incomplete.
+8. Production OAuth E2E is incomplete (email Magic Link LIVE PASS 2026-10-24; Google/Kakao + SMTP still open).
 
 ### Medium priority
 
@@ -1397,8 +1397,8 @@ MY CHAPTER MVP is technically complete only when all of the following are true:
 
 ### Auth
 
-- Email login E2E passes.
-- OAuth launch providers pass.
+- Email login E2E passes. **(PASS — LIVE 2026-10-24 on production `7ab565a6`; see `22-e2e-status.md`)**
+- OAuth launch providers pass. **(still incomplete — Google/Kakao + general SMTP pending)**
 - onboarding state is durable.
 - direct URL access respects guards.
 

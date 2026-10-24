@@ -1,14 +1,15 @@
 # MY CHAPTER 문서 인덱스
 
 **Status:** CURRENT  
-**Updated:** 2026-10-23
+**Updated:** 2026-10-24
 
 이 문서는 MY CHAPTER 저장소의 문서 구조와 우선순위를 정의한다.
 
 > 원칙: 같은 정책을 여러 문서에서 다시 정의하지 않는다.  
 > 상세 문서는 한 곳만 Source of Truth로 두고, 다른 문서는 링크/참조만 한다.
 
-> **지금 본인이 할 일:** → **[18-user-next-steps.md](./18-user-next-steps.md)** (Secrets → bypass off → E2E)
+> **E2E 현황:** → **[22-e2e-status.md](./22-e2e-status.md)** (로그인 LIVE PASS · 책·기록 PENDING)  
+> **지금 본인이 할 일:** → **[18-user-next-steps.md](./18-user-next-steps.md)** STEP 4 (책·기록·PAGE)
 
 ---
 
@@ -81,13 +82,14 @@
 | **[08-development-specification.md](./08-development-specification.md)** | **개발명세서** (통합 기술 문서) | 전체 | — |
 | **[09-supabase-setup.md](./09-supabase-setup.md)** | Supabase + **마이그레이션 적용** | Supabase 연결 시 필수 | — |
 | **[11-agent-workflow.md](./11-agent-workflow.md)** | AI 에이전트 프롬프트·출시 체크리스트 요약 | 담당자 + Cursor | 2026-06-23 |
-| **[15-launch-roadmap.md](./15-launch-roadmap.md)** | **출시 로드맵·우선순위·2주 일정** | **담당자 (시작점)** | 2026-10-23 |
+| **[15-launch-roadmap.md](./15-launch-roadmap.md)** | **출시 로드맵·우선순위·2주 일정** | **담당자 (시작점)** | 2026-10-24 |
 | **[16-dev-plan.md](./16-dev-plan.md)** | **잔여 점검·Wave 0~3 개발 계획** | **개발 진행 시 필독** | 2026-10-23 |
-| **[17-test-report.md](./17-test-report.md)** | **로컬 스모크 테스트 리포트** | 담당자 + Cursor | 2026-10-23 |
-| **[18-user-next-steps.md](./18-user-next-steps.md)** | **본인 할 일 상세 따라하기** | **서비스 담당자 (지금)** | 2026-10-23 |
-| **[19-gap-and-ux-plan.md](./19-gap-and-ux-plan.md)** | **기능 누락 재점검 + UX·디자인 개선 계획** | 제품·개발 | 2026-10-23 |
+| **[17-test-report.md](./17-test-report.md)** | **스모크·자동테스트·로그인 LIVE 요약** | 담당자 + Cursor | 2026-10-24 |
+| **[18-user-next-steps.md](./18-user-next-steps.md)** | **본인 할 일 상세 따라하기** | **서비스 담당자 (지금)** | 2026-10-24 |
+| **[19-gap-and-ux-plan.md](./19-gap-and-ux-plan.md)** | **기능 누락 재점검 + UX·디자인 개선 계획** | 제품·개발 | 2026-10-24 |
 | **[20-error-cases.md](./20-error-cases.md)** | **기능별 에러 케이스 (코드 점검)** | QA·개발 | 2026-10-23 |
 | **[21-screen-completeness.md](./21-screen-completeness.md)** | **화면 완성도·미개발 점검** | 제품·개발 | 2026-10-23 |
+| **[22-e2e-status.md](./22-e2e-status.md)** | **LIVE E2E PASS/PENDING·출시 차단** | **담당자 + Work + Cursor** | 2026-10-24 |
 | **[06-play-store-listing-draft.md](./06-play-store-listing-draft.md)** | **Play 스토어 등록정보 초안** | 사용자 + Cursor | 2026-10-23 |
 | **[07-manual-setup-checklist.md](./07-manual-setup-checklist.md)** | **수동 설정 체크리스트** (Secrets, Vercel, Play 등) | 사용자 | 2026-10-23 |
 
@@ -99,7 +101,8 @@
 |---|---|---|
 | [SCREEN_IMPLEMENTATION_GAP.md](./SCREEN_IMPLEMENTATION_GAP.md) | Screen Spec ↔ 현재 코드 차이 | ACTIVE |
 | [CHANGELOG_MVP.md](./CHANGELOG_MVP.md) | MVP 변경 이력 | ACTIVE |
-| [16_QA_E2E.md](./16_QA_E2E.md) | 기능/권한/실데이터 E2E | ACTIVE (v0.1, live test pending) |
+| [16_QA_E2E.md](./16_QA_E2E.md) | 기능/권한/실데이터 E2E | ACTIVE (v0.2; auth LIVE PASS, Book/Record PENDING) |
+| [22-e2e-status.md](./22-e2e-status.md) | LIVE 현황 보드 | ACTIVE |
 | `17_RELEASE_RUNBOOK.md` | Vercel/Supabase/Android 배포 절차 | NEXT |
 
 ---
@@ -145,10 +148,11 @@
 
 ### 출시 작업 진행 순서
 
-1. **[18-user-next-steps.md](./18-user-next-steps.md)** — **지금 본인이 할 일 (상세)**
-2. **[16-dev-plan.md](./16-dev-plan.md)** — 뭐가 남았는지·Wave 계획
-3. **[15-launch-roadmap.md](./15-launch-roadmap.md)** — P0부터 출시 순서
-4. [06-user-tasks.md](./06-user-tasks.md) — Supabase·Vercel·Play 전체
+1. **[22-e2e-status.md](./22-e2e-status.md)** — LIVE E2E 현황  
+2. **[18-user-next-steps.md](./18-user-next-steps.md)** — **지금 본인이 할 일 (상세)**
+3. **[16-dev-plan.md](./16-dev-plan.md)** — 뭐가 남았는지·Wave 계획
+4. **[15-launch-roadmap.md](./15-launch-roadmap.md)** — P0부터 출시 순서
+5. [06-user-tasks.md](./06-user-tasks.md) — Supabase·Vercel·Play 전체
 
 ---
 
@@ -172,7 +176,7 @@
 2. `13_DEVELOPMENT_SPEC.md` — 통합 개발명세서 — **DONE**
 3. `14_API_SPEC.md` — 현재 코드/Edge Function 계약 정리 — **WORKING (v0.1, 추가 응답 계약 검증 필요)**
 4. `15_DATA_DICTIONARY.md` — repository schema 기준 초안 **WORKING (v0.1, 실제 Supabase 확인 필요)**
-5. `16_QA_E2E.md` — QA 체크리스트 작성 완료, **실사용자 E2E 진행 필요**
+5. `16_QA_E2E.md` / `22-e2e-status.md` — 이메일 로그인 LIVE PASS · **책·기록 E2E 진행 중**
 6. `17_RELEASE_RUNBOOK.md` — 출시/운영 절차
 7. 오래된 문서의 물리적 archive 이동은 마지막에 수행
 
@@ -199,3 +203,4 @@
 | 2026-10-23 | `19-gap-and-ux-plan.md` — 명세 갭 재검증·UX Wave U0~U4 |
 | 2026-10-23 | `20-error-cases.md` — 기능별 에러 케이스 코드 점검 |
 | 2026-10-23 | `21-screen-completeness.md` — MVP 화면 누락 없음·미개발 P0~P2 |
+| 2026-10-24 | `22-e2e-status.md` — 운영 로그인 7/7 PASS · 책·기록 PENDING |

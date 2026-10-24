@@ -1,7 +1,7 @@
 # 05. Screen Specification
 
 **Status:** Final Screen Spec v1.1  
-**Updated:** 2026-10-16  
+**Updated:** 2026-10-24  
 **Source of truth:** product-facing screen/UX behavior. Product policy still follows 02_PRODUCT_DECISIONS.md.
 
 ## Status legend
@@ -34,7 +34,7 @@ Current MVP onboarding is two steps: A-03 Nickname + O-01 Notification. Old O-01
 |---|---|---|---|---|
 | SP-01 | Splash | /splash | Implemented | single post-auth routing checkpoint |
 | A-01 | Login | /login | Implemented | Google / Kakao / Email entry |
-| A-02 | Email Login / Auth | /login/email | Implemented / E2E Pending | magic-link sign in |
+| A-02 | Email Login / Auth | /login/email | Implemented / **E2E PASS — LIVE** (2026-10-24, prod `7ab565a6`) | magic-link sign in; OAuth·SMTP 일반화는 별도 PENDING |
 | A-03 | Nickname | /onboarding/nickname | Implemented | save 2~10 char author name |
 | O-01 | Notification Onboarding | /onboarding/notification | Implemented | save notification preference and complete onboarding |
 

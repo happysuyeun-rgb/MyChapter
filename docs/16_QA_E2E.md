@@ -1,9 +1,10 @@
 # 16. QA / E2E Verification
 
-**Version:** 0.1  
+**Version:** 0.2  
 **Status:** ACTIVE / EVIDENCE LOG  
-**Updated:** 2026-10-16  
-**Target:** MY CHAPTER first Free Book → first real PDF → revisit; do not conflate deployment readiness with successful E2E.
+**Updated:** 2026-10-24  
+**Target:** MY CHAPTER first Free Book → first real PDF → revisit; do not conflate deployment readiness with successful E2E.  
+**Companion status board:** `22-e2e-status.md`
 
 ## Evidence labels
 
@@ -22,7 +23,9 @@
 | ENV-04 | Security Advisor | PASS — LIVE admin inspection | Zero security lints |
 | ENV-05 | GAP-005 code before reopen fix | PASS — BUILD | Vercel production READY at `6eb0b65f` |
 | ENV-06 | Final review reopen fix | PENDING BUILD | `5326e758`, Vercel build pending at first check |
-| ENV-07 | Test users/data | PENDING | Public tables currently contain no user data; no authenticated E2E exercised |
+| ENV-07 | Test users/data | PARTIAL — LIVE | Auth E2E exercised 2026-10-24; Book/Record rows still PENDING Work verification |
+| ENV-08 | Vercel production @ `7ab565a6` | PASS — LIVE | https://my-chapter.vercel.app — login suite 7/7 |
+| ENV-09 | Save-integrity unit suite | PASS — BUILD | vitest 18/18 on conflict/idempotency policy (`7ab565a`) |
 
 ## 2. GAP-005 manuscript / final review scenarios
 
@@ -216,3 +219,26 @@ Client `books.ts` now maps codes to `BookApiError`; `FinalReviewPage` displays t
 - Added `src/lib/photoAttempt.ts` (commit `ea81e895`), storing only the user's/project's pending upload path and matching record request UUID in sessionStorage with 24h TTL; no original image bytes or record content are stored.
 - Photo editor (commit `c9ef4d3f`) restores matching upload path and requests a fresh signed preview after reload; creation can retry using the same previously uploaded Storage object. Successful save clears pending photo metadata and record request ID.
 - **Not an E2E PASS:** live upload, access control, signed URL and ambiguous response handling still require authenticated exercise. Changing the photo after an ambiguous committed attempt may produce safe payload mismatch; no automatic merge. Upload or DB failures can leave orphaned files, needing cleanup policy. Client-level sessionStorage may be unavailable.
+
+## 24. Production email auth E2E — 2026-10-24 (PASS — LIVE)
+
+**Environment:** https://my-chapter.vercel.app · commit `7ab565a6` · Work-operated real login.
+
+| ID | Scenario | Result |
+|---|---|---|
+| AUTH-LIVE-01 | Production deploy healthy | PASS — LIVE |
+| AUTH-LIVE-02 | Supabase anon/public key wired | PASS — LIVE |
+| AUTH-LIVE-03 | Magic Link email delivered | PASS — LIVE |
+| AUTH-LIVE-04 | Email login succeeds | PASS — LIVE |
+| AUTH-LIVE-05 | Post-login My Page | PASS — LIVE |
+| AUTH-LIVE-06 | Session survives refresh | PASS — LIVE |
+| AUTH-LIVE-07 | Logout + protected route blocked | PASS — LIVE |
+
+Supabase request sample: 29 calls, **no 4xx/5xx**. Prior production auth/401 issues are recorded as **resolved** for the email Magic Link path.
+
+**Still not PASS:** Google/Kakao OAuth; custom SMTP for general users; Book create; free/question/photo save; reload persistence; PAGE number integrity; AI chapter; PDF publish.
+
+## 25. Explicit create-conflict UX — BUILD (`7ab565a`)
+
+- Auto-mint of a new request UUID on `RecordRequestConflictError` removed. Same ID + same payload → return existing; same ID + different payload → modal (open existing / save as new). Lookup failure → recoverable error, no auto-insert.
+- vitest **18/18** PASS — BUILD. **Not** a substitute for Work Book/Record LIVE E2E.

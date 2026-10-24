@@ -277,15 +277,19 @@ Google Play Developer API + 서비스 계정 연동 → Supabase `verify-subscri
 ### 계정·인프라
 
 - [x] Supabase 마이그레이션 001~006 적용 완료 (2026-06-23, `scripts/*_idempotent.sql`)
-- [ ] `.env.local` / Vercel 환경 변수 설정
-- [ ] Edge Function 8개 배포
-- [ ] `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`, `BILLING_DEV_BYPASS` Secrets 등록
+- [x] Vercel Production 공개키·배포 (`my-chapter.vercel.app` @ `7ab565a6`, 2026-10-24 로그인 E2E)
+- [x] Edge Function 8개 배포 (원격 프로브 확인)
+- [ ] `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`, `BILLING_DEV_BYPASS` Secrets **값 유효성** 확인 (AI·PDF용)
+- [ ] 일반 사용자 대상 SMTP
+- [ ] Kakao / Google OAuth Provider
 
 ### 기능 테스트 (직접 또는 테스터)
 
-- [ ] 카카오/Google/이메일 로그인
-- [ ] 프로젝트 생성 → 첫 기록 → 홈 진행률 확인
-- [ ] 기록 10개 후 챕터 생성 (또는 수동 생성 버튼)
+- [x] **이메일 Magic Link 로그인** (운영 LIVE 7/7 PASS, 2026-10-24) — `22-e2e-status.md`
+- [ ] 카카오 / Google 로그인 (미완료)
+- [ ] 책 생성 → 자유/질문/사진 기록 → 새로고침·PAGE 정합 (**Work 다음**)
+- [ ] 기록 충분 후 챕터 생성 (AI E2E 미실시)
+- [ ] PDF 발행 E2E 미실시
 - [ ] Pro 업그레이드 (개발 모드: `VITE_BILLING_DEV_MODE=true`)
 - [ ] 계정 삭제 후 재가입
 
@@ -333,3 +337,4 @@ Google Play Developer API + 서비스 계정 연동 → Supabase `verify-subscri
 | 2026-06-23 | 마이그레이션 001~006 완료, Edge Function 8개 목록 보완 |
 | 2026-06-23 | §2.5~2.6 Secrets·배포 절차 상세 (`GOOGLE_AI_API_KEY`, `npx supabase`) |
 | 2026-10-23 | `18-user-next-steps.md` 링크 — 본인 다음 할 일 상세 가이드 |
+| 2026-10-24 | 운영 이메일 로그인 PASS · 책·기록/OAuth/SMTP/AI·PDF는 미완료로 유지 |

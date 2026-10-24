@@ -1,22 +1,38 @@
 # MyChapter — 본인이 지금 할 일 (상세 가이드)
 
-> **최종 갱신:** 2026-10-23  
+> **최종 갱신:** 2026-10-24  
 > **대상:** 서비스 담당자 (비개발자 포함)  
-> **전제:** 마이그레이션 001~006 ✅ · Edge Function 8개 배포 ✅ (스모크 확인됨)  
-> **관련:** `06-user-tasks.md`, `17-test-report.md`, `15-launch-roadmap.md`, `20-error-cases.md`
+> **전제:** 마이그레이션 001~006 ✅ · Edge Function 8개 배포 ✅ · **운영 이메일 로그인 E2E 7/7 PASS** (`22-e2e-status.md`)  
+> **관련:** `06-user-tasks.md`, `17-test-report.md`, `15-launch-roadmap.md`, `20-error-cases.md`, `22-e2e-status.md`
 
 ---
 
 ## 이 문서의 목표
 
-아래를 **순서대로** 끝내면, mock 없이 실제 Supabase로 앱이 동작하는지 확인할 수 있습니다.
+**운영 이메일 로그인은 완료**됐습니다. 지금은 **책·기록 실사용 E2E**가 다음입니다.
 
 ```
-① Secrets 등록/확인
-② 이메일 로그인 설정 + Redirect URL
-③ VITE_DEV_BYPASS=false
-④ 로컬에서 E2E 테스트
+① (완료) 운영 Magic Link 로그인
+② Secrets 등록/확인 — AI·PDF용
+③ Work: 첫 책 → 자유/질문/사진 저장 → 새로고침·PAGE 정합
+④ (이후) AI 챕터 · PDF · OAuth · SMTP 일반화
 ```
+
+**이미 끝난 운영 검증 (2026-10-24, `7ab565a6`, https://my-chapter.vercel.app)**
+
+| 항목 | 결과 |
+|------|------|
+| Production 배포 · anon 키 · Magic Link · 로그인 · 마이페이지 · 세션 유지 · 로그아웃/가드 | **7/7 PASS — LIVE** |
+| Supabase 요청 4xx·5xx | 없음 (29건) |
+
+**아직 미완료로 유지**
+
+| 항목 | 상태 |
+|------|------|
+| 일반 사용자 대상 SMTP | 미완료 |
+| Google · Kakao OAuth | 미완료 |
+| 실계정 책·기록 저장 E2E | **Work 진행 예정** |
+| AI 챕터 · PDF E2E | 미실시 |
 
 **AI가 이미 코드로 처리한 것** (본인 작업 불필요)
 
@@ -24,7 +40,7 @@
 |------|------|
 | Edge Function 에러 `code` 파싱, ErrorState 확대, Settings 저장 피드백 | `20-error-cases.md` |
 | 로그아웃 시 FCM 토큰 삭제, 구독 조회 실패 시 Free 오탐 방지 | `21-screen-completeness.md` |
-| 사진 10MB·제목 길이 등 입력 가드 | 코드 반영 |
+| 저장 충돌 시 명시적 UX · vitest 18건 · `7ab565a` | `22-e2e-status.md` |
 
 **지금 하지 않아도 되는 것**
 
@@ -32,6 +48,7 @@
 |------|------|
 | Edge Function 8개 재배포 | 이미 원격에서 응답 확인됨 (`17-test-report.md`) |
 | 마이그레이션 SQL 재실행 | 001~006 적용 완료 |
+| 이메일 로그인 Provider 재설정 | 운영 E2E PASS |
 | Firebase / Play Console / Billing 네이티브 | 베타·출시 단계 (**본인+네이티브 작업**, 나중에) |
 
 ---
@@ -169,7 +186,8 @@ com.mychapter.app://home
 Authentication → Users → **Add user** / 또는 앱에서 이메일 로그인 시  
 받은편지함(스팸함 포함)에 Supabase 메일이 오면 OK.
 
-**STEP 2 완료 표시:** ☐ Email ON + Redirect URL 저장함
+**STEP 2 완료 표시:** ☑ Email ON + 운영 Redirect URL — **운영 Magic Link E2E PASS (2026-10-24)**  
+※ 로컬(`localhost:5173`) Redirect는 로컬 테스트 시에만 추가하면 됩니다.
 
 ---
 
@@ -215,59 +233,54 @@ npm run dev
 
 ---
 
-## STEP 4 — E2E 테스트 (직접 따라하기)
+## STEP 4 — 다음 E2E (Work / 실계정) — **지금 진행**
 
-목표: **로그인 → 온보딩 → 프로젝트 → AI 질문 → 기록 저장 → 목록**
+운영: https://my-chapter.vercel.app · 로그인 E2E는 **이미 PASS**.  
+목표: **첫 책 → 3모드 기록 → 새로고침 유지 → PAGE 정합**
 
-### 4-1. 로그인
+상세 현황 표: **`22-e2e-status.md` §4**
 
-1. `http://localhost:5173` → 스플래시 후 **로그인** 화면
-2. **이메일로 시작** (또는 Email 메뉴)
-3. 본인 이메일 입력 → 링크 발송
-4. 메일함에서 링크 클릭 → 브라우저가 `localhost:5173`으로 돌아와야 함
+### 4-1. 로그인 (완료 확인만)
 
-**실패 시**
+이미 통과한 계정이면 재검증 불필요. 새 계정이면 Magic Link로 로그인 후 온보딩만 확인.
 
-| 증상 | 확인할 것 |
-|------|-----------|
-| 메일이 안 옴 | Providers Email ON, 스팸함, Supabase Auth 로그 |
-| 링크 클릭 후 빈 화면/에러 | Redirect URLs에 `localhost:5173/**` 있는지 |
-| 계속 mock 서아로 홈 | `.env.local`이 `false`인지, **서버 재시작** 했는지 |
+### 4-2. 온보딩 (해당 시)
 
-### 4-2. 온보딩
+1. 닉네임 입력 (2~10자) → 다음  
+2. 알림 권한 → 허용 또는 나중에
 
-1. 닉네임 입력 (2~10자) → 다음
-2. 알림 권한 화면 → 허용 또는 나중에
+### 4-3. 첫 책 생성
 
-### 4-3. 첫 프로젝트 생성
+1. 책 유형 선택  
+2. 제목 입력 → **이 책 시작하기**  
+3. 완료 화면 → 홈/기록 진입 가능하면 책 생성 OK
 
-1. 프로젝트 유형 선택 (예: 감정)
-2. 제목·기간 설정
-3. 기록 모드 선택
-4. 생성 완료 → **첫 AI 질문**이 보이면 Secrets·Function OK
+**실패 시:** 화면 문구 + Network/콘솔을 Cursor에 공유 (Production env·Auth 설정은 변경하지 말 것)
 
-**AI 질문이 안 나오거나 에러**
+### 4-4. 기록 저장 (3모드)
 
-1. Dashboard → **Edge Functions** → `generate-question` → **Logs**
-2. `GOOGLE_AI_API_KEY` / `SERVICE_ROLE_KEY` 오타·누락인지 확인
-3. 로그·화면 에러 문구를 복사해 Cursor에 공유
+각각 **저장 → 완료 화면의 PAGE 번호 → 목록에 표시**까지:
 
-### 4-4. 기록 1개 저장
+1. 자유 기록  
+2. 질문 기록 (AI 질문이 안 나오면 Secrets·`generate-question` Logs)  
+3. 사진 기록 (업로드·미리보기·저장)
 
-1. 홈에서 **지금 답하기** 또는 기록 탭 → + 기록
-2. 질문 모드로 10자 이상 작성 → 감정 선택 → **저장**
-3. 완료 화면 → 홈/기록 목록에 새 기록이 보이면 성공
+### 4-5. 정합 확인
 
-### 4-5. 통과 체크리스트
+1. 새로고침 후에도 책·기록이 유지되는지  
+2. 완료 화면 PAGE와 목록/상세 PAGE가 같은지 (작성 중 「예상 PAGE」와 달라도 됨 — 서버 확정이 기준)
 
-- [ ] 이메일 로그인 성공
-- [ ] 닉네임·온보딩 완료
-- [ ] 프로젝트 1개 생성
-- [ ] AI 질문 표시
-- [ ] 기록 저장 후 목록에 표시
-- [ ] Supabase Table Editor에 `users` / `projects` / `records` 행이 생김
+### 4-6. 통과 체크리스트 (Work)
 
-**전부 체크되면 = M1(로컬 실연동) 통과** → Cursor에 “E2E 통과했어”라고 알려주세요.
+- [x] 이메일 로그인 성공 (운영, 2026-10-24)
+- [ ] 닉네임·온보딩 완료 (해당 계정)
+- [ ] 책 1개 생성
+- [ ] 자유 / 질문 / 사진 각 1건 저장
+- [ ] 새로고침 후 데이터 유지
+- [ ] 기록 ID·PAGE 번호 정합
+- [ ] (이후) AI 챕터 · PDF
+
+결과(성공·실패 단계·스크린샷·콘솔)를 Cursor에 알려주면 개발 개선으로 연결합니다.
 
 ---
 
@@ -334,12 +347,13 @@ Cursor에 아래 형식으로 보내면 빠르게 도와줍니다.
 
 | STEP | 내용 | 완료 |
 |------|------|------|
-| 1 | Secrets 3개 | ☐ |
-| 2 | Email + Redirect URL | ☐ |
-| 3 | `VITE_DEV_BYPASS=false` + 서버 재시작 | ☐ |
-| 4 | E2E (로그인~기록) | ☐ |
+| 1 | Secrets 3개 | ☐ (AI·PDF용 — 값 유효성 확인) |
+| 2 | Email + Redirect URL | ☑ 운영 Magic Link PASS |
+| 3 | Production bypass off / 공개키 | ☑ 운영 검증됨 |
+| 4a | E2E 로그인 | ☑ 7/7 PASS |
+| 4b | E2E 책·기록·PAGE | ☐ **Work 다음** |
 | 5 | (선택) OAuth | ☐ |
-| 6 | (나중) Vercel 등 | ☐ |
+| 6 | Vercel Production | ☑ `my-chapter.vercel.app` @ `7ab565a6` |
 
 ---
 
@@ -348,7 +362,8 @@ Cursor에 아래 형식으로 보내면 빠르게 도와줍니다.
 | 문서 | 언제 보나 |
 |------|-----------|
 | **이 문서 (`18-user-next-steps.md`)** | **지금 할 일 따라하기** |
-| `17-test-report.md` | AI가 이미 테스트한 결과 |
+| **`22-e2e-status.md`** | **LIVE E2E PASS/PENDING·출시 차단** |
+| `17-test-report.md` | AI 스모크·자동 테스트·로그인 LIVE 요약 |
 | `20-error-cases.md` | 기능별 에러 케이스·수정 우선순위 |
 | `21-screen-completeness.md` | MVP 화면 누락 여부·미개발 목록 |
 | `06-user-tasks.md` | Supabase·Vercel·Play 전체 작업 |
@@ -362,3 +377,4 @@ Cursor에 아래 형식으로 보내면 빠르게 도와줍니다.
 | 날짜 | 내용 |
 |------|------|
 | 2026-10-23 | 최초 작성 — Secrets·Auth·bypass·E2E 단계별 가이드 |
+| 2026-10-24 | 운영 로그인 7/7 PASS 반영 · 다음 목표를 책·기록 E2E로 전환 |

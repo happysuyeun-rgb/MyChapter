@@ -1,6 +1,6 @@
 # MyChapter — 기능 누락 재점검 & UX·디자인 개선 계획
 
-> **최종 갱신:** 2026-10-23  
+> **최종 갱신:** 2026-10-24  
 > **대상:** 제품·개발 (본인 문서 확인 중 AI가 병행 점검)  
 > **근거:** `docs/10`~`14` 화면명세, `00`/`04`/`08`, 현재 `src/` 코드  
 > **관련:** `16-dev-plan.md`, `07-dev-progress.md`, `20-error-cases.md`, `21-screen-completeness.md`, `DESIGN.md`, `.cursor/skills/mychapter-ui`
@@ -24,7 +24,7 @@
 | 구분 | 상태 |
 |------|------|
 | MVP **화면** (라우트·페이지) | ✅ 누락 없음 → `21-screen-completeness.md` |
-| MVP 핵심 플로우 (로그인~기록~챕터~PDF) | 코드 ✅ · 실연동 E2E만 남음 |
+| MVP 핵심 플로우 (로그인~기록~챕터~PDF) | 로그인 LIVE ✅ · 책·기록·챕터·PDF E2E 남음 (`22-e2e-status`) |
 | 명세 vs 코드 **실제 누락** | Billing 네이티브, 복원 실연동, S-32, expand-caption, 푸시 세부 |
 | UX·에러 | ErrorState 4화면만 · 나머지는 `20-error-cases.md` |
 
@@ -52,9 +52,9 @@
 
 | ID | 항목 | 설계 | 현재 | 비고 |
 |----|------|------|------|------|
-| G-01 | 실연동 E2E | 로그인~기록 | bypass만 검증됨 | 본인 `18-user-next-steps` |
-| G-02 | Secrets 유효성 | Gemini 키 | 미확인 | Function은 배포됨 |
-| G-03 | OAuth Redirect | Kakao/Google | 코드만 있음 | 본인 설정 |
+| G-01 | 실연동 E2E | 로그인~기록 | **로그인 LIVE PASS** · 책·기록 PENDING | Work `18` / `22-e2e-status` |
+| G-02 | Secrets 유효성 | Gemini 키 | 미확인 | Function은 배포됨 · AI·PDF용 |
+| G-03 | OAuth Redirect | Kakao/Google | 코드만 있음 · **미완료** | 로그인 PASS와 별개 |
 
 #### P1 — 스토어·유료화
 
@@ -271,3 +271,4 @@
 | 2026-10-23 | Wave U2 반영 (LoadingBlock·구독 비교·온보딩/완료 폴리싱) |
 | 2026-10-23 | 에러 케이스 전수 점검은 `20-error-cases.md`로 분리 |
 | 2026-10-23 | 화면 누락 재검증 → `21-screen-completeness.md`; CHAPTER_LIMIT·G-11~14·G-26 표기 교정 |
+| 2026-10-24 | G-01 로그인 LIVE PASS 반영 · 책·기록 E2E는 PENDING |
