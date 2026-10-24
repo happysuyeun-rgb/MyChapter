@@ -1,7 +1,12 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import fontkit from 'npm:@pdf-lib/fontkit@1.1.1'
 import { PDFDocument, rgb, type PDFFont, type RGB } from 'npm:pdf-lib@1.17.1'
 import { corsHeaders } from '../_shared/cors.ts'
 import { generateGeminiText, stripQuotes } from '../_shared/gemini.ts'
+import {
+  coverProOnlyResponseBody,
+  evaluateCoverEntitlement,
+} from '../_shared/coverEntitlement.ts'
 
 const FONT_URL =
   'https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/OTF/Korean/NotoSansKR-Regular.otf'
@@ -102,6 +107,22 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceRoleKey)
     adminForFailure = admin
 
+    const { data: subscription } = await admin
+      .from('subscriptions')
+      .select('plan, expires_at')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    const coverGate = evaluateCoverEntitlement(cover_template_id, subscription?.plan, {
+      expiresAt: subscription?.expires_at,
+    })
+    if (!coverGate.ok) {
+      return new Response(JSON.stringify(coverProOnlyResponseBody()), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // Atomic reservation in the caller's JWT context: owns the book, verifies
     // review prerequisites and Free/Pro entitlement, serializes concurrent calls.
     const { data: reservation, error: reserveError } = await userClient.rpc(
@@ -112,11 +133,12 @@ Deno.serve(async (req) => {
       const detail = reserveError?.message ?? 'PUBLICATION_RESERVATION_FAILED'
       const code = ['UNAUTHORIZED', 'PROJECT_NOT_FOUND', 'REVIEW_REQUIRED',
         'COVER_MISMATCH', 'MANUSCRIPT_INCOMPLETE', 'PUBLICATION_LIMIT',
-        'PUBLICATION_IN_PROGRESS'].find((item) => detail.includes(item))
+        'PUBLICATION_IN_PROGRESS', 'COVER_PRO_ONLY'].find((item) => detail.includes(item))
         ?? 'PUBLICATION_RESERVATION_FAILED'
       const status = code === 'PUBLICATION_LIMIT' ? 402 :
         code === 'PROJECT_NOT_FOUND' ? 404 :
-        code === 'UNAUTHORIZED' ? 401 : 409
+        code === 'UNAUTHORIZED' ? 401 :
+        code === 'COVER_PRO_ONLY' ? 403 : 409
       return new Response(JSON.stringify({ code, error: code }), {
         status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -149,6 +171,7 @@ Deno.serve(async (req) => {
 
     const fontBytes = await loadKoreanFont()
     const pdfDoc = await PDFDocument.create()
+    pdfDoc.registerFontkit(fontkit)
     const font = await pdfDoc.embedFont(fontBytes)
 
     const coverPage = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT])

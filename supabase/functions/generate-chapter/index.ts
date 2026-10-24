@@ -5,6 +5,10 @@ import {
   aiUnavailableResponseBody,
   buildChapterFromAiText,
 } from '../_shared/geminiResult.ts'
+import {
+  bookNotReadyResponseBody,
+  evaluateChapterReadinessGate,
+} from '../_shared/chapterReadinessGate.ts'
 
 const MIN_RECORDS_FOR_CHAPTER = 3
 const MAX_CLUSTER_RECORDS = 12
@@ -141,6 +145,21 @@ Deno.serve(async (req) => {
     if (recordsError) throw recordsError
 
     const allRecords = (projectRecords ?? []) as SourceRecord[]
+
+    const readiness = evaluateChapterReadinessGate({
+      readyAt: project.ready_at,
+      recordCount: allRecords.length,
+      startedAt: project.started_at || project.created_at,
+      minRecords: project.readiness_min_records,
+      minDays: project.readiness_min_days,
+    })
+    if (!readiness.ok) {
+      return new Response(JSON.stringify(bookNotReadyResponseBody(readiness)), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const { data: projectChapters, error: projectChaptersError } = await admin
       .from('chapters')
       .select('id')

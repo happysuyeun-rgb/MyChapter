@@ -10,6 +10,7 @@ import type { Project, ProjectType } from '@/types/database'
 import type { NewProjectDraft } from '@/stores/projectStore'
 import { calculateRoutine } from '@/utils/calculateRoutine'
 import { BOOK_READINESS_RULES, getBookReadiness } from '@/utils/bookReadiness'
+import { evaluateCoverEntitlement } from '@/lib/coverEntitlement'
 
 export async function getProjects(userId: string): Promise<Project[]> {
   if (isDevBypass()) return mockGetProjects()
@@ -176,6 +177,19 @@ export async function updateProjectCoverSelection(
   if (isDevBypass()) {
     const { mockUpdateProjectCoverSelection } = await import('@/mocks/projects')
     return mockUpdateProjectCoverSelection(projectId, userId, coverId)
+  }
+
+  const { data: subscription } = await supabase
+    .from('subscriptions')
+    .select('plan, expires_at')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  const coverGate = evaluateCoverEntitlement(coverId, subscription?.plan, {
+    expiresAt: subscription?.expires_at,
+  })
+  if (!coverGate.ok) {
+    throw new Error('이 표지는 Pro에서 사용할 수 있어요.')
   }
 
   const { data, error } = await supabase

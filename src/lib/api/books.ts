@@ -1,7 +1,8 @@
 import { resolveFunctionPayload } from '@/lib/api/functionInvoke'
 import { isDevBypass } from '@/lib/devBypass'
 import { supabase } from '@/lib/supabase'
-import { getSubscriptionPlan } from './subscriptions'
+import { isActiveProPlan } from '@/lib/coverEntitlement'
+import { getSubscription } from './subscriptions'
 import type { Chapter, Database, Project } from '@/types/database'
 import { getChapterDisplayContent } from '@/utils/chapterContent'
 
@@ -139,8 +140,8 @@ export async function getPublishedBookSignedUrl(storagePath: string): Promise<st
 }
 
 export async function canPublishBook(userId: string): Promise<boolean> {
-  const plan = await getSubscriptionPlan(userId)
-  if (plan === 'pro') return true
+  const subscription = await getSubscription(userId)
+  if (isActiveProPlan(subscription.plan, subscription.expires_at)) return true
 
   const { count, error } = await supabase
     .from('publications')
@@ -270,6 +271,10 @@ export async function generateBookPdf(
 
   if (code === 'PUBLICATION_LIMIT' || code === 'PDF_PRO_ONLY') {
     throw new BookApiError('PUBLICATION_LIMIT', message ?? 'Free 플랜의 첫 책 발행을 이미 사용했어요.')
+  }
+
+  if (code === 'COVER_PRO_ONLY') {
+    throw new BookApiError('COVER_PRO_ONLY', message ?? '이 표지는 Pro에서 사용할 수 있어요.')
   }
 
   if (error || message || !body?.pdf_url || !body?.publication_id || !body?.version) {

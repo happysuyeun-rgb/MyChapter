@@ -23,3 +23,16 @@
 5. **외부 베타 GATE**: SMTP, 약관·탈퇴, 비용 한도·로깅·알림 확인 후 공개 여부 결정.
 
 **상태:** 책·기록 LIVE 통과 / AI/PDF 전체 LIVE 미검증 / 웹 공개 출시 NO-GO.
+
+---
+
+## 구현 진행 (브랜치 · 미배포)
+
+| 항목 | 코드 | Edge 운영 배포 |
+|------|------|----------------|
+| AUTH-01 준비도 서버 강제 | `chapterReadinessGate` + `generate-chapter` | **미배포** (승인 대기) |
+| SEC-01 결제 우회 fail-closed | `billingDevBypass` + `verify-subscription` | **미배포** |
+| PDF-01 registerFontkit | `generate-pdf` | **미배포** |
+| AUTH-02 Pro cover | `coverEntitlement` + PDF/표지 저장 | **미배포** |
+
+운영 Secret OFF / Gemini 키 등록은 여전히 비밀 관리 콘솔 담당 (이 PR 범위 밖).

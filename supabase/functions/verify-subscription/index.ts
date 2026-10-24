@@ -1,5 +1,10 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
+import {
+  canAcceptDevBillingToken,
+  DEV_BILLING_FORBIDDEN_CODE,
+  DEV_BILLING_FORBIDDEN_MESSAGE,
+} from '../_shared/billingDevBypass.ts'
 
 const PRODUCT_ID = 'mychapter_pro_monthly'
 
@@ -128,14 +133,22 @@ Deno.serve(async (req) => {
       })
     }
 
-    const devBypass = Deno.env.get('BILLING_DEV_BYPASS') === 'true'
     const isDevToken = purchase_token.startsWith('dev_')
 
     let expiresAt: string | null = null
 
     if (isDevToken) {
-      if (!devBypass) {
-        return new Response(JSON.stringify({ error: 'Dev billing not enabled' }), {
+      const acceptDev = canAcceptDevBillingToken({
+        billingDevBypass: Deno.env.get('BILLING_DEV_BYPASS') === 'true',
+        billingDevBypassAllow: Deno.env.get('BILLING_DEV_BYPASS_ALLOW') === 'true',
+        supabaseUrl,
+        mychapterEnv: Deno.env.get('MYCHAPTER_ENV'),
+      })
+      if (!acceptDev) {
+        return new Response(JSON.stringify({
+          code: DEV_BILLING_FORBIDDEN_CODE,
+          error: DEV_BILLING_FORBIDDEN_MESSAGE,
+        }), {
           status: 403,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
