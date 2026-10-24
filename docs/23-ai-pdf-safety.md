@@ -107,41 +107,74 @@
 | ID | 결함 | 등급 | 웹 MVP 차단? |
 |----|------|------|----------------|
 | S-01 | 운영 bypass 실값 **미확인** | P0 설정 | **담당자 확인 전 AI/결제 관련 공개 비권장** |
-| S-02 | AI 키 없음→원문 챕터 “성공” | P0 품질 / P1 키 있으면 완화 | AI E2E·출시 전 **수정 또는 키 검증 필수** |
+| S-02 | AI 키 없음→원문 챕터 “성공” | ~~P0~~ → **코드 수정됨** (`AI_UNAVAILABLE`, INSERT/UPDATE 금지) | Edge 재배포 후 스테이징/운영 검증 |
 | S-03 | Free 3챕터·챕터 AI 한도 서버 미강제 | P1 | 정책 유지 시 **출시 전 서버 강제 권장** (정책 철회 시 문서 정정) |
 | S-04 | Pro 표지 서버 미강제 | P1 | 무료 Pro 표지 우회 가능 — **출시 전 권장** |
 | S-05 | 챕터 동시성·비용 무제한 | P1 | 베타 소규모면 모니터링으로 완화 가능 |
 | S-06 | PDF 교차계정 LIVE 미실시 | P2 | 차단 아님 · 테스트 권장 |
 | S-07 | Secret 문서 오표기 | P2 | 문서 수정으로 해소 |
 
-**책·기록 LIVE와 독립:** 본 항목은 Work E2E를 막지 않음. **AI·PDF LIVE 시작 전** S-01 확인 + S-02 처리(또는 키 검증 증거)를 권고.
+**책·기록 LIVE와 독립:** Work E2E와 충돌 없음. **AI·PDF LIVE 전** S-01 확인 + S-02 Edge **재배포** 필요.
 
 ---
 
-## 8. 승인 후 수정 파일 예상 (기능 코드 — 아직 미적용)
+## 8. S-02 적용 파일 (완료 · Edge 재배포 필요)
 
 | 영역 | 파일 |
 |------|------|
-| Gemini 실패 구분 | `supabase/functions/_shared/gemini.ts` |
-| 챕터 생성 | `supabase/functions/generate-chapter/index.ts` |
-| 챕터 재생성 | `supabase/functions/regenerate-chapter/index.ts` |
-| (선택) 한도·락 | 위 + 소규모 migration 또는 기존 `ai_usage` 조회 |
-| (선택) Pro 표지 | `generate-pdf/index.ts`, `updateProjectCoverSelection` |
-| 클라 에러 UX | `src/lib/api/chapters.ts`, `BookPage.tsx`, `ChapterEditPage.tsx` |
-| **금지(현 시점)** | `records.ts`, 기록 페이지, requestId 정책 |
+| Gemini 결과 구분 | `_shared/gemini.ts` (`tryGenerateGeminiText`) |
+| 원고 가드 | `_shared/geminiResult.ts` |
+| 챕터 생성/재생성 | `generate-chapter`, `regenerate-chapter` |
+| 클라 | `chapters.ts`, `BookPage.tsx`, `ChapterEditPage.tsx` |
+| 단위 테스트 | `src/lib/chapterAiResult.test.ts` |
 
 ---
 
-## 9. 검증 시나리오 (승인·수정 후 / Work 안전 수동)
+## 9. P1 후속 구현 방안 (코드 미적용 · 설계 확정)
 
-1. Dashboard: bypass OFF, `GOOGLE_AI_API_KEY`/`SERVICE_ROLE_KEY` 존재 (값 미공유).
-2. 키를 임시 제거한 **스테이징**에서 generate-chapter → `AI_UNAVAILABLE`, DB 챕터 0건 증가.
-3. 키 복구 후 미배치 ≥3 → 챕터 1건, `ai_usage.feature=chapter`.
-4. Free: 정책상 4번째 챕터 거부(구현 후).
-5. Free: `cover_03` 직접 API 저장 시도 → 서버 거부(구현 후).
-6. Free 1회 PDF 성공, 2회 `PUBLICATION_LIMIT`.
-7. 타 계정 publication id / storage path 접근 거부.
-8. 멀티탭 동시 generate-chapter → 1건만 성공(구현 후).
+### 9.1 Free 챕터 3개 제한 — 서버 강제
+
+1. **제품 확정:** `04-business-rules` §4.2 유지 여부. 철회 시 문서만 정정하고 본 항 취소.
+2. **강제 위치:** `generate-chapter`에서 INSERT 직전:
+   - `subscriptions.plan` (user) 조회
+   - Free이면 `chapters` count where `project_id` ≥ 3 → `403` `{ code: 'CHAPTER_LIMIT' }`
+3. **스키마:** 신규 migration 불필요(기존 테이블). (선택) DB CHECK/트리거는 cross-project Free 정책과 충돌 여부 검토 후.
+4. **클라:** `CHAPTER_LIMIT` → Paywall (`BookPage`).
+5. **데이터:** 이미 4챕터+ Free 책이 있으면 그랜트파더 또는 수동 정리 정책 필요 — 배포 전 카운트 쿼리.
+
+### 9.2 AI 사용량·비용 상한
+
+1. **생성/재생성 공통:** INSERT 전 `ai_usage`에서 `feature IN ('chapter','chapter_regenerate')` AND 당월 COUNT.
+2. **제안 한도 (제품 확정 필요):** Free 월 5회 합산 / Pro 월 50회(또는 일 10). `AI_LIMIT` 402 — 질문 API와 동일 코드 재사용.
+3. **클러스터+본문 2콜:** 사용량은 **요청 1회**로 카운트(과금 체감과 맞춤). 실패(`AI_UNAVAILABLE`) 시 `ai_usage` INSERT 안 함(현재 S-02와 일치).
+4. **관측:** Dashboard/로그에 `reason=missing_key|upstream_error` 집계.
+
+### 9.3 프로젝트별 동시 생성 방지
+
+1. **권장:** `generate-chapter` 시작 시 `pg_advisory_xact_lock(hashtext(project_id::text))`를 RPC 또는 raw SQL로 — **migration 1개** (SECURITY DEFINER 래퍼, `auth.uid()` 소유 검증).
+2. **대안(스키마 최소):** `projects.chapter_generating_at timestamptz` — 획득 실패 시 `409 CHAPTER_IN_PROGRESS`, 90초 타임아웃 회수.
+3. **클라:** 진행 중 버튼 유지 + 409 메시지.
+4. **기록 저장과 무관** — advisory lock은 챕터 Function만.
+
+### 9.4 Pro 전용 표지 서버 검사
+
+1. **상수:** `cover_03`, `cover_04` = Pro (클라 `BookCoverPage`와 동일 목록을 `_shared/covers.ts`로 공유 또는 Edge 하드코드).
+2. **`updateProjectCoverSelection`:** plan≠pro 이고 proOnly 표지 → throw.
+3. **`generate-pdf` / `reserve_book_publication`:** 예약 시 cover가 Pro-only이면 plan 검사 — Free면 `COVER_PRO_ONLY` 403. RPC 수정 시 migration; Edge만 검사도 1차 가능.
+4. **기존 Free+Pro표지 데이터:** 발행 차단 vs 강제 다운그레이드 — 제품 결정 후.
+
+---
+
+## 10. 검증 시나리오
+
+**자동:** `chapterAiResult.test.ts` (키 없음·upstream·empty·재생성 비영속·정상 JSON).
+
+**수동 (스테이징 권장, 운영 키 제거 금지):**
+
+1. bypass OFF, Secret 존재 확인(값 미공유).
+2. 스테이징에서 키 제거 → `AI_UNAVAILABLE`, 챕터 행 증가 없음.
+3. 키 복구 → 정상 생성.
+4. (P1 구현 후) Free 4번째·표지·동시 클릭.
 
 ---
 
@@ -150,3 +183,4 @@
 | 날짜 | 내용 |
 |------|------|
 | 2026-10-24 | 최초 정적 점검·설계안 · 기능 코드 미변경 |
+| 2026-10-24 | S-02 코드 적용 · P1 §9 설계 확정 |

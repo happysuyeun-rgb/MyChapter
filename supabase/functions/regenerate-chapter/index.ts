@@ -1,6 +1,10 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
-import { generateGeminiText, parseJsonResponse } from '../_shared/gemini.ts'
+import { parseJsonResponse, tryGenerateGeminiText } from '../_shared/gemini.ts'
+import {
+  aiUnavailableResponseBody,
+  buildChapterFromAiText,
+} from '../_shared/geminiResult.ts'
 
 const SYSTEM_PROMPT = `당신은 MY CHAPTER의 전문 에세이 편집자입니다.
 사용자의 원본 기록을 바탕으로 기존 챕터를 새 원고로 다시 편집하세요.
@@ -91,31 +95,41 @@ Deno.serve(async (req) => {
       .map((r, i) => `[${i + 1}] (${r.created_at}) [${(r.emotion_tags ?? []).join(', ')}] ${r.content}`)
       .join('\n')
 
-    let title = chapter.title
-    let content = chapter.ai_content ?? ''
-
-    if (recordsText) {
-      const aiText = await generateGeminiText({
-        systemInstruction: SYSTEM_PROMPT,
-        prompt: `기존 챕터 제목: ${chapter.title}\n\n아래 원본 기록만을 근거로 챕터를 다시 작성하세요. 기존 원고의 문장을 답습하기보다 기록 자체에서 더 자연스러운 흐름을 찾으세요.\n\n원본 기록:\n${recordsText}`,
-        maxOutputTokens: 4096,
-        json: true,
+    if (!recordsText.trim()) {
+      return new Response(JSON.stringify(aiUnavailableResponseBody('empty_response')), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
+    }
 
-      if (aiText) {
-        const parsed = parseJsonResponse<{ chapter_title?: string; chapter_content?: string }>(aiText)
-        if (parsed) {
-          title = parsed.chapter_title ?? title
-          content = parsed.chapter_content ?? content
-        } else {
-          content = aiText || content
-        }
-      }
+    const aiResult = await tryGenerateGeminiText({
+      systemInstruction: SYSTEM_PROMPT,
+      prompt: `기존 챕터 제목: ${chapter.title}\n\n아래 원본 기록만을 근거로 챕터를 다시 작성하세요. 기존 원고의 문장을 답습하기보다 기록 자체에서 더 자연스러운 흐름을 찾으세요.\n\n원본 기록:\n${recordsText}`,
+      maxOutputTokens: 4096,
+      json: true,
+    })
+
+    const manuscript = buildChapterFromAiText(
+      aiResult,
+      (text) => parseJsonResponse<{ chapter_title?: string; chapter_content?: string }>(text),
+      chapter.title,
+    )
+
+    if (manuscript.status === 'unavailable') {
+      // Preserve existing chapter row — no UPDATE.
+      return new Response(JSON.stringify(aiUnavailableResponseBody(manuscript.reason)), {
+        status: manuscript.reason === 'missing_key' ? 503 : 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     const { data: updated, error } = await admin
       .from('chapters')
-      .update({ ai_content: content, user_content: null, title })
+      .update({
+        ai_content: manuscript.content,
+        user_content: null,
+        title: manuscript.title,
+      })
       .eq('id', chapter_id)
       .select()
       .single()

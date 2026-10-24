@@ -145,6 +145,13 @@ export async function generateChapter(projectId: string): Promise<Chapter | null
     throw new ChapterApiError('NOT_ENOUGH_MATERIAL', message ?? '챕터를 만들기 위한 기록이 조금 더 필요해요.')
   }
 
+  if (code === 'AI_UNAVAILABLE') {
+    throw new ChapterApiError(
+      'AI_UNAVAILABLE',
+      message ?? 'AI 원고를 만들지 못했어요. 잠시 후 다시 시도해주세요.',
+    )
+  }
+
   if (error || message) {
     throw new ChapterApiError(code ?? 'CHAPTER_GENERATE_FAILED', message ?? '챕터 생성에 실패했어요.')
   }
@@ -203,10 +210,17 @@ export async function regenerateChapter(chapterId: string): Promise<Chapter> {
     error?: string
   }>(response)
 
+  const code = errorBody?.code ?? data?.code
   const message = errorBody?.error ?? data?.error
+  if (code === 'AI_UNAVAILABLE') {
+    throw new ChapterApiError(
+      'AI_UNAVAILABLE',
+      message ?? 'AI 원고를 만들지 못했어요. 잠시 후 다시 시도해주세요.',
+    )
+  }
   if (error || message) {
     throw new ChapterApiError(
-      errorBody?.code ?? data?.code ?? 'CHAPTER_REGENERATE_FAILED',
+      code ?? 'CHAPTER_REGENERATE_FAILED',
       message ?? '챕터 재생성에 실패했어요.',
     )
   }

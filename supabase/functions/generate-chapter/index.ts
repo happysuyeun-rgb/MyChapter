@@ -1,6 +1,10 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
-import { generateGeminiText, parseJsonResponse } from '../_shared/gemini.ts'
+import { generateGeminiText, parseJsonResponse, tryGenerateGeminiText } from '../_shared/gemini.ts'
+import {
+  aiUnavailableResponseBody,
+  buildChapterFromAiText,
+} from '../_shared/geminiResult.ts'
 
 const MIN_RECORDS_FOR_CHAPTER = 3
 const MAX_CLUSTER_RECORDS = 12
@@ -241,26 +245,29 @@ Deno.serve(async (req) => {
       })
       .join('\n\n---\n\n')
 
-    let chapterTitle = `챕터 ${(chapterCount ?? 0) + 1}`
-    let chapterContent = selectedRecords.map((record) => record.content).join('\n\n')
-
-    const aiText = await generateGeminiText({
+    const fallbackTitle = `챕터 ${(chapterCount ?? 0) + 1}`
+    const aiResult = await tryGenerateGeminiText({
       systemInstruction: SYSTEM_PROMPT,
       prompt: `프로젝트 제목: ${project.title}\n프로젝트 유형: ${project.type}\n챕터 번호: ${(chapterCount ?? 0) + 1}\n선택된 기록 수: ${selectedRecords.length}\n\n아래 기록만을 사실의 근거로 사용해 한 챕터의 원고를 작성하세요. 기록에 없는 내용을 추측해 채우지 마세요.\n\n원본 기록:\n${recordsText}`,
       maxOutputTokens: 4096,
       json: true,
     })
 
-    if (aiText) {
-      const parsed = parseJsonResponse<{ chapter_title?: string; chapter_content?: string }>(aiText)
-      if (parsed) {
-        chapterTitle = parsed.chapter_title ?? chapterTitle
-        chapterContent = parsed.chapter_content ?? chapterContent
-      } else {
-        chapterContent = aiText || chapterContent
-      }
+    const manuscript = buildChapterFromAiText(
+      aiResult,
+      (text) => parseJsonResponse<{ chapter_title?: string; chapter_content?: string }>(text),
+      fallbackTitle,
+    )
+
+    if (manuscript.status === 'unavailable') {
+      return new Response(JSON.stringify(aiUnavailableResponseBody(manuscript.reason)), {
+        status: manuscript.reason === 'missing_key' ? 503 : 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
+    const chapterTitle = manuscript.title
+    const chapterContent = manuscript.content
     const chapterNumber = (chapterCount ?? 0) + 1
 
     const { data: chapter, error: insertError } = await admin

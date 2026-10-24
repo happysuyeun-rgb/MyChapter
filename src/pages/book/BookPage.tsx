@@ -158,11 +158,15 @@ export function BookPage() {
         await load()
       }
     } catch (error) {
-      setGenerationError(
-        error instanceof ChapterApiError
-          ? error.message
-          : '챕터를 만들지 못했어요. 잠시 후 다시 시도해주세요.',
-      )
+      if (error instanceof ChapterApiError) {
+        setGenerationError(
+          error.code === 'AI_UNAVAILABLE'
+            ? `${error.message} 아래 버튼으로 다시 시도할 수 있어요.`
+            : error.message,
+        )
+      } else {
+        setGenerationError('챕터를 만들지 못했어요. 잠시 후 다시 시도해주세요.')
+      }
     } finally {
       setGenerating(false)
     }

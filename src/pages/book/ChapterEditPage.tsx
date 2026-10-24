@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button, ErrorState, Input, LoadingBlock, Modal, Textarea } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
-import { getChapter, regenerateChapter, updateChapterContent } from '@/lib/api/chapters'
+import { ChapterApiError, getChapter, regenerateChapter, updateChapterContent } from '@/lib/api/chapters'
 import { useAuthStore } from '@/stores/authStore'
 import type { Chapter } from '@/types/database'
 import { getChapterDisplayContent } from '@/utils/chapterContent'
@@ -75,7 +75,15 @@ export function ChapterEditPage() {
       setTitle(updated.title)
       setContent(getChapterDisplayContent(updated))
     } catch (err) {
-      showToast(err instanceof Error && err.message ? err.message : '챕터 재생성에 실패했어요. 다시 시도해주세요.')
+      const message =
+        err instanceof ChapterApiError
+          ? err.code === 'AI_UNAVAILABLE'
+            ? `${err.message} 다시 시도해주세요.`
+            : err.message
+          : err instanceof Error && err.message
+            ? err.message
+            : '챕터 재생성에 실패했어요. 다시 시도해주세요.'
+      showToast(message)
     } finally {
       setRegenerating(false)
     }
