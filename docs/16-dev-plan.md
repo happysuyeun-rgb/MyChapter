@@ -37,10 +37,10 @@
 | # | 항목 | 막히는 증상 | 담당 |
 |---|------|-------------|------|
 | A1 | ~~Edge Function 8개 미배포~~ | ✅ 2026-10-23 프로브로 배포 확인 (`17-test-report`) | — |
-| A2 | Secrets (`GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`, `BILLING_DEV_BYPASS`) | Function 500 / AI null | 본인 |
-| A3 | `VITE_DEV_BYPASS=true` 유지 | 항상 mock — 실DB 미검증 | 본인 |
+| A2 | Secrets (`GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`) + 운영 bypass OFF | AI null/원문 폴백·결제 우회 | 본인 · `23-ai-pdf-safety` |
+| A3 | ~~`VITE_DEV_BYPASS` 운영~~ | 로그인 LIVE PASS (2026-10-24) | — |
 | A4 | OAuth Redirect URL | 카카오/구글 로그인 불가 | 본인 |
-| A5 | Vercel 배포 + env | 웹·약관 URL 미공개 | 본인 |
+| A5 | ~~Vercel 배포~~ | Production LIVE (로그인) | — |
 | A6 | Firebase + Cron | 푸시만 안 됨 (앱 내 알림은 DB로 가능) | 본인 |
 | A7 | Play Console + AAB | 스토어 미등록 | 본인 |
 
@@ -59,7 +59,7 @@
 
 | 문서 표현 | 실제 코드 | 조치 |
 |-----------|-----------|------|
-| Secrets `ANTHROPIC_API_KEY` (일부 문서) | `GOOGLE_AI_API_KEY` (Gemini) | `06-user-tasks`는 수정됨. `00-design-decisions`·`15-launch-roadmap` P0 문구 정리 |
+| Secrets `ANTHROPIC_API_KEY` / `SUPABASE_SERVICE_ROLE_KEY` | `GOOGLE_AI_API_KEY` / `SERVICE_ROLE_KEY` | 2026-10-24 문서 정정 · `23-ai-pdf-safety` |
 | PDF `🔄 006 SQL 필요` | 006 idempotent 적용 완료 | progress에 ✅ 반영 |
 | S-32 상세·바텀시트 ✅ | 이동 기능만 ❌ | 「상세 UI ✅ / 챕터 이동 ❌」로 분리 |
 
@@ -69,11 +69,11 @@
 
 ### Wave 0 — 인프라 (지금, 코드 거의 없음)
 
-- [ ] Secrets 3종 등록 (`GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`, `BILLING_DEV_BYPASS=true`)
-- [ ] Edge Function 8개 `npx supabase functions deploy …`
-- [ ] Auth Redirect URL (`localhost` / `mychapter.app` / 딥링크)
-- [ ] Email Magic Link provider 활성화
-- [ ] `VITE_DEV_BYPASS=false` 후 로컬 E2E
+- [ ] Secrets 2종 유효성 (`GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`)
+- [ ] 운영: `BILLING_DEV_BYPASS`≠true · `VITE_BILLING_DEV_MODE=false`
+- [x] Edge Function 8개 배포 (프로브 확인)
+- [x] Email Magic Link 운영 LIVE PASS
+- [ ] 책·기록·AI·PDF LIVE (`22` / `23`)
 
 **E2E 통과 기준**
 

@@ -137,10 +137,10 @@ Email provider 활성화 시 `signInWithOtp` 사용 (코드 반영됨).
 **Project Settings** → **Edge Functions** → **Secrets**
 
 ```
-ANTHROPIC_API_KEY=sk-ant-...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...  (service_role, anon 아님)
-BILLING_DEV_BYPASS=true
+GOOGLE_AI_API_KEY=AIza...          # Gemini
+SERVICE_ROLE_KEY=eyJ...            # service_role (anon 아님). 코드가 SERVICE_ROLE_KEY를 읽음
 CRON_SECRET=임의의_긴_문자열
+# BILLING_DEV_BYPASS=true  ← 운영에 넣지 마세요 (로컬 격리 테스트 전용)
 ```
 
 푸시 사용 시 추가:

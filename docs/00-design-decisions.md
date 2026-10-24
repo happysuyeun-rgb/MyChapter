@@ -89,8 +89,8 @@ VITE_TERMS_URL=https://mychapter.app/terms
 
 # Edge Functions (Supabase Secrets) — 프론트에 AI Key 금지
 GOOGLE_AI_API_KEY=                 # Gemini (실제 구현)
-SERVICE_ROLE_KEY=
-BILLING_DEV_BYPASS=true            # 테스트용
+SERVICE_ROLE_KEY=                  # Edge admin (코드 명칭)
+# BILLING_DEV_BYPASS=true          # 로컬·격리 테스트만. 운영 프로젝트에 true 금지
 GOOGLE_PLAY_SERVICE_ACCOUNT_JSON=  # Phase 5
 ```
 
@@ -102,6 +102,7 @@ GOOGLE_PLAY_SERVICE_ACCOUNT_JSON=  # Phase 5
 |------|------|
 | 2026-06-12 | 최초 작성 |
 | 2026-10-23 | Edge Secrets를 Gemini(`GOOGLE_AI_API_KEY`) 기준으로 정정 |
+| 2026-10-24 | `BILLING_DEV_BYPASS` 운영 금지 주석 · Secret 명칭 SoT `23-ai-pdf-safety` |
 
 ---
 

@@ -90,6 +90,7 @@
 | **[20-error-cases.md](./20-error-cases.md)** | **기능별 에러 케이스 (코드 점검)** | QA·개발 | 2026-10-23 |
 | **[21-screen-completeness.md](./21-screen-completeness.md)** | **화면 완성도·미개발 점검** | 제품·개발 | 2026-10-23 |
 | **[22-e2e-status.md](./22-e2e-status.md)** | **LIVE E2E PASS/PENDING·출시 차단** | **담당자 + Work + Cursor** | 2026-10-24 |
+| **[23-ai-pdf-safety.md](./23-ai-pdf-safety.md)** | **AI 챕터·PDF 서버 안전성·설계안** | 담당자 + Cursor (기능 수정 승인 전) | 2026-10-24 |
 | **[06-play-store-listing-draft.md](./06-play-store-listing-draft.md)** | **Play 스토어 등록정보 초안** | 사용자 + Cursor | 2026-10-23 |
 | **[07-manual-setup-checklist.md](./07-manual-setup-checklist.md)** | **수동 설정 체크리스트** (Secrets, Vercel, Play 등) | 사용자 | 2026-10-23 |
 
@@ -204,3 +205,4 @@
 | 2026-10-23 | `20-error-cases.md` — 기능별 에러 케이스 코드 점검 |
 | 2026-10-23 | `21-screen-completeness.md` — MVP 화면 누락 없음·미개발 P0~P2 |
 | 2026-10-24 | `22-e2e-status.md` — 운영 로그인 7/7 PASS · 책·기록 PENDING |
+| 2026-10-24 | `23-ai-pdf-safety.md` — AI·PDF 서버 위험·설계 · Secret 명칭 문서 정정 |

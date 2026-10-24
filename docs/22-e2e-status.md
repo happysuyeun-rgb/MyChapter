@@ -104,8 +104,8 @@ Work를 통한 운영 검증. Supabase 요청 29건에서 4xx·5xx 없음.
 ### 차단 (웹 MVP / 실사용 공개 전)
 
 1. **책 생성 → 3모드 기록 저장 → 새로고침 유지 → PAGE 정합** (§4) — Work LIVE 대기
-2. **AI 챕터·PDF 발행 LIVE** (필수 Secret 이름: `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`)
-3. **운영에서 결제 우회 OFF** — `BILLING_DEV_BYPASS`≠true, `VITE_BILLING_DEV_MODE=false` (값 출력·변경은 승인 필요)
+2. **AI 챕터·PDF 발행 LIVE** (필수 Secret 이름: `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`) — 서버 리스크·설계: `23-ai-pdf-safety.md`
+3. **운영에서 결제 우회 OFF** — `BILLING_DEV_BYPASS`≠true, `VITE_BILLING_DEV_MODE=false` (**실값 미확인**, 읽기 확인만·변경 승인 필요)
 
 ### 채널·플랫폼 선택 (이메일 웹만이면 당장 비차단)
 
@@ -126,3 +126,4 @@ Work를 통한 운영 검증. Supabase 요청 29건에서 4xx·5xx 없음.
 |------|------|
 | 2026-10-24 | 운영 로그인 7/7 PASS 반영, Work 다음 검증·차단 이슈 정리 |
 | 2026-10-24 | CI run 구분·차단/선택 분리·billing bypass 운영 금지 |
+| 2026-10-24 | AI·PDF 안전성 → `23-ai-pdf-safety.md` 링크 |

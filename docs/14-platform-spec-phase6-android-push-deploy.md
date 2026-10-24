@@ -320,7 +320,7 @@ RLS: auth.uid() = user_id
 | `CRON_SECRET` | Cron 인증 |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | FCM OAuth |
 | `FIREBASE_PROJECT_ID` | FCM API URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | admin 클라이언트 |
+| `SERVICE_ROLE_KEY` | admin 클라이언트 (Edge 코드 SoT; 구문서 `SUPABASE_SERVICE_ROLE_KEY` 아님) |
 
 ### 처리 로직
 

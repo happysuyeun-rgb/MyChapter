@@ -248,11 +248,12 @@ Google Play Developer API + 서비스 계정 연동 → Supabase `verify-subscri
 
 ---
 
-## 7. Anthropic (Claude API) — AI 기능 (필수)
+## 7. Google AI (Gemini) — AI 기능 (필수)
 
-1. [console.anthropic.com](https://console.anthropic.com) 가입
-2. API Key 발급
-3. Supabase Secret `ANTHROPIC_API_KEY`에 등록
+1. [Google AI Studio](https://aistudio.google.com/apikey)에서 API 키 발급
+2. Supabase Secret 이름 **`GOOGLE_AI_API_KEY`** 로 등록 (Claude/`ANTHROPIC_API_KEY` 아님)
+3. Admin용 **`SERVICE_ROLE_KEY`** 도 함께 등록 (§2.5)
+4. 상세·운영 bypass 금지 → `18-user-next-steps.md` · `23-ai-pdf-safety.md`
 
 ---
 
@@ -320,7 +321,7 @@ Google Play Developer API + 서비스 계정 연동 → Supabase `verify-subscri
 | 증상 | 확인 |
 |------|------|
 | 로그인 안 됨 | Supabase Redirect URL, OAuth 키 |
-| AI 질문 안 나옴 | Edge Function 배포, `ANTHROPIC_API_KEY` |
+| AI 질문 안 나옴 | Edge Function 배포, `GOOGLE_AI_API_KEY` / `SERVICE_ROLE_KEY` |
 | 빈 화면만 나옴 | `.env.local` URL/Key 확인 |
 | 푸시 안 옴 | `google-services.json`, Firebase Secret, Cron |
 | 결제 안 됨 | Play 상품 ID `mychapter_pro_monthly`, Billing Secret |
@@ -340,3 +341,4 @@ Google Play Developer API + 서비스 계정 연동 → Supabase `verify-subscri
 | 2026-10-23 | `18-user-next-steps.md` 링크 — 본인 다음 할 일 상세 가이드 |
 | 2026-10-24 | 운영 이메일 로그인 PASS · 책·기록/OAuth/SMTP/AI·PDF는 미완료로 유지 |
 | 2026-10-24 | 운영 `BILLING_DEV_BYPASS` 금지 명시 (테스트 전용) |
+| 2026-10-24 | Anthropic 절 → Gemini/`GOOGLE_AI_API_KEY` 정정 |

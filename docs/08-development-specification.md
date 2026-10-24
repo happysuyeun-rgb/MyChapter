@@ -343,13 +343,15 @@ npm run cap:run:android
 
 | Secret | 용도 |
 |--------|------|
-| `ANTHROPIC_API_KEY` | Claude |
-| `SUPABASE_SERVICE_ROLE_KEY` | Admin DB |
-| `BILLING_DEV_BYPASS` | 테스트 결제 |
+| `GOOGLE_AI_API_KEY` | Gemini (`_shared/gemini.ts`) |
+| `SERVICE_ROLE_KEY` | Edge admin DB (코드가 읽는 이름 — `SUPABASE_SERVICE_ROLE_KEY` 아님) |
+| `BILLING_DEV_BYPASS` | 로컬·격리 테스트만. **운영 `true` 금지** |
 | `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Play 검증 |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | FCM |
 | `FIREBASE_PROJECT_ID` | FCM |
 | `CRON_SECRET` | Cron 인증 |
+
+> 구문서의 `ANTHROPIC_API_KEY` / `SUPABASE_SERVICE_ROLE_KEY`는 **폐기**. 런타임 SoT: `docs/23-ai-pdf-safety.md` §6.
 
 ---
 
