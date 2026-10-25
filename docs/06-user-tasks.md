@@ -1,25 +1,30 @@
 # MyChapter — 직접 해야 하는 일 (비개발자 가이드)
 
-> **최종 갱신:** 2026-10-23  
+> **최종 갱신:** 2026-10-25  
 > **대상:** 서비스 운영·출시를 직접 진행하는 담당자  
 > **전제:** 코드 구현은 Cursor AI가 완료했으며, 아래 항목은 **외부 서비스 계정·설정·업로드**가 필요합니다.  
-> **지금 바로 따라하기:** [`18-user-next-steps.md`](./18-user-next-steps.md) — Secrets · bypass · E2E 상세  
+> **지금 바로 따라하기:** [`18-user-next-steps.md`](./18-user-next-steps.md) — Secrets · 결제 우회 OFF · AI/PDF  
+> **E2E 현황:** [`22-e2e-status.md`](./22-e2e-status.md) · **배포 실행:** [`26-ai-pdf-release-execution-runbook.md`](./26-ai-pdf-release-execution-runbook.md)  
 > **출시 순서:** [`15-launch-roadmap.md`](./15-launch-roadmap.md) — 무엇부터 할지 한눈에 보기
 
 ---
 
 ## 1. 우선순위 요약
 
-| 순서 | 할 일 | 예상 난이도 | 없으면 |
-|------|--------|-------------|--------|
-| 1 | Supabase 프로젝트 생성 + 마이그레이션 | ★★☆ | ✅ 완료 (2026-06-23) |
-| 2 | `.env.local` 환경 변수 입력 | ★☆☆ | 로그인·DB 연결 불가 |
-| 3 | Supabase Auth (Kakao/Google/이메일) 설정 | ★★☆ | 로그인 불가 |
-| 4 | Edge Function 배포 + API Key | ★★★ | AI 질문·챕터 생성 불가 |
-| 5 | Vercel 웹 배포 | ★★☆ | 웹·약관 URL 없음 |
-| 6 | Firebase (푸시 알림) | ★★★ | 알림 푸시 불가 (앱 내 알림은 가능) |
-| 7 | Android Studio 빌드 + Play Console | ★★★★ | 스토어 출시 불가 |
-| 8 | Play Billing 상품 등록 | ★★★ | 실제 결제 불가 |
+| 순서 | 할 일 | 상태 | 없으면 |
+|------|--------|------|--------|
+| 1 | Supabase 프로젝트 + 마이그레이션 001~006 | ✅ 완료 (2026-06-23) | — |
+| 2 | `.env.local` / Vercel `VITE_*` | ✅ 운영 로그인·기록 LIVE에 사용됨 | 로그인·DB 연결 불가 |
+| 3 | Auth 이메일 Magic Link | ✅ 운영 LIVE PASS (2026-10-24) | — |
+| 3b | Kakao / Google OAuth | ☐ 미완료 | 소셜 로그인만 불가 (이메일은 가능) |
+| 4 | Edge Function 8개 배포 | ✅ 원격 응답 확인 | AI·PDF 불가 |
+| 4b | `GOOGLE_AI_API_KEY` · `SERVICE_ROLE_KEY` 유효 등록 | ☐ 미확인/미등록 보고 | AI 챕터·질문 실패 |
+| 4c | 운영 `BILLING_DEV_BYPASS` OFF | ☐ **지금 최우선** | 무료 Pro 승격 위험 |
+| 4d | DB 마이그레이션 **025** 운영 적용 | ☐ 코드만 main (미적용) | REST 표지·준비도 DB 가드 미동작 |
+| 5 | Vercel 웹 배포 | ✅ `my-chapter.vercel.app` | — |
+| 6 | Firebase (푸시) | ☐ 선택·나중 | 앱 내 알림만 가능 |
+| 7 | Android + Play Console | ☐ 출시 시 | 스토어 출시 불가 |
+| 8 | Play Billing 실결제 | ☐ 출시 시 | 실제 결제 불가 |
 
 상세 Supabase 절차는 **`docs/09-supabase-setup.md`** 를 따르세요.
 
@@ -173,13 +178,17 @@ Dashboard → **Integrations** → **Cron** (또는 pg_cron):
 프로젝트 루트에 `.env.local` 파일 생성 (`.env.example` 참고):
 
 ```env
-VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbG...
+# 값은 .env.example 형식을 따르고, 실제 키는 .env.local에만 넣으세요.
+VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-public-anon-key
 VITE_PRIVACY_POLICY_URL=https://mychapter.app/legal/privacy.html
 VITE_TERMS_URL=https://mychapter.app/legal/terms.html
-VITE_BILLING_DEV_MODE=true
-VITE_APP_URL=https://mychapter.app
+VITE_BILLING_DEV_MODE=false
+VITE_APP_URL=http://localhost:5173
+VITE_DEV_BYPASS=false
 ```
+
+> 운영·Vercel Production에서는 `VITE_BILLING_DEV_MODE=false` 유지. 로컬 결제 우회 실험은 **격리 프로젝트**에서만.
 
 로컬 테스트:
 
@@ -278,21 +287,23 @@ Google Play Developer API + 서비스 계정 연동 → Supabase `verify-subscri
 ### 계정·인프라
 
 - [x] Supabase 마이그레이션 001~006 적용 완료 (2026-06-23, `scripts/*_idempotent.sql`)
-- [x] Vercel Production 공개키·배포 (`my-chapter.vercel.app` @ `7ab565a6`, 2026-10-24 로그인 E2E)
+- [x] Vercel Production 공개키·배포 (`my-chapter.vercel.app`, 2026-10-24 로그인·기록 E2E)
 - [x] Edge Function 8개 배포 (원격 프로브 확인)
-- [ ] `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY` Secrets **값 유효성** 확인 (AI·PDF용)
-- [ ] 운영: `BILLING_DEV_BYPASS`≠true · Vercel `VITE_BILLING_DEV_MODE=false` (결제 우회 금지)
+- [x] GitHub main에 AI/PDF 가드·025 마이그레이션 **코드** 반영 (PR #2 squash `f1c47fc`+)
+- [ ] `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY` Secrets **등록·값 유효성** 확인 (AI·PDF용) — Work 보고: 키 미등록
+- [ ] 운영: `BILLING_DEV_BYPASS`≠true · Vercel `VITE_BILLING_DEV_MODE=false` — Work 보고: bypass **활성** → **즉시 OFF**
+- [ ] 운영 DB **025** 적용 (백업·스테이징 검증 후) — `26-ai-pdf-release-execution-runbook.md`
 - [ ] 일반 사용자 대상 SMTP
 - [ ] Kakao / Google OAuth Provider
 
 ### 기능 테스트 (직접 또는 테스터)
 
-- [x] **이메일 Magic Link 로그인** (운영 LIVE 7/7 PASS, 2026-10-24) — `22-e2e-status.md`
-- [ ] 카카오 / Google 로그인 (미완료)
-- [ ] 책 생성 → 자유/질문/사진 기록 → 새로고침·PAGE 정합 (**Work 다음**)
-- [ ] 기록 충분 후 챕터 생성 (AI E2E 미실시)
-- [ ] PDF 발행 E2E 미실시
-- [ ] Pro 업그레이드 (개발 모드: `VITE_BILLING_DEV_MODE=true`)
+- [x] **이메일 Magic Link 로그인** (운영 LIVE 7/7 PASS, 2026-10-24) — `22-e2e-status.md` §2
+- [x] **책 생성 → 자유/질문/사진 기록 → 새로고침·PAGE 정합** (운영 LIVE 17항목 PASS, 2026-10-24) — `22-e2e-status.md` §4
+- [ ] 카카오 / Google 로그인 (미완료 설정)
+- [ ] 기록 충분(20/30) 후 **AI 챕터** 생성 LIVE (미실시 · 준비도·Secret·스테이징 필요)
+- [ ] **PDF 발행** LIVE (미실시)
+- [ ] Pro 업그레이드 (격리 환경·실결제 연동 전엔 운영 bypass 사용 금지)
 - [ ] 계정 삭제 후 재가입
 
 ### Play 심사 필수
@@ -301,6 +312,13 @@ Google Play Developer API + 서비스 계정 연동 → Supabase `verify-subscri
 - [ ] 개인정보처리방침 URL 공개
 - [ ] 이용약관 URL 공개
 - [ ] 인앱결제 (Pro) — 출시 시 실결제 연동
+
+### 지금 본인이 할 일 (우선순위)
+
+1. **운영 `BILLING_DEV_BYPASS` OFF** (값 채팅·Git에 올리지 말 것) — `26-…runbook.md` 순서 A  
+2. **`GOOGLE_AI_API_KEY` + `SERVICE_ROLE_KEY` 등록** 후 AI 질문 1회 스모크  
+3. 스테이징에서 **025 + AI→PDF E2E** (운영 DB 바로 025 적용 금지)  
+4. (선택) OAuth · SMTP · 약관 URL 공개 확인
 
 ---
 
@@ -342,3 +360,4 @@ Google Play Developer API + 서비스 계정 연동 → Supabase `verify-subscri
 | 2026-10-24 | 운영 이메일 로그인 PASS · 책·기록/OAuth/SMTP/AI·PDF는 미완료로 유지 |
 | 2026-10-24 | 운영 `BILLING_DEV_BYPASS` 금지 명시 (테스트 전용) |
 | 2026-10-24 | Anthropic 절 → Gemini/`GOOGLE_AI_API_KEY` 정정 |
+| 2026-10-25 | 책·기록 LIVE 17 PASS 반영 · 다음 본인 할 일을 결제 우회 OFF·Gemini Secret·025/AI·PDF로 갱신 |

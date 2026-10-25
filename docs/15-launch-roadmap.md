@@ -1,17 +1,17 @@
 # MyChapter — 출시 로드맵 & 우선순위 가이드
 
-> **최종 갱신:** 2026-10-24  
+> **최종 갱신:** 2026-10-25  
 > **대상:** 서비스 담당자 + Cursor AI  
-> **관련:** `06-user-tasks.md`, `07-dev-progress.md`, `11-agent-workflow.md`, **`16-dev-plan.md`**, **`17-test-report.md`**, **`22-e2e-status.md`**
+> **관련:** `06-user-tasks.md`, `18-user-next-steps.md`, **`22-e2e-status.md`**, **`26-ai-pdf-release-execution-runbook.md`**
 
 ---
 
 ## 요약
 
-MyChapter는 **코드 구현은 대부분 완료**되었고, **운영 이메일 로그인은 2026-10-24에 LIVE PASS**입니다.  
-현재 병목은 **실계정 책·기록 저장 E2E**와 AI/PDF·OAuth·SMTP 잔여입니다.
+MyChapter는 **코드 구현은 대부분 완료**되었고, **운영 이메일 로그인(7/7) + 책·기록(17항목)은 2026-10-24 LIVE PASS**입니다.  
+현재 병목은 **운영 결제 우회 OFF · Gemini Secret · AI/PDF(스테이징) · DB 025 적용**과 OAuth·SMTP 잔여입니다.
 
-UI 폴리싱보다 **책 생성 → 3모드 기록 → PAGE 정합**을 먼저 닫는 것이 효율적입니다. 현황: `22-e2e-status.md`.
+현황: `22-e2e-status.md` · 본인 다음 할 일: `18-user-next-steps.md` STEP 4b · `26-…runbook.md`.
 
 | 단계 | 기간 | 목표 |
 |------|------|------|
@@ -22,24 +22,26 @@ UI 폴리싱보다 **책 생성 → 3모드 기록 → PAGE 정합**을 먼저 �
 
 ---
 
-## 현재 상태 (2026-10-24)
+## 현재 상태 (2026-10-25)
 
 | 항목 | 상태 | 비고 |
 |------|------|------|
-| 코드 (Phase 0~6) | ✅ 대부분 완료 | `07-dev-progress.md` 참고 |
+| 코드 (Phase 0~6 + PR #2 가드) | ✅ 대부분 완료 | main `79e3ad1` 기준 근처 |
 | Supabase 프로젝트 | ✅ 생성됨 | |
-| **마이그레이션 001~006** | **✅ 적용 완료** | `scripts/*_idempotent.sql` 로 적용 |
-| 저장 정합 (`7ab565a`) | ✅ BUILD | vitest 18 · 충돌 시 명시 UX |
-| GitHub Actions CI (`ci.yml`) | ✅ BUILD | tip `2d38c10` — [Actions run](https://github.com/happysuyeun-rgb/MyChapter/actions/runs/40083741371) (vitest≠LIVE) |
-| **운영 이메일 로그인 E2E** | **✅ 7/7 PASS — LIVE** | `my-chapter.vercel.app` |
-| 책·기록 저장 E2E | 🔄 PENDING | Work 다음 |
-| AI 챕터 · PDF E2E | 🔄 PENDING | |
-| Edge Function 배포 | ✅ 응답 확인 | Secrets 값 유효성(AI) 확인 권장 |
+| **마이그레이션 001~006** | **✅ 운영 적용** | `scripts/*_idempotent.sql` |
+| **마이그레이션 025** | 🔄 코드만 main | **운영 미적용** — runbook 선행 |
+| 저장 정합 / CI | ✅ BUILD | vitest·CI ≠ LIVE |
+| **운영 이메일 로그인 E2E** | **✅ 7/7 PASS — LIVE** | |
+| **책·기록 저장 E2E** | **✅ 17 PASS — LIVE** | `22-e2e-status.md` §4 |
+| AI 챕터 · PDF E2E | 🔄 PENDING | Secret·준비도·스테이징 |
+| 운영 `BILLING_DEV_BYPASS` OFF | 🔄 **본인 최우선** | Work 보고 당시 활성 |
+| `GOOGLE_AI_API_KEY` | 🔄 미등록 보고 | 유효성 본인 확인 |
+| Edge Function 배포 | ✅ 응답 확인 | 가드 코드 재배포는 별도 승인 |
 | OAuth (Kakao/Google) | 🔄 미완료 | |
 | 일반 사용자 SMTP | 🔄 미완료 | |
-| Vercel Production | ✅ | https://my-chapter.vercel.app @ `7ab565a6` |
-| Firebase / FCM | 🔄 | 푸시 알림 (베타 후 가능) |
-| Play Billing 실결제 | 🔄 | 네이티브 브릿지 P1 |
+| Vercel Production | ✅ | https://my-chapter.vercel.app |
+| Firebase / FCM | 🔄 | 베타 후 |
+| Play Billing 실결제 | 🔄 | 출시 시 |
 | UI (Paywall·Empty) | ✅ | |
 
 ---
@@ -52,22 +54,23 @@ UI 폴리싱보다 **책 생성 → 3모드 기록 → PAGE 정합**을 먼저 �
 |---|--------|------|------|------|
 | 1 | Supabase 마이그레이션 001~006 적용 | 본인 | ☑ | `scripts/001~006_idempotent.sql` |
 | 2 | Edge Function 8개 배포 | 본인 | ☑ | 프로브로 배포 확인 (`17-test-report.md`) |
-| 2b | Secrets 값 확인 (`GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`) | 본인 | ☐ | AI·PDF용. **운영에 `BILLING_DEV_BYPASS=true` 금지** |
+| 2b | Secrets (`GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`) + **bypass OFF** | 본인 | ☐ | **지금 최우선** · `26-…runbook.md` |
 | 3 | Production 공개키 · 이메일 Auth | 본인 | ☑ | 로그인 LIVE PASS |
 | 4a | **E2E 로그인** | Work | ☑ | 2026-10-24 · `22-e2e-status.md` |
-| 4b | **E2E 책·기록·PAGE** | Work | ☐ | `18-user-next-steps.md` STEP 4 |
+| 4b | **E2E 책·기록·PAGE** | Work | ☑ | 17 PASS · `22-e2e-status.md` §4 |
+| 4c | **AI 챕터 · PDF** (스테이징 권장) | 본인+Work | ☐ | 운영 시간/우회 조작 금지 |
 
 ### E2E 최소 성공 기준
 
-**로그인 구간:** ✅ PASS (2026-10-24).
+**로그인·책·기록:** ✅ PASS (2026-10-24).
 
-**남은 P0 핵심 (아직 PENDING):**
+**남은 P0 핵심 (본인 운영 설정):**
 
 ```
-첫 책 생성 → 자유/질문/사진 저장 → 새로고침 유지 → 기록 ID·PAGE 정합
+BILLING_DEV_BYPASS OFF → Gemini/SERVICE_ROLE Secret → (스테이징) AI 챕터 → PDF
 ```
 
-**다음에 할 일:** → **[`18-user-next-steps.md`](./18-user-next-steps.md)** STEP 4 · **[`22-e2e-status.md`](./22-e2e-status.md)**
+**다음에 할 일:** → **[`18-user-next-steps.md`](./18-user-next-steps.md)** STEP 4b · **[`26-ai-pdf-release-execution-runbook.md`](./26-ai-pdf-release-execution-runbook.md)**
 
 ---
 
@@ -81,7 +84,7 @@ UI 폴리싱보다 **책 생성 → 3모드 기록 → PAGE 정합**을 먼저 �
 | 6 | Vercel 프로덕션 배포 + env 동기화 | 본인 | ☑ | `my-chapter.vercel.app` |
 | 7 | 약관 URL 실동작 확인 (`/privacy`, `/terms`) | 본인 | ☐ | `VITE_PRIVACY_POLICY_URL` |
 | 8 | 챕터 생성 → PDF 출판 (dev billing) E2E | 본인 | ☐ | Pro 플로우 · LIVE 미실시 |
-| 9 | 연동 중 발생 버그 수정 | Cursor AI | ☐ | 책·기록 E2E 결과 후 |
+| 9 | 연동 중 발생 버그 수정 | Cursor AI | ☐ | AI/PDF E2E·스테이징 결과 후 |
 
 ### P1에서 미루어도 되는 것
 
@@ -179,9 +182,9 @@ Growth Hacker 역할로 MyChapter Play 스토어 출시 전략을 짜줘.
 
 | 상황 | 추천 |
 |------|------|
-| 지금 뭘 해야 할지 모르겠다 | **P0 #4b** — 책·기록·PAGE E2E (`22-e2e-status`) |
-| Function은 배포됐다 | Secrets 확인 후 AI·PDF E2E |
-| 베타를 빨리 보여주고 싶다 | 책·기록 LIVE 통과 후 3~5명 초대 (푸시는 나중에) |
+| 지금 뭘 해야 할지 모르겠다 | **P0 #2b** — 결제 우회 OFF + Gemini Secret (`26-…runbook`) |
+| Function은 배포됐다 | Secrets·bypass 확인 후 스테이징 AI·PDF E2E |
+| 베타를 빨리 보여주고 싶다 | 결제 우회 OFF·AI 스모크 후 소규모 초대 (푸시는 나중에) |
 | 스토어 출시가 급하다 | P2 #12~14 병렬 (AAB + Billing 브릿지) |
 | UI가 아쉽다 | P0 통과 후 `DESIGN.md` + `mychapter-ui` skill로 폴리싱 |
 
@@ -210,3 +213,4 @@ Growth Hacker 역할로 MyChapter Play 스토어 출시 전략을 짜줘.
 | 2026-10-23 | Edge Function 배포 확인·`17-test-report` 반영, 다음 액션을 Secrets+E2E로 조정 |
 | 2026-10-24 | 운영 로그인 LIVE PASS · Vercel Production ☑ · 다음을 책·기록 E2E로 조정 |
 | 2026-10-24 | CI `2d38c10` 반영 · 운영 billing bypass 금지 명시 |
+| 2026-10-25 | 책·기록 17 LIVE PASS 반영 · 다음을 bypass OFF·Secret·AI/PDF·025로 조정 |

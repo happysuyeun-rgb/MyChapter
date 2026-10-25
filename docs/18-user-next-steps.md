@@ -1,38 +1,40 @@
 # MyChapter — 본인이 지금 할 일 (상세 가이드)
 
-> **최종 갱신:** 2026-10-24  
+> **최종 갱신:** 2026-10-25  
 > **대상:** 서비스 담당자 (비개발자 포함)  
-> **전제:** 마이그레이션 001~006 ✅ · Edge Function 8개 배포 ✅ · **운영 이메일 로그인 E2E 7/7 PASS** (`22-e2e-status.md`)  
-> **관련:** `06-user-tasks.md`, `17-test-report.md`, `15-launch-roadmap.md`, `20-error-cases.md`, `22-e2e-status.md`
+> **전제:** 마이그레이션 001~006 ✅ · Edge 8개 ✅ · **로그인 7/7 LIVE** · **책·기록 17항목 LIVE** (`22-e2e-status.md`)  
+> **관련:** `06-user-tasks.md`, `15-launch-roadmap.md`, `22-e2e-status.md`, `26-ai-pdf-release-execution-runbook.md`
 
 ---
 
 ## 이 문서의 목표
 
-**운영 이메일 로그인은 완료**됐습니다. 지금은 **책·기록 실사용 E2E**가 다음입니다.
+**로그인·책·기록 핵심 여정은 완료**됐습니다. 지금은 **보안 Secret 정리 → AI/PDF 스테이징**이 다음입니다.
 
 ```
 ① (완료) 운영 Magic Link 로그인
-② Secrets 등록/확인 — AI·PDF용
-③ Work: 첫 책 → 자유/질문/사진 저장 → 새로고침·PAGE 정합
-④ (이후) AI 챕터 · PDF · OAuth · SMTP 일반화
+② (완료) 첫 책 → 자유/질문/사진 → 새로고침·PAGE 정합 (17 PASS)
+③ (지금) 운영 BILLING_DEV_BYPASS OFF + GOOGLE_AI_API_KEY / SERVICE_ROLE_KEY
+④ (다음) 스테이징 025 · AI 챕터 · PDF E2E → (이후) OAuth · SMTP
 ```
 
-**이미 끝난 운영 검증 (2026-10-24, `7ab565a6`, https://my-chapter.vercel.app)**
+**이미 끝난 운영 검증 (2026-10-24, https://my-chapter.vercel.app)**
 
 | 항목 | 결과 |
 |------|------|
-| Production 배포 · anon 키 · Magic Link · 로그인 · 마이페이지 · 세션 유지 · 로그아웃/가드 | **7/7 PASS — LIVE** |
-| Supabase 요청 4xx·5xx | 없음 (29건) |
+| Production 배포 · anon 키 · Magic Link · 로그인 · 마이페이지 · 세션 · 로그아웃/가드 | **7/7 PASS — LIVE** |
+| 책 생성 · 3모드 기록 · PAGE·초안·정합 (§4) | **17 PASS — LIVE** (`22-e2e-status.md`) |
 
-**아직 미완료로 유지**
+**아직 미완료로 유지 (본인·운영)**
 
 | 항목 | 상태 |
 |------|------|
+| 운영 `BILLING_DEV_BYPASS` OFF | **최우선** — Work 보고 당시 활성 |
+| `GOOGLE_AI_API_KEY` · `SERVICE_ROLE_KEY` 유효 등록 | 미확인/미등록 보고 |
+| DB 025 운영 적용 | 코드만 main · **운영 미적용** |
+| AI 챕터 · PDF E2E | 미실시 (준비도 20/30·스테이징 필요) |
+| Google · Kakao OAuth | 미완료 설정 |
 | 일반 사용자 대상 SMTP | 미완료 |
-| Google · Kakao OAuth | 미완료 |
-| 실계정 책·기록 저장 E2E | **Work 진행 예정** |
-| AI 챕터 · PDF E2E | 미실시 |
 
 **AI가 이미 코드로 처리한 것** (본인 작업 불필요)
 
@@ -148,7 +150,7 @@ npx supabase secrets set SERVICE_ROLE_KEY=여기에_service_role키
 
 없으면 Cursor에 “Function 목록이 안 보여”라고 알려주세요. (재배포가 필요할 수 있음)
 
-**STEP 1 완료 표시:** ☐ Secrets 3개 등록함
+**STEP 1 완료 표시:** ☐ `GOOGLE_AI_API_KEY` + `SERVICE_ROLE_KEY` 등록 · ☐ 운영 `BILLING_DEV_BYPASS`≠true 확인
 
 ---
 
@@ -241,54 +243,35 @@ npm run dev
 
 ---
 
-## STEP 4 — 다음 E2E (Work / 실계정) — **지금 진행**
+## STEP 4 — 책·기록 E2E — **완료 (2026-10-24)**
 
-운영: https://my-chapter.vercel.app · 로그인 E2E는 **이미 PASS**.  
-목표: **첫 책 → 3모드 기록 → 새로고침 유지 → PAGE 정합**
-
-상세 현황 표: **`22-e2e-status.md` §4**
-
-### 4-1. 로그인 (완료 확인만)
-
-이미 통과한 계정이면 재검증 불필요. 새 계정이면 Magic Link로 로그인 후 온보딩만 확인.
-
-### 4-2. 온보딩 (해당 시)
-
-1. 닉네임 입력 (2~10자) → 다음  
-2. 알림 권한 → 허용 또는 나중에
-
-### 4-3. 첫 책 생성
-
-1. 책 유형 선택  
-2. 제목 입력 → **이 책 시작하기**  
-3. 완료 화면 → 홈/기록 진입 가능하면 책 생성 OK
-
-**실패 시:** 화면 문구 + Network/콘솔을 Cursor에 공유 (Production env·Auth 설정은 변경하지 말 것)
-
-### 4-4. 기록 저장 (3모드)
-
-각각 **저장 → 완료 화면의 PAGE 번호 → 목록에 표시**까지:
-
-1. 자유 기록  
-2. 질문 기록 (AI 질문이 안 나오면 Secrets·`generate-question` Logs)  
-3. 사진 기록 (업로드·미리보기·저장)
-
-### 4-5. 정합 확인
-
-1. 새로고침 후에도 책·기록이 유지되는지  
-2. 완료 화면 PAGE와 목록/상세 PAGE가 같은지 (작성 중 「예상 PAGE」와 달라도 됨 — 서버 확정이 기준)
+운영: https://my-chapter.vercel.app  
+상세: **`22-e2e-status.md` §4** — Work 운영 17 PASS / AI·PDF·장애복구 3항목 미검증
 
 ### 4-6. 통과 체크리스트 (Work)
 
 - [x] 이메일 로그인 성공 (운영, 2026-10-24)
-- [ ] 닉네임·온보딩 완료 (해당 계정)
-- [ ] 책 1개 생성
-- [ ] 자유 / 질문 / 사진 각 1건 저장
-- [ ] 새로고침 후 데이터 유지
-- [ ] 기록 ID·PAGE 번호 정합
-- [ ] (이후) AI 챕터 · PDF
+- [x] 책 1개 생성
+- [x] 자유 / 질문 / 사진 각 저장 + 초안·PAGE 정합
+- [x] 새로고침 후 데이터 유지 · ID·PAGE 연속
+- [ ] (다음) AI 챕터 · PDF — 준비도 20기록/30일 또는 **스테이징**; 운영 DB 조작·결제 우회로 통과 처리 금지
 
-결과(성공·실패 단계·스크린샷·콘솔)를 Cursor에 알려주면 개발 개선으로 연결합니다.
+**재실행이 필요할 때**만 아래를 따릅니다: 로그인 → 온보딩(해당 시) → 책 생성 → 3모드 저장 → 새로고침·PAGE 확인.  
+실패 시 화면 문구·Network/콘솔을 Cursor에 공유 (Production Secret·DB는 승인 없이 변경하지 말 것).
+
+---
+
+## STEP 4b — 지금 할 일: Secret · 결제 우회 · AI/PDF 준비
+
+상세 순서: **`26-ai-pdf-release-execution-runbook.md`**
+
+1. Dashboard Secrets에서 **`BILLING_DEV_BYPASS`를 true로 두지 않음** (삭제 또는 false)  
+2. **`GOOGLE_AI_API_KEY`**, **`SERVICE_ROLE_KEY`** 등록 (키 원문 채팅·Git 금지)  
+3. Vercel Production **`VITE_BILLING_DEV_MODE=false`** 확인  
+4. 격리 스테이징에서 025 적용·검증 후, 운영 025는 **백업·승인 뒤에만**  
+5. 스테이징에서 AI 챕터 → PDF E2E
+
+**STEP 4b 완료 표시:** ☐ bypass OFF · ☐ AI Secrets · ☐ (스테이징) AI/PDF 1회 성공
 
 ---
 
@@ -315,16 +298,15 @@ npm run dev
 
 ---
 
-## STEP 6 — (나중에) Vercel / 푸시 / 스토어
+## STEP 6 — (나중에) 커스텀 도메인 / 푸시 / 스토어
 
-로컬 E2E 통과 후 순서입니다. **지금은 안 해도 됩니다.**
+Vercel Production·핵심 기록 E2E는 완료. **아래는 베타·출시 단계**입니다.
 
 | 순서 | 할 일 | 문서 |
 |------|--------|------|
-| 1 | Vercel에 배포 + 동일 env | `06-user-tasks.md` |
-| 2 | Site URL을 `https://mychapter.app`로 변경 | Auth URL Configuration |
-| 3 | Firebase + `google-services.json` | Phase 6 |
-| 4 | Android AAB + Play | `15-launch-roadmap` Wave 2 |
+| 1 | Site URL을 `https://mychapter.app`로 변경 (도메인 연결 시) | Auth URL Configuration |
+| 2 | Firebase + `google-services.json` | Phase 6 |
+| 3 | Android AAB + Play | `15-launch-roadmap` Wave 2 |
 
 ---
 
@@ -355,13 +337,16 @@ Cursor에 아래 형식으로 보내면 빠르게 도와줍니다.
 
 | STEP | 내용 | 완료 |
 |------|------|------|
-| 1 | Secrets (`GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`) | ☐ (AI·PDF용 — 값 유효성 확인; 운영에 billing bypass 금지) |
+| 1a | Secrets (`GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`) | ☐ AI·PDF용 — 등록·유효성 |
+| 1b | 운영 `BILLING_DEV_BYPASS` OFF | ☐ **지금 최우선** |
 | 2 | Email + Redirect URL | ☑ 운영 Magic Link PASS |
-| 3 | Production bypass off / 공개키 | ☑ 운영 검증됨 |
+| 3 | `VITE_DEV_BYPASS` / 공개키 (앱 mock 아님) | ☑ 운영 검증됨 |
 | 4a | E2E 로그인 | ☑ 7/7 PASS |
-| 4b | E2E 책·기록·PAGE | ☐ **Work 다음** |
+| 4b | E2E 책·기록·PAGE | ☑ 17 PASS (2026-10-24) |
+| 4c | AI 챕터 · PDF LIVE (스테이징 권장) | ☐ |
+| 4d | 운영 DB 025 (백업·승인 후) | ☐ 코드만 main |
 | 5 | (선택) OAuth | ☐ |
-| 6 | Vercel Production | ☑ `my-chapter.vercel.app` @ `7ab565a6` |
+| 6 | Vercel Production | ☑ `my-chapter.vercel.app` |
 
 ---
 
@@ -371,6 +356,7 @@ Cursor에 아래 형식으로 보내면 빠르게 도와줍니다.
 |------|-----------|
 | **이 문서 (`18-user-next-steps.md`)** | **지금 할 일 따라하기** |
 | **`22-e2e-status.md`** | **LIVE E2E PASS/PENDING·출시 차단** |
+| **`27-functional-test-checklist.md`** | **기능 테스트 Phase 0~4 체크리스트·실행 로그** |
 | `17-test-report.md` | AI 스모크·자동 테스트·로그인 LIVE 요약 |
 | `20-error-cases.md` | 기능별 에러 케이스·수정 우선순위 |
 | `21-screen-completeness.md` | MVP 화면 누락 여부·미개발 목록 |
@@ -387,3 +373,4 @@ Cursor에 아래 형식으로 보내면 빠르게 도와줍니다.
 | 2026-10-23 | 최초 작성 — Secrets·Auth·bypass·E2E 단계별 가이드 |
 | 2026-10-24 | 운영 로그인 7/7 PASS 반영 · 다음 목표를 책·기록 E2E로 전환 |
 | 2026-10-24 | 운영 `BILLING_DEV_BYPASS` 금지 · AI Secrets 2개로 정리 |
+| 2026-10-25 | 책·기록 17 PASS 반영 · 다음 목표를 결제 우회 OFF·Secrets·AI/PDF·025로 전환 |
