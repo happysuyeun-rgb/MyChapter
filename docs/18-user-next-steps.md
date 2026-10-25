@@ -357,6 +357,7 @@ Cursor에 아래 형식으로 보내면 빠르게 도와줍니다.
 | **이 문서 (`18-user-next-steps.md`)** | **지금 할 일 따라하기** |
 | **`22-e2e-status.md`** | **LIVE E2E PASS/PENDING·출시 차단** |
 | **`27-functional-test-checklist.md`** | **기능 테스트 Phase 0~4 체크리스트·실행 로그** |
+| **`28-signup-legal-audit-and-design.md`** | **가입·약관 검수·설계** (온보딩→`/project/new` 확정 · 동의 UI는 승인 후) |
 | `17-test-report.md` | AI 스모크·자동 테스트·로그인 LIVE 요약 |
 | `20-error-cases.md` | 기능별 에러 케이스·수정 우선순위 |
 | `21-screen-completeness.md` | MVP 화면 누락 여부·미개발 목록 |

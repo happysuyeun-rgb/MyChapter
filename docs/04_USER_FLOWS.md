@@ -1,24 +1,27 @@
 # 04. User Flows
 
 **Status:** MVP flow specification  
-**Updated:** 2026-09-28
+**Updated:** 2026-10-25
 
 ## 1. New user
+
+제품 확정(2026-10-25): 온보딩 완료 후 **홈·빈 서재를 필수로 거치지 않고** `/project/new`로 바로 이동한다.  
+(코드: `NotificationPage` → `navigate('/project/new')`. 상세: `28-signup-legal-audit-and-design.md`)
 
 ```text
 Splash
 → Login / Signup
 → Nickname
 → Notification onboarding
-→ Home
-→ Empty Library
-→ 첫 번째 책 만들기
+→ 첫 번째 책 만들기 (/project/new)
 → Book Type
 → Basic Info
 → Book Created
 → Record Mode
 → First Record
 ```
+
+기존 회원(온보딩 완료)은 Splash → Home. 빈 서재의 “첫 책 만들기” CTA도 `/project/new`로 연결된다.
 
 ## 2. Existing user / daily recording
 
