@@ -123,10 +123,8 @@ export function HomePage() {
           </button>
         </div>
         <p className="mt-4 text-[11px] tracking-[0.08em] text-ink-faint">{today}</p>
-        <h1 className="mt-1 font-serif text-[26px] font-bold leading-tight tracking-[-0.03em] text-ink">
-          {profile?.nickname ?? '회원'}님의
-          <br />
-          책 작업 데스크
+        <h1 className="mt-1 truncate font-serif text-[26px] font-bold leading-tight tracking-[-0.03em] text-ink">
+          {profile?.nickname ?? '회원'}님 안녕하세요.
         </h1>
       </header>
 
