@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { EmptyState, ErrorState, LoadingBlock } from '@/components/common'
+import { BrandMasthead } from '@/components/layout/BrandMasthead'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { listPublishedBooks } from '@/lib/api/books'
 import { getProjects } from '@/lib/api/projects'
@@ -105,20 +106,21 @@ export function ProjectsListPage() {
 
   return (
     <div className="desk-fade-in flex flex-1 flex-col overflow-y-auto bg-surface">
-      <header className="px-5 pb-5 pt-7">
-        <p className="font-serif text-[12px] font-bold tracking-[0.28em] text-ink">MY CHAPTER</p>
-        <div className="mt-4 flex items-end justify-between gap-3">
-          <div>
-            <h1 className="font-serif text-[32px] font-bold tracking-[-0.03em]">서재</h1>
-            <p className="mt-2 text-xs text-ink-muted">{projects.length}권 · 내가 만드는 책 선반</p>
-          </div>
-          <button
-            type="button"
-            className="min-h-11 border border-ink bg-ink px-3 text-sm font-semibold text-surface"
-            onClick={handleCreate}
-          >
-            새 책 +
-          </button>
+      <header className="px-5 pb-5 pt-6">
+        <BrandMasthead
+          right={
+            <button
+              type="button"
+              className="min-h-11 border border-ink bg-ink px-3 text-sm font-semibold text-surface"
+              onClick={handleCreate}
+            >
+              새 책 +
+            </button>
+          }
+        />
+        <div className="mt-4">
+          <h1 className="font-serif text-[32px] font-bold tracking-[-0.03em]">서재</h1>
+          <p className="mt-2 text-xs text-ink-muted">{projects.length}권 · 내가 만드는 책 선반</p>
         </div>
         <div className="shelf-rail mt-6 h-2 w-full" aria-hidden />
       </header>

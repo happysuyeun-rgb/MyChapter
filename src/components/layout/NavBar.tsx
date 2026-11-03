@@ -1,4 +1,6 @@
+import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { BrandMasthead } from './BrandMasthead'
 
 interface NavBarProps {
   title?: string
@@ -7,6 +9,7 @@ interface NavBarProps {
   onLeftClick?: () => void
   onRightClick?: () => void
   rightAccent?: boolean
+  rightSlot?: ReactNode
 }
 
 export function NavBar({
@@ -16,19 +19,13 @@ export function NavBar({
   onLeftClick,
   onRightClick,
   rightAccent = false,
+  rightSlot,
 }: NavBarProps) {
   const navigate = useNavigate()
 
-  return (
-    <header className="flex min-h-[56px] shrink-0 items-center gap-3 border-b border-border bg-surface px-5">
-      <button
-        type="button"
-        className="min-h-11 min-w-12 text-left text-[12px] font-medium text-ink-muted"
-        onClick={onLeftClick ?? (() => navigate(-1))}
-      >
-        {leftLabel ?? ''}
-      </button>
-      <h1 className="flex-1 text-center font-serif text-[15px] font-bold tracking-[-0.01em]">{title}</h1>
+  const right =
+    rightSlot ??
+    (rightLabel ? (
       <button
         type="button"
         className={[
@@ -37,8 +34,30 @@ export function NavBar({
         ].join(' ')}
         onClick={onRightClick}
       >
-        {rightLabel ?? ''}
+        {rightLabel}
       </button>
+    ) : undefined)
+
+  return (
+    <header className="shrink-0 border-b border-border bg-surface px-5 pb-3 pt-5">
+      <BrandMasthead
+        left={
+          leftLabel !== undefined ? (
+            <button
+              type="button"
+              className="flex min-h-11 min-w-8 items-center text-[12px] font-medium text-ink-muted"
+              onClick={onLeftClick ?? (() => navigate(-1))}
+              aria-label="뒤로"
+            >
+              {leftLabel || '←'}
+            </button>
+          ) : undefined
+        }
+        right={right}
+      />
+      {title ? (
+        <h1 className="mt-3 font-serif text-[20px] font-bold tracking-[-0.02em] text-ink">{title}</h1>
+      ) : null}
     </header>
   )
 }

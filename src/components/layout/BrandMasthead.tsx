@@ -1,0 +1,27 @@
+import type { ReactNode } from 'react'
+
+interface BrandMastheadProps {
+  /** Optional left control (e.g. back). Logo stays visible beside or after it. */
+  left?: ReactNode
+  /** Optional right control (알림, 설정 등) */
+  right?: ReactNode
+  className?: string
+}
+
+/** Shared MY CHAPTER logo row used on tab + detail headers. */
+export function BrandMasthead({ left, right, className = '' }: BrandMastheadProps) {
+  return (
+    <div
+      className={[
+        'flex h-11 w-full items-center justify-between gap-3',
+        className,
+      ].join(' ')}
+    >
+      <div className="flex min-w-0 items-center gap-2">
+        {left}
+        <p className="font-serif text-[13px] font-bold tracking-[0.28em] text-ink">MY CHAPTER</p>
+      </div>
+      {right ? <div className="flex shrink-0 items-center">{right}</div> : <span className="w-11 shrink-0" aria-hidden />}
+    </div>
+  )
+}

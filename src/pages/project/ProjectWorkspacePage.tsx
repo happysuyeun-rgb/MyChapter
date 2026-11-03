@@ -8,6 +8,7 @@ import {
   StudioSection,
   type StudioStep,
 } from '@/components/common'
+import { BrandMasthead } from '@/components/layout/BrandMasthead'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { getPublishedBook } from '@/lib/api/books'
@@ -166,14 +167,27 @@ export function ProjectWorkspacePage() {
   return (
     <div className="desk-fade-in mx-auto min-h-dvh w-full max-w-phone overflow-y-auto bg-surface">
       <header className="px-5 pb-5 pt-6">
-        <button
-          type="button"
-          className="flex min-h-11 items-center text-sm text-ink-muted"
-          onClick={() => navigate('/library')}
-        >
-          ← 서재
-        </button>
-        <p className="mt-4 font-serif text-[12px] font-bold tracking-[0.28em] text-ink">MY CHAPTER</p>
+        <BrandMasthead
+          left={
+            <button
+              type="button"
+              className="flex min-h-11 items-center text-sm text-ink-muted"
+              onClick={() => navigate('/library')}
+              aria-label="서재로"
+            >
+              ←
+            </button>
+          }
+          right={
+            <button
+              type="button"
+              className="min-h-11 text-[11px] font-semibold text-ink-muted"
+              onClick={() => navigate('/project/settings')}
+            >
+              책 설정
+            </button>
+          }
+        />
         <div className="mt-4 flex gap-5">
           <div className="flex h-32 w-[86px] shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-ink p-3 text-surface shadow-[8px_10px_0_rgba(59,53,45,.14)]">
             <span className="text-[6px] tracking-[0.18em] opacity-55">MY CHAPTER</span>
@@ -181,16 +195,7 @@ export function ProjectWorkspacePage() {
             <span className="h-px w-5 bg-sage" />
           </div>
           <div className="min-w-0 flex-1 pt-1">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">BOOK WORKSPACE</p>
-              <button
-                type="button"
-                className="min-h-9 text-[11px] font-semibold text-ink-muted"
-                onClick={() => navigate('/project/settings')}
-              >
-                책 설정
-              </button>
-            </div>
+            <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">BOOK WORKSPACE</p>
             <h1 className="mt-2 line-clamp-2 font-serif text-[24px] font-bold leading-snug tracking-[-0.03em]">
               {project.title}
             </h1>

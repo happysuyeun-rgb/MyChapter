@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DeskProgress, EmptyState, ErrorState, FlatIcon, LoadingBlock } from '@/components/common'
+import { BrandMasthead } from '@/components/layout/BrandMasthead'
 import pageNoteImage from '@/assets/images/home/page-note/page_c.png'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { getUnreadCount } from '@/lib/api/notifications'
@@ -109,20 +110,21 @@ export function HomePage() {
     <div className="desk-fade-in flex flex-1 flex-col overflow-y-auto bg-surface">
       {/* Brand masthead — hero-level signal */}
       <header className="px-5 pb-4 pt-6">
-        <div className="flex h-11 items-center justify-between">
-          <p className="font-serif text-[13px] font-bold tracking-[0.28em] text-ink">MY CHAPTER</p>
-          <button
-            type="button"
-            aria-label="알림"
-            className="relative -mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-ink"
-            onClick={() => navigate('/notifications')}
-          >
-            <FlatIcon name="bell" size={20} />
-            {unreadCount > 0 && (
-              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-terracotta" />
-            )}
-          </button>
-        </div>
+        <BrandMasthead
+          right={
+            <button
+              type="button"
+              aria-label="알림"
+              className="relative -mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-ink"
+              onClick={() => navigate('/notifications')}
+            >
+              <FlatIcon name="bell" size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-terracotta" />
+              )}
+            </button>
+          }
+        />
         <p className="mt-4 text-[11px] tracking-[0.08em] text-ink-faint">{today}</p>
         <h1 className="mt-1 truncate font-serif text-[26px] font-bold leading-tight tracking-[-0.03em] text-ink">
           {profile?.nickname ?? '회원'}님 안녕하세요.
