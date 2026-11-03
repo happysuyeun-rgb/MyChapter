@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import brandCi from '@/assets/images/brand/ci.png'
 
 interface BrandMastheadProps {
   /** Optional left control (e.g. back). Logo stays visible beside or after it. */
@@ -19,7 +20,12 @@ export function BrandMasthead({ left, right, className = '' }: BrandMastheadProp
     >
       <div className="flex min-w-0 items-center gap-2">
         {left}
-        <p className="font-serif text-[13px] font-bold tracking-[0.28em] text-ink">MY CHAPTER</p>
+        <img
+          src={brandCi}
+          alt="MY CHAPTER"
+          className="h-7 w-auto max-w-[180px] object-contain object-left"
+          decoding="async"
+        />
       </div>
       {right ? <div className="flex shrink-0 items-center">{right}</div> : <span className="w-11 shrink-0" aria-hidden />}
     </div>
