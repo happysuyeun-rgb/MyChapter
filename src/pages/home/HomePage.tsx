@@ -278,7 +278,7 @@ export function HomePage() {
         </section>
 
         <section className="px-5 pb-2 pt-8">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <img
               src={pageNoteImage}
               alt="PAGE"
