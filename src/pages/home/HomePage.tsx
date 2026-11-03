@@ -200,18 +200,12 @@ export function HomePage() {
               <button
                 key={item.to}
                 type="button"
-                className="relative flex min-h-[118px] flex-col items-start rounded-2xl border border-border bg-surface-card px-3.5 pb-4 pt-3.5 text-left shadow-paper active:translate-y-px"
+                className="flex min-h-[118px] flex-col items-start rounded-2xl border border-border bg-surface-card px-3.5 pb-4 pt-3.5 text-left shadow-paper active:translate-y-px"
                 onClick={() => navigate(item.to)}
               >
                 <FlatIcon name={item.icon} size={22} className={item.iconClass} />
                 <span className="mt-3 text-[13px] font-bold leading-snug text-ink">{item.title}</span>
                 <span className="mt-1.5 text-[11px] leading-4 text-ink-muted">{item.description}</span>
-                <span
-                  className="absolute bottom-3 right-3 flex h-6 w-6 items-center justify-center rounded-full border border-border text-[11px] text-ink-faint"
-                  aria-hidden
-                >
-                  →
-                </span>
               </button>
             ))}
           </div>
