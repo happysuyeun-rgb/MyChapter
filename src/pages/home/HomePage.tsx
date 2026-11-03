@@ -121,7 +121,7 @@ export function HomePage() {
           <button
             type="button"
             aria-label="알림"
-            className="relative mt-1 flex h-11 w-11 shrink-0 items-center justify-center border border-border-strong bg-surface-card text-ink"
+            className="relative mt-1 flex h-11 w-11 shrink-0 items-center justify-center text-ink"
             onClick={() => navigate('/notifications')}
           >
             <FlatIcon name="bell" size={20} />
