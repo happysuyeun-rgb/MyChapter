@@ -131,7 +131,7 @@ export function HomePage() {
       </header>
 
       <main className="pb-10">
-        <section className="px-5 text-ink">
+        <section className="px-5 pt-6 text-ink">
           <div className="flex flex-col items-center">
             <button
               type="button"
