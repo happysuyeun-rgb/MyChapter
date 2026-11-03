@@ -167,10 +167,10 @@ export function HomePage() {
             )}
           </div>
 
-          <div className="mt-6 flex flex-col items-center">
+          <div className="mt-6">
             <button
               type="button"
-              className="flex min-h-[52px] w-4/5 items-center justify-center border border-ink bg-transparent px-5 text-[15px] font-semibold text-ink transition-opacity active:translate-y-px active:opacity-90"
+              className="flex min-h-[52px] w-full items-center justify-center border border-ink bg-transparent px-5 text-[15px] font-semibold text-ink transition-opacity active:translate-y-px active:opacity-90"
               onClick={() => navigate(primary.to)}
             >
               {primary.label}
