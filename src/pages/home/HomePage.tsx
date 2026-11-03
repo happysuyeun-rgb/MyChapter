@@ -203,7 +203,7 @@ export function HomePage() {
               className="h-[104px] w-[104px] shrink-0 object-contain"
               decoding="async"
             />
-            <div className="quote-rule flex min-h-[104px] min-w-0 flex-1 items-center">
+            <div className="flex min-h-[104px] min-w-0 flex-1 items-center">
               <p className="font-serif text-[16px] font-semibold leading-7 text-ink">
                 {isPublished
                   ? '당신의 이야기가 한 권의 책이 되었어요.'
