@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Badge, DeskProgress, EmptyState, ErrorState, FlatIcon, LoadingBlock } from '@/components/common'
 import { BrandMasthead } from '@/components/layout/BrandMasthead'
+import bookDefaultCover from '@/assets/images/home/Book_defualt.png'
 import pageNoteImage from '@/assets/images/home/page-note/page_c.png'
-import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { getUnreadCount } from '@/lib/api/notifications'
 import { getPublishedBook, type PublishedBook } from '@/lib/api/books'
 import { isDevBypass } from '@/lib/devBypass'
@@ -75,7 +75,6 @@ export function HomePage() {
   if (projects.length === 0) return <EmptyState variant="home" />
 
   const project = projects.find((item) => item.id === activeProjectId) ?? projects[0]
-  const typeLabel = PROJECT_TYPES.find((p) => p.type === project.type)?.label ?? '나의 이야기'
   const readiness = getBookReadiness(project, recordCount)
   const isPublished = latestPublication !== null
   const bookTitle = latestPublication?.title_snapshot ?? project.title
@@ -132,47 +131,48 @@ export function HomePage() {
 
       <main className="pb-10">
         <section className="px-5 text-ink">
-          <div className="flex gap-6">
-            <div className="flex h-32 w-[84px] shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-ink p-3 text-surface shadow-[6px_8px_0_rgba(59,53,45,.12)]">
-              <span className="text-[6px] tracking-[0.18em] text-surface/55">MY CHAPTER</span>
-              <div>
-                <span className="mb-2 block h-px w-6 bg-sage" />
-                <p className="line-clamp-4 font-serif text-[12px] font-bold leading-[1.4]">{bookTitle}</p>
-              </div>
-              <span className="text-[6px] text-surface/55">{typeLabel}</span>
-            </div>
+          <div className="flex flex-col items-center">
+            <Badge variant={isPublished ? 'accent' : 'gray'}>
+              {isPublished ? '발행완료' : readiness.isReady ? '발행가능' : '진행중'}
+            </Badge>
 
-            <div className="min-w-0 flex-1 self-center">
-              <Badge variant={isPublished ? 'accent' : 'gray'}>
-                {isPublished ? '발행완료' : readiness.isReady ? '발행가능' : '진행중'}
-              </Badge>
-              <button
-                type="button"
-                className="mt-1.5 w-full text-left"
-                onClick={() => navigate('/record/mode')}
-                aria-label={`${bookTitle} 이어쓰기`}
-              >
-                <h2 className="line-clamp-3 font-serif text-[20px] font-bold leading-snug tracking-[-0.02em] text-ink underline-offset-4 active:underline">
+            <button
+              type="button"
+              className="relative mt-4 w-[200px] shrink-0 active:translate-y-px"
+              onClick={() => navigate('/record/mode')}
+              aria-label={`${bookTitle} 이어쓰기`}
+            >
+              <img
+                src={bookDefaultCover}
+                alt=""
+                width={200}
+                height={300}
+                className="h-auto w-full object-contain drop-shadow-[6px_10px_0_rgba(59,53,45,.10)]"
+                decoding="async"
+              />
+              <div className="pointer-events-none absolute inset-x-[14%] top-[12%] flex h-[38%] items-center justify-center px-1">
+                <h2 className="line-clamp-4 text-center font-serif text-[22px] font-bold leading-snug tracking-[-0.02em] text-ink">
                   {bookTitle}
                 </h2>
-              </button>
-              {isPublished ? (
-                <div className="mt-4">
-                  <p className="font-serif text-2xl font-bold text-ink">v{latestPublication.version}</p>
-                  <p className="mt-1 text-[11px] text-ink-muted">
-                    {new Date(latestPublication.published_at).toLocaleDateString('ko-KR')} 발행
-                  </p>
-                </div>
-              ) : (
-                <DeskProgress
-                  className="mt-4"
-                  tone="paper"
-                  score={readiness.score}
-                  message={readiness.message}
-                  recordCount={recordCount}
-                />
-              )}
-            </div>
+              </div>
+            </button>
+
+            {isPublished ? (
+              <div className="mt-5 w-full text-center">
+                <p className="font-serif text-2xl font-bold text-ink">v{latestPublication.version}</p>
+                <p className="mt-1 text-[11px] text-ink-muted">
+                  {new Date(latestPublication.published_at).toLocaleDateString('ko-KR')} 발행
+                </p>
+              </div>
+            ) : (
+              <DeskProgress
+                className="mt-5 w-full"
+                tone="paper"
+                score={readiness.score}
+                message={readiness.message}
+                recordCount={recordCount}
+              />
+            )}
           </div>
 
           <div className="mt-6">
