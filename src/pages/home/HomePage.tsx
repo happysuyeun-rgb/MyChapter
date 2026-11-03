@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DeskProgress, EmptyState, ErrorState, FlatIcon, LoadingBlock } from '@/components/common'
+import pageNoteImage from '@/assets/images/home/page-note/page_c.png'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { getUnreadCount } from '@/lib/api/notifications'
 import { getPublishedBook, type PublishedBook } from '@/lib/api/books'
@@ -223,24 +224,36 @@ export function HomePage() {
           </div>
         </section>
 
-        {/* PAGE note as editorial quote */}
-        <section className="px-5 pt-8">
+        {/* PAGE note — character + editorial quote */}
+        <section className="px-5 pb-2 pt-8">
           <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">PAGE&apos;S NOTE</p>
-          <div className="quote-rule mt-4">
-            <p className="font-serif text-[17px] font-semibold leading-7 text-ink">
-              {isPublished
-                ? '당신의 이야기가 한 권의 책이 되었어요.'
-                : readiness.isReady
-                  ? '이제 기록을 한 권의 이야기로 묶을 수 있어요.'
-                  : '지금은 잘 쓰는 것보다, 계속 남기는 것이 더 중요해요.'}
-            </p>
-            <p className="mt-3 text-xs leading-6 text-ink-muted">
-              {isPublished
-                ? `최신 발행본 v${latestPublication.version}을 확인하거나 책 작업실에서 다음 작업을 이어갈 수 있어요.`
-                : readiness.isReady
-                  ? '책 작업실에서 PAGE와 함께 챕터의 연결점을 찾고 원고를 만들어보세요.'
-                  : `책 만들기까지 ${readiness.recordsRemaining > 0 ? `기록 ${readiness.recordsRemaining}개` : '기록 조건 충족'}${readiness.daysRemaining > 0 ? ` · ${readiness.daysRemaining}일` : ''}.`}
-            </p>
+          <div className="mt-4 flex items-center gap-4">
+            <div className="relative shrink-0 overflow-hidden rounded-[18px] bg-ink shadow-paper ring-1 ring-ink/10">
+              <img
+                src={pageNoteImage}
+                alt="PAGE"
+                width={112}
+                height={112}
+                className="h-[112px] w-[112px] object-cover object-center"
+                decoding="async"
+              />
+            </div>
+            <div className="quote-rule min-w-0 flex-1">
+              <p className="font-serif text-[16px] font-semibold leading-7 text-ink">
+                {isPublished
+                  ? '당신의 이야기가 한 권의 책이 되었어요.'
+                  : readiness.isReady
+                    ? '이제 기록을 한 권의 이야기로 묶을 수 있어요.'
+                    : '지금은 잘 쓰는 것보다, 계속 남기는 것이 더 중요해요.'}
+              </p>
+              <p className="mt-2.5 text-xs leading-6 text-ink-muted">
+                {isPublished
+                  ? `최신 발행본 v${latestPublication.version}을 확인하거나 책 작업실에서 다음 작업을 이어갈 수 있어요.`
+                  : readiness.isReady
+                    ? '책 작업실에서 PAGE와 함께 챕터의 연결점을 찾고 원고를 만들어보세요.'
+                    : `책 만들기까지 ${readiness.recordsRemaining > 0 ? `기록 ${readiness.recordsRemaining}개` : '기록 조건 충족'}${readiness.daysRemaining > 0 ? ` · ${readiness.daysRemaining}일` : ''}.`}
+              </p>
+            </div>
           </div>
         </section>
       </main>
