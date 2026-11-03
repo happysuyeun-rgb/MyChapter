@@ -164,8 +164,8 @@ export function ProjectWorkspacePage() {
   ]
 
   return (
-    <div className="desk-fade-in mx-auto min-h-dvh w-full max-w-phone overflow-y-auto bg-surface">
-      <header className="px-5 pb-6 pt-6">
+    <div className="desk-fade-in desk-blotter mx-auto min-h-dvh w-full max-w-phone overflow-y-auto">
+      <header className="px-5 pb-5 pt-6">
         <button
           type="button"
           className="flex min-h-11 items-center text-sm text-ink-muted"
@@ -173,10 +173,11 @@ export function ProjectWorkspacePage() {
         >
           ← 서재
         </button>
-        <div className="desk-rule mt-6 flex gap-5 pb-6">
-          <div className="flex h-28 w-[74px] shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-ink p-3 text-surface shadow-[7px_8px_0_rgba(59,53,45,.10)]">
+        <p className="mt-4 font-serif text-[12px] font-bold tracking-[0.28em] text-ink">MY CHAPTER</p>
+        <div className="mt-4 flex gap-5">
+          <div className="flex h-32 w-[86px] shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-ink p-3 text-surface shadow-[8px_10px_0_rgba(59,53,45,.14)]">
             <span className="text-[6px] tracking-[0.18em] opacity-55">MY CHAPTER</span>
-            <span className="line-clamp-4 font-serif text-[10px] font-bold leading-[1.5]">{project.title}</span>
+            <span className="line-clamp-4 font-serif text-[11px] font-bold leading-[1.45]">{project.title}</span>
             <span className="h-px w-5 bg-sage" />
           </div>
           <div className="min-w-0 flex-1 pt-1">
@@ -198,21 +199,24 @@ export function ProjectWorkspacePage() {
             </p>
           </div>
         </div>
+        <div className="shelf-rail mt-5 h-1.5 w-full" aria-hidden />
       </header>
 
       <main className="px-5 pb-8">
         <StudioSection eyebrow="READINESS" title="이야기 준비도" meta={`${readiness.score}%`}>
-          <DeskProgress
-            tone="paper"
-            score={readiness.score}
-            message={readiness.message}
-            recordCount={recordCount}
-          />
-          <p className="mt-3 text-[11px] leading-relaxed text-ink-muted">
-            {readiness.isReady
-              ? `기록 ${recordCount}개 · ${readiness.elapsedDays}일 동안 이야기를 모았어요.`
-              : `기록 ${recordCount}/${readiness.rule.minRecords}개 · ${readiness.elapsedDays}/${readiness.rule.minDays}일 · 책 만들기까지 ${readiness.recordsRemaining > 0 ? `기록 ${readiness.recordsRemaining}개` : ''}${readiness.recordsRemaining > 0 && readiness.daysRemaining > 0 ? ' · ' : ''}${readiness.daysRemaining > 0 ? `${readiness.daysRemaining}일` : ''}`}
-          </p>
+          <div className="border border-border bg-surface-card/80 px-4 py-4">
+            <DeskProgress
+              tone="paper"
+              score={readiness.score}
+              message={readiness.message}
+              recordCount={recordCount}
+            />
+            <p className="mt-3 text-[11px] leading-relaxed text-ink-muted">
+              {readiness.isReady
+                ? `기록 ${recordCount}개 · ${readiness.elapsedDays}일 동안 이야기를 모았어요.`
+                : `기록 ${recordCount}/${readiness.rule.minRecords}개 · ${readiness.elapsedDays}/${readiness.rule.minDays}일 · 책 만들기까지 ${readiness.recordsRemaining > 0 ? `기록 ${readiness.recordsRemaining}개` : ''}${readiness.recordsRemaining > 0 && readiness.daysRemaining > 0 ? ' · ' : ''}${readiness.daysRemaining > 0 ? `${readiness.daysRemaining}일` : ''}`}
+            </p>
+          </div>
           <button
             type="button"
             className="mt-5 min-h-[48px] w-full border border-ink bg-ink px-4 py-3.5 text-sm font-semibold text-surface"

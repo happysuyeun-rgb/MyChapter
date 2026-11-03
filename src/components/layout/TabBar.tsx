@@ -8,14 +8,14 @@ const tabs = [
   { to: '/mypage', icon: 'mypage' as const, label: '마이' },
 ] as const
 
-function TabIcon({ name }: { name: TabIconName }) {
+function TabIcon({ name, active }: { name: TabIconName; active: boolean }) {
   const props = {
     width: 22,
     height: 22,
     viewBox: '0 0 24 24',
     fill: 'none',
     stroke: 'currentColor',
-    strokeWidth: 1.75,
+    strokeWidth: active ? 2 : 1.75,
     strokeLinecap: 'round' as const,
     strokeLinejoin: 'round' as const,
     'aria-hidden': true,
@@ -48,7 +48,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="주요 메뉴"
-      className="safe-bottom flex h-[58px] shrink-0 border-t border-border bg-surface/95 backdrop-blur-sm"
+      className="safe-bottom flex h-[62px] shrink-0 border-t border-ink/15 bg-[#EFE6D8]/95 backdrop-blur-sm"
     >
       {tabs.map((tab) => (
         <NavLink
@@ -56,13 +56,22 @@ export function TabBar() {
           to={tab.to}
           className={({ isActive }) =>
             [
-              'flex flex-1 flex-col items-center justify-center gap-0.5 border-t-2 py-2 transition-colors',
-              isActive ? 'border-ink text-ink' : 'border-transparent text-ink-faint',
+              'relative flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-colors',
+              isActive ? 'text-ink' : 'text-ink-faint',
             ].join(' ')
           }
         >
-          <TabIcon name={tab.icon} />
-          <span className="text-[10px] font-medium tracking-wide">{tab.label}</span>
+          {({ isActive }) => (
+            <>
+              {isActive && (
+                <span className="absolute top-0 h-[3px] w-8 bg-ink" aria-hidden />
+              )}
+              <TabIcon name={tab.icon} active={isActive} />
+              <span className={['text-[10px] tracking-wide', isActive ? 'font-semibold' : 'font-medium'].join(' ')}>
+                {tab.label}
+              </span>
+            </>
+          )}
         </NavLink>
       ))}
     </nav>

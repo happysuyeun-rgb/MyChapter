@@ -104,25 +104,30 @@ export function ProjectsListPage() {
   }
 
   return (
-    <div className="desk-fade-in flex flex-1 flex-col overflow-y-auto bg-surface">
-      <header className="px-5 pb-6 pt-7">
-        <div className="desk-rule flex items-end justify-between pb-5">
+    <div className="desk-fade-in desk-blotter flex flex-1 flex-col overflow-y-auto">
+      <header className="px-5 pb-5 pt-7">
+        <p className="font-serif text-[12px] font-bold tracking-[0.28em] text-ink">MY CHAPTER</p>
+        <div className="mt-4 flex items-end justify-between gap-3">
           <div>
-            <p className="text-[11px] font-semibold tracking-[0.22em] text-sage">MY LIBRARY</p>
-            <h1 className="mt-2 font-serif text-[30px] font-bold tracking-[-0.03em]">서재</h1>
-            <p className="mt-2 text-xs text-ink-muted">{projects.length}권의 책 · 내가 만드는 책들</p>
+            <h1 className="font-serif text-[32px] font-bold tracking-[-0.03em]">서재</h1>
+            <p className="mt-2 text-xs text-ink-muted">{projects.length}권 · 내가 만드는 책 선반</p>
           </div>
-          <button type="button" className="min-h-11 text-sm font-semibold" onClick={handleCreate}>
+          <button
+            type="button"
+            className="min-h-11 border border-ink bg-ink px-3 text-sm font-semibold text-surface"
+            onClick={handleCreate}
+          >
             새 책 +
           </button>
         </div>
+        <div className="shelf-rail mt-6 h-2 w-full" aria-hidden />
       </header>
 
       {projects.length === 0 ? (
         <EmptyState variant="library" />
       ) : (
         <main className="px-5 pb-10">
-          <div className="flex border-b border-border">
+          <div className="flex border-b border-border bg-surface-card/60">
             {FILTERS.map((item) => (
               <button
                 key={item}
@@ -210,14 +215,14 @@ export function ProjectsListPage() {
 
           <button
             type="button"
-            className="mt-7 flex min-h-[54px] w-full items-center justify-between border-y border-dashed border-border px-1 text-left"
+            className="mt-7 flex min-h-[56px] w-full items-center justify-between border border-dashed border-ink/30 bg-surface-card/70 px-4 text-left"
             onClick={handleCreate}
           >
             <span>
-              <span className="block font-serif text-sm font-bold">새로운 한 권 시작하기</span>
-              <span className="mt-1 block text-[11px] text-ink-muted">또 다른 이야기를 위한 빈 책</span>
+              <span className="block font-serif text-sm font-bold">선반에 빈 책 추가</span>
+              <span className="mt-1 block text-[11px] text-ink-muted">새로운 한 권의 시작</span>
             </span>
-            <span className="text-xl text-ink-faint">+</span>
+            <span className="text-xl text-ink">+</span>
           </button>
         </main>
       )}

@@ -77,9 +77,9 @@ export function HomePage() {
   const readiness = getBookReadiness(project, recordCount)
   const isPublished = latestPublication !== null
   const isReady = readiness.isReady && !isPublished
+  const bookTitle = latestPublication?.title_snapshot ?? project.title
   const today = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' })
 
-  // H-02 / H-03 / H-04 primary CTA (05_SCREEN_SPEC)
   const primary = isPublished
     ? {
         label: '발행한 책 보기',
@@ -98,20 +98,30 @@ export function HomePage() {
           to: '/record/mode',
         }
 
+  const statusLabel = isPublished
+    ? `발행완료 · v${latestPublication.version}`
+    : readiness.isReady
+      ? '책 만들기 가능'
+      : '기록 중'
+
   return (
-    <div className="desk-fade-in flex flex-1 flex-col overflow-y-auto bg-surface">
-      <header className="px-5 pb-5 pt-6">
-        <div className="flex items-start justify-between">
+    <div className="desk-fade-in desk-blotter flex flex-1 flex-col overflow-y-auto">
+      {/* Brand masthead — hero-level signal */}
+      <header className="px-5 pb-4 pt-6">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] tracking-[0.12em] text-ink-faint">{today}</p>
-            <h1 className="mt-2 font-serif text-[24px] font-bold tracking-[-0.03em]">
-              {profile?.nickname ?? '회원'}님의 작업실
+            <p className="font-serif text-[13px] font-bold tracking-[0.28em] text-ink">MY CHAPTER</p>
+            <p className="mt-3 text-[11px] tracking-[0.08em] text-ink-faint">{today}</p>
+            <h1 className="mt-1 font-serif text-[26px] font-bold leading-tight tracking-[-0.03em] text-ink">
+              {profile?.nickname ?? '회원'}님의
+              <br />
+              책 작업 데스크
             </h1>
           </div>
           <button
             type="button"
             aria-label="알림"
-            className="relative flex h-11 w-11 items-center justify-center border border-border bg-surface text-ink"
+            className="relative mt-1 flex h-11 w-11 shrink-0 items-center justify-center border border-border-strong bg-surface-card text-ink"
             onClick={() => navigate('/notifications')}
           >
             <FlatIcon name="bell" size={20} />
@@ -120,130 +130,123 @@ export function HomePage() {
         </div>
       </header>
 
-      <main className="pb-8">
-        <section className="bg-ink px-5 py-7 text-surface">
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] font-semibold tracking-[0.22em] text-surface/55">
-              {isPublished ? 'PUBLISHED BOOK' : 'CURRENT BOOK'}
-            </p>
-            <button type="button" className="text-xs text-surface/70" onClick={() => navigate('/library')}>
-              서재 →
-            </button>
-          </div>
-
-          <div className="mt-6 flex gap-5">
-            <div className="flex h-36 w-24 shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-[#F2E6D4] p-3.5 text-ink shadow-[8px_10px_0_rgba(0,0,0,.12)]">
-              <span className="text-[7px] tracking-[0.18em] text-ink/45">MY CHAPTER</span>
-              <div>
-                <span className="mb-3 block h-px w-7 bg-sage" />
-                <p className="line-clamp-4 font-serif text-[13px] font-bold leading-[1.45]">
-                  {latestPublication?.title_snapshot ?? project.title}
-                </p>
-              </div>
-              <span className="text-[7px] text-ink/45">{typeLabel}</span>
+      <main className="pb-10">
+        {/* Desk blotter + book stage */}
+        <section className="px-5">
+          <div className="desk-ink-panel relative overflow-hidden px-5 pb-6 pt-5 text-surface">
+            <div
+              className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-sage/20 blur-2xl"
+              aria-hidden
+            />
+            <div className="relative flex items-center justify-between">
+              <p className="text-[10px] font-semibold tracking-[0.22em] text-surface/50">
+                {isPublished ? 'PUBLISHED' : 'ON THE DESK'}
+              </p>
+              <button
+                type="button"
+                className="text-[11px] font-medium text-surface/70 underline-offset-2 hover:underline"
+                onClick={() => navigate('/library')}
+              >
+                서재 보기
+              </button>
             </div>
 
-            <div className="min-w-0 flex-1 pt-1">
-              <p className="text-xs text-surface/55">{typeLabel}</p>
-              <h2 className="mt-2 line-clamp-2 font-serif text-xl font-bold leading-snug">
-                {latestPublication?.title_snapshot ?? project.title}
-              </h2>
-              {isPublished ? (
-                <div className="mt-6">
-                  <p className="font-serif text-xl font-bold">v{latestPublication.version} · 발행 완료</p>
-                  <p className="mt-2 text-[11px] text-surface/65">
-                    {new Date(latestPublication.published_at).toLocaleDateString('ko-KR')} 발행
-                  </p>
+            <div className="relative mt-6 flex gap-5">
+              <div className="flex h-44 w-[108px] shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-[#F2E6D4] p-3.5 text-ink shadow-[10px_12px_0_rgba(0,0,0,.18)]">
+                <span className="text-[7px] tracking-[0.18em] text-ink/45">MY CHAPTER</span>
+                <div>
+                  <span className="mb-3 block h-px w-8 bg-sage" />
+                  <p className="line-clamp-5 font-serif text-[14px] font-bold leading-[1.4]">{bookTitle}</p>
                 </div>
-              ) : (
-                <DeskProgress
-                  className="mt-6"
-                  tone="ink"
-                  score={readiness.score}
-                  message={readiness.message}
-                  recordCount={recordCount}
-                />
-              )}
+                <span className="text-[7px] text-ink/45">{typeLabel}</span>
+              </div>
+
+              <div className="min-w-0 flex-1 self-end pb-1">
+                <p className="text-[11px] text-surface/55">{typeLabel}</p>
+                <h2 className="mt-1.5 line-clamp-3 font-serif text-[22px] font-bold leading-snug tracking-[-0.02em]">
+                  {bookTitle}
+                </h2>
+                {isPublished ? (
+                  <div className="mt-5">
+                    <p className="font-serif text-2xl font-bold">v{latestPublication.version}</p>
+                    <p className="mt-1 text-[11px] text-surface/60">
+                      {new Date(latestPublication.published_at).toLocaleDateString('ko-KR')} 발행
+                    </p>
+                  </div>
+                ) : (
+                  <DeskProgress
+                    className="mt-5"
+                    tone="ink"
+                    score={readiness.score}
+                    message={readiness.message}
+                    recordCount={recordCount}
+                  />
+                )}
+              </div>
             </div>
+
+            <div className="relative mt-6">
+              <button
+                type="button"
+                className="flex min-h-[52px] w-full items-center justify-center bg-[#F7F2E8] px-5 text-[15px] font-semibold text-ink transition-opacity active:translate-y-px active:opacity-90"
+                onClick={() => navigate(primary.to)}
+              >
+                {primary.label}
+              </button>
+              <p className="mt-2.5 text-center text-[11px] text-surface/55">{primary.hint}</p>
+            </div>
+
+            {isReady && (
+              <button
+                type="button"
+                className="relative mt-3 min-h-10 w-full text-center text-[12px] text-surface/70"
+                onClick={() => navigate('/record/mode')}
+              >
+                계속 기록하기 →
+              </button>
+            )}
+            {isPublished && (
+              <button
+                type="button"
+                className="relative mt-3 min-h-10 w-full text-center text-[12px] text-surface/70"
+                onClick={() => navigate('/project/workspace')}
+              >
+                책 작업실 열기 →
+              </button>
+            )}
           </div>
-
-          <button
-            type="button"
-            className="mt-7 flex min-h-[52px] w-full items-center justify-between border-t border-surface/20 pt-4 text-left"
-            onClick={() => navigate(primary.to)}
-          >
-            <span>
-              <span className="block font-serif text-base font-bold">{primary.label}</span>
-              <span className="mt-1 block text-[11px] text-surface/55">{primary.hint}</span>
-            </span>
-            <span className="text-xl" aria-hidden>
-              →
-            </span>
-          </button>
-
-          {isReady && (
-            <button
-              type="button"
-              className="mt-3 min-h-11 w-full text-left text-[12px] text-surface/70"
-              onClick={() => navigate('/record/mode')}
-            >
-              계속 기록하기 →
-            </button>
-          )}
-          {isPublished && (
-            <button
-              type="button"
-              className="mt-3 min-h-11 w-full text-left text-[12px] text-surface/70"
-              onClick={() => navigate('/project/workspace')}
-            >
-              책 작업실 열기 →
-            </button>
-          )}
         </section>
 
-        <section className="px-5 pt-8">
-          <div className="desk-rule flex items-end justify-between pb-3">
-            <div>
-              <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">PAGE&apos;S NOTE</p>
-              <h2 className="mt-1 font-serif text-lg font-bold">작은 편집 메모</h2>
-            </div>
-            <FlatIcon name="book" size={22} className="text-sage" />
+        {/* Ledger strip */}
+        <section className="mx-5 mt-5 grid grid-cols-2 border border-border bg-surface-card/80">
+          <div className="border-r border-border px-4 py-3.5">
+            <p className="text-[10px] tracking-[0.12em] text-ink-faint">PAGES</p>
+            <p className="mt-1 font-serif text-xl font-bold">{recordCount}</p>
           </div>
+          <div className="px-4 py-3.5">
+            <p className="text-[10px] tracking-[0.12em] text-ink-faint">STATUS</p>
+            <p className="mt-1 font-serif text-sm font-bold leading-snug">{statusLabel}</p>
+          </div>
+        </section>
 
-          <div className="py-5">
-            <p className="font-serif text-[16px] font-semibold leading-7">
+        {/* PAGE note as editorial quote */}
+        <section className="px-5 pt-8">
+          <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">PAGE&apos;S NOTE</p>
+          <div className="quote-rule mt-4">
+            <p className="font-serif text-[17px] font-semibold leading-7 text-ink">
               {isPublished
                 ? '당신의 이야기가 한 권의 책이 되었어요.'
                 : readiness.isReady
                   ? '이제 기록을 한 권의 이야기로 묶을 수 있어요.'
                   : '지금은 잘 쓰는 것보다, 계속 남기는 것이 더 중요해요.'}
             </p>
-            <p className="mt-2 text-xs leading-6 text-ink-muted">
+            <p className="mt-3 text-xs leading-6 text-ink-muted">
               {isPublished
                 ? `최신 발행본 v${latestPublication.version}을 확인하거나 책 작업실에서 다음 작업을 이어갈 수 있어요.`
                 : readiness.isReady
                   ? '책 작업실에서 PAGE와 함께 챕터의 연결점을 찾고 원고를 만들어보세요.'
-                  : `책 만들기까지 ${readiness.recordsRemaining > 0 ? `기록 ${readiness.recordsRemaining}개` : '기록 조건 충족'}${readiness.daysRemaining > 0 ? ` · ${readiness.daysRemaining}일` : ''}. 평범한 하루도 나중에는 책의 재료가 됩니다.`}
+                  : `책 만들기까지 ${readiness.recordsRemaining > 0 ? `기록 ${readiness.recordsRemaining}개` : '기록 조건 충족'}${readiness.daysRemaining > 0 ? ` · ${readiness.daysRemaining}일` : ''}.`}
             </p>
-          </div>
-        </section>
-
-        <section className="px-5 pt-2">
-          <div className="border-y border-border py-4">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-ink-muted">현재 기록</span>
-              <span className="font-semibold">{recordCount} pages</span>
-            </div>
-            <div className="mt-3 flex items-center justify-between text-xs">
-              <span className="text-ink-muted">책 상태</span>
-              <span className="font-semibold">
-                {isPublished
-                  ? `발행완료 · v${latestPublication.version}`
-                  : readiness.isReady
-                    ? '책 만들기 가능'
-                    : '기록 중'}
-              </span>
-            </div>
           </div>
         </section>
       </main>
