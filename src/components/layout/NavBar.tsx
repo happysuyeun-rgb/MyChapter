@@ -39,7 +39,7 @@ export function NavBar({
     ) : undefined)
 
   return (
-    <header className="shrink-0 border-b border-border bg-surface px-5 pb-3 pt-5">
+    <header className="shrink-0 border-b border-border bg-surface px-5 pb-3 pt-4">
       <BrandMasthead
         left={
           leftLabel !== undefined ? (

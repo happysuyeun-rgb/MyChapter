@@ -23,7 +23,7 @@ export function MyPage() {
 
   return (
     <div className="flex flex-1 flex-col overflow-y-auto bg-surface">
-      <header className="px-5 pb-6 pt-6">
+      <header className="px-5 pb-5 pt-4">
         <BrandMasthead
           right={
             <button

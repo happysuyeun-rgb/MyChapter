@@ -101,7 +101,7 @@ export function HomePage() {
   return (
     <div className="desk-fade-in flex flex-1 flex-col overflow-y-auto bg-surface">
       {/* Brand masthead — hero-level signal */}
-      <header className="px-5 pb-8 pt-6">
+      <header className="px-5 pb-5 pt-4">
         <BrandMasthead
           right={
             <button
