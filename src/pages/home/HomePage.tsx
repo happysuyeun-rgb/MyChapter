@@ -222,7 +222,7 @@ export function HomePage() {
             ))}
           </div>
 
-          <section className="mt-5 rounded-2xl border border-border bg-surface-card px-4 py-4 shadow-paper">
+          <section className="mt-5 rounded-2xl border border-border bg-transparent px-4 py-4">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-[15px] font-bold text-ink">최근 기록</h2>
               <button
