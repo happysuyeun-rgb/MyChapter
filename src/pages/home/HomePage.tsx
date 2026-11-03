@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { DeskProgress, EmptyState, ErrorState, FlatIcon, LoadingBlock } from '@/components/common'
+import { Badge, DeskProgress, EmptyState, ErrorState, FlatIcon, LoadingBlock } from '@/components/common'
 import { BrandMasthead } from '@/components/layout/BrandMasthead'
 import pageNoteImage from '@/assets/images/home/page-note/page_c.png'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
@@ -143,7 +143,9 @@ export function HomePage() {
             </div>
 
             <div className="min-w-0 flex-1 self-center">
-              <p className="text-[11px] text-ink-muted">{typeLabel}</p>
+              <Badge variant={isPublished ? 'accent' : 'gray'}>
+                {isPublished ? '발행완료' : readiness.isReady ? '발행가능' : '진행중'}
+              </Badge>
               <button
                 type="button"
                 className="mt-1.5 w-full text-left"
