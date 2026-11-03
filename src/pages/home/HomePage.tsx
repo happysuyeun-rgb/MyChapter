@@ -121,7 +121,9 @@ export function HomePage() {
           <h1 className="min-w-0 truncate font-serif text-[26px] font-bold leading-tight tracking-[-0.03em] text-ink">
             {profile?.nickname ?? '회원'}님 안녕하세요.
           </h1>
-          <FlatIcon name="hello" size={22} className="shrink-0 text-sage" aria-hidden />
+          <span className="shrink-0 text-[22px] leading-none" aria-hidden>
+            👋
+          </span>
         </div>
         <p className="mt-2 truncate text-[12px] leading-5 text-ink-muted">
           오늘의 기록이 당신의 책을 완성해가고 있어요.
