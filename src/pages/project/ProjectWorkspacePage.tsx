@@ -9,6 +9,7 @@ import {
   type StudioStep,
 } from '@/components/common'
 import { BrandMasthead } from '@/components/layout/BrandMasthead'
+import pageNoteImage from '@/assets/images/home/page-note/page_c.png'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { getPublishedBook } from '@/lib/api/books'
@@ -246,13 +247,16 @@ export function ProjectWorkspacePage() {
         </StudioSection>
 
         <StudioSection eyebrow="PAGE" title="PAGE의 편집 메모">
-          <div className="flex gap-3">
-            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border border-[#D8CCB9] bg-[#FFF9EE] shadow-sm">
-              <span className="absolute -top-1 left-4 h-2 w-1 rotate-[-28deg] rounded-full bg-sage" />
-              <span className="absolute -top-1 right-2 h-1.5 w-2 rotate-[25deg] rounded-full bg-sage" />
-              <span className="font-serif text-[9px] font-bold tracking-[0.1em]">PAGE</span>
-            </div>
-            <div>
+          <div className="flex items-center gap-4">
+            <img
+              src={pageNoteImage}
+              alt="PAGE"
+              width={88}
+              height={88}
+              className="h-[88px] w-[88px] shrink-0 object-contain"
+              decoding="async"
+            />
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold">작은 편집 메모</p>
               <p className="mt-1 text-xs leading-relaxed text-ink-muted">
                 {readiness.isReady
