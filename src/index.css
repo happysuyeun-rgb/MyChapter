@@ -3,6 +3,23 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --mc-ink: #3b352d;
+    --mc-ink-muted: #756d62;
+    --mc-ink-faint: #a79d90;
+    --mc-surface: #f7f2e8;
+    --mc-surface-card: #fffdf8;
+    --mc-surface-alt: #eee5d7;
+    --mc-sage: #7c8d78;
+    --mc-terracotta: #c87959;
+    --mc-danger: #b85c4a;
+    --mc-border: rgba(59, 53, 45, 0.12);
+    --mc-border-strong: rgba(59, 53, 45, 0.24);
+    --mc-shadow-paper: 0 8px 28px rgba(59, 53, 45, 0.08);
+    --mc-radius-btn: 14px;
+    --mc-max-phone: 430px;
+  }
+
   html, body, #root { @apply h-full; }
   body {
     @apply bg-surface font-sans text-ink antialiased;
@@ -10,9 +27,22 @@
     background-image: radial-gradient(rgba(59,53,45,.025) 0.7px, transparent 0.7px);
     background-size: 7px 7px;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .desk-fade-in { animation: none !important; }
+  }
 }
 
 @layer utilities {
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
   .paper-card { @apply border border-border bg-surface-card shadow-paper; }
+  .desk-rule { @apply border-b border-ink; }
+  .desk-fade-in {
+    animation: desk-fade-in 120ms ease-out;
+  }
+}
+
+@keyframes desk-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

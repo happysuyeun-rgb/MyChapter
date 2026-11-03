@@ -19,18 +19,23 @@ export function ErrorState({
   return (
     <div
       className={[
-        'flex flex-1 flex-col items-center justify-center px-8 py-12 text-center',
+        'desk-fade-in flex flex-1 flex-col justify-center px-8 py-12',
         className,
       ].join(' ')}
     >
-      <div className="mb-5 flex size-[72px] items-center justify-center rounded-full bg-surface-alt text-ink-muted">
-        <FlatIcon name="alert" size={28} />
+      <div className="desk-rule border-t border-ink py-8 text-left">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-semibold tracking-[0.2em] text-terracotta">NOTICE</p>
+          <FlatIcon name="alert" size={28} className="text-ink-muted" />
+        </div>
+        <h2 className="mt-5 font-serif text-lg font-bold text-ink">{title}</h2>
+        <p className="mt-3 max-w-[280px] text-sm leading-6 text-ink-muted">{description}</p>
       </div>
-      <h2 className="mb-2 font-serif text-lg font-bold text-ink">{title}</h2>
-      <p className="mb-8 max-w-[260px] text-sm leading-relaxed text-ink-muted">
-        {description}
-      </p>
-      {onRetry && <Button onClick={onRetry}>{retryLabel}</Button>}
+      {onRetry && (
+        <Button className="mt-7" onClick={onRetry}>
+          {retryLabel}
+        </Button>
+      )}
     </div>
   )
 }

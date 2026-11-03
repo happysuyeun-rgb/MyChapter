@@ -1,7 +1,7 @@
 # 10. Design System
 
-**Status:** Brand/UI direction v1  
-**Updated:** 2026-09-28
+**Status:** Editorial Book Desk — confirmed direction (Redesign Phase 1–2)  
+**Updated:** 2026-11-03
 
 ## Brand concept
 
@@ -11,7 +11,13 @@ Visual direction:
 
 > Paper × Botanical × Vintage × Editorial × AI
 
+**Product metaphor:** Editorial Book Desk — a quiet workspace for making and publishing *a book of me* (not a wellness diary, not a content store).
+
 The product should feel like a modern app containing a quiet editorial/book-making space.
+
+**Redesign pack:** `docs/redesign/` (`01`–`08`) — audit, IA, token/component change plans.  
+**Screen & behavior source of truth:** `docs/05_SCREEN_SPEC.md`, `docs/02_PRODUCT_DECISIONS.md`.  
+Token/component deltas: `docs/redesign/07_TOKEN_CHANGE_PLAN.md`, `08_COMMON_COMPONENTS.md`.
 
 ## Core colors
 

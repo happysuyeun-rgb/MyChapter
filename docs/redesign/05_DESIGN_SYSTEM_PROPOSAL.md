@@ -22,7 +22,7 @@
 | Ink | 본문·제목 | 본문 기본 |
 | Ivory / Paper | 면·배경 | 페이지 바탕 |
 | Sage | 보조·성공·준비도 | 진행·완료 |
-| Terracotta | Primary CTA | 버튼·강조 1개/화면 |
+| Terracotta | 선택 강조·경고·배지 | Primary CTA **아님** (CTA는 Ink) |
 | Line / Hairline | 구분 | 카드 대신 규칙선 |
 
 **금지(리뉴얼에서도):** 보라 그라데이션 기본 테마, 크림+세리프+테라코타 클리셰 복제, 다크모드 기본화.

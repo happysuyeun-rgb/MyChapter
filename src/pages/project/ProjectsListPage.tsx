@@ -104,13 +104,13 @@ export function ProjectsListPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col overflow-y-auto bg-surface">
+    <div className="desk-fade-in flex flex-1 flex-col overflow-y-auto bg-surface">
       <header className="px-5 pb-6 pt-7">
-        <div className="flex items-end justify-between border-b border-ink pb-5">
+        <div className="desk-rule flex items-end justify-between pb-5">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.22em] text-sage">MY LIBRARY</p>
-            <h1 className="mt-2 font-serif text-[30px] font-bold tracking-[-0.03em]">내 서재</h1>
-            <p className="mt-2 text-xs text-ink-muted">{projects.length}권의 책 · 기록과 발행을 한곳에서</p>
+            <h1 className="mt-2 font-serif text-[30px] font-bold tracking-[-0.03em]">서재</h1>
+            <p className="mt-2 text-xs text-ink-muted">{projects.length}권의 책 · 내가 만드는 책들</p>
           </div>
           <button type="button" className="min-h-11 text-sm font-semibold" onClick={handleCreate}>
             새 책 +
@@ -119,7 +119,7 @@ export function ProjectsListPage() {
       </header>
 
       {projects.length === 0 ? (
-        <EmptyState variant="home" />
+        <EmptyState variant="library" />
       ) : (
         <main className="px-5 pb-10">
           <div className="flex border-b border-border">
