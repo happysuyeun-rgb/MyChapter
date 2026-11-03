@@ -40,21 +40,12 @@
   .desk-fade-in {
     animation: desk-fade-in 180ms ease-out;
   }
-  /* Warm desk blotter — distinguishes renewed shell from flat ivory pages */
-  .desk-blotter {
-    background:
-      linear-gradient(165deg, rgba(255, 253, 248, 0.92) 0%, rgba(238, 229, 215, 0.75) 48%, rgba(247, 242, 232, 0.95) 100%),
-      radial-gradient(ellipse 120% 80% at 10% 0%, rgba(124, 141, 120, 0.12), transparent 55%),
-      radial-gradient(ellipse 90% 70% at 100% 20%, rgba(200, 121, 89, 0.08), transparent 50%);
-  }
   .desk-ink-panel {
-    background:
-      linear-gradient(160deg, #2f2a23 0%, #3b352d 42%, #4a4339 100%);
-    box-shadow: inset 0 1px 0 rgba(255, 253, 248, 0.08);
+    background: var(--mc-ink);
   }
   .shelf-rail {
-    background: linear-gradient(180deg, #d9cdb8 0%, #cbb99e 55%, #b9a688 100%);
-    box-shadow: 0 2px 0 rgba(59, 53, 45, 0.12);
+    background: var(--mc-surface-alt);
+    border-bottom: 1px solid var(--mc-border-strong);
   }
   .quote-rule {
     border-left: 2px solid var(--mc-sage);

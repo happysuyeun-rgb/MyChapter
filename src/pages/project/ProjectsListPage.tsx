@@ -104,7 +104,7 @@ export function ProjectsListPage() {
   }
 
   return (
-    <div className="desk-fade-in desk-blotter flex flex-1 flex-col overflow-y-auto">
+    <div className="desk-fade-in flex flex-1 flex-col overflow-y-auto bg-surface">
       <header className="px-5 pb-5 pt-7">
         <p className="font-serif text-[12px] font-bold tracking-[0.28em] text-ink">MY CHAPTER</p>
         <div className="mt-4 flex items-end justify-between gap-3">

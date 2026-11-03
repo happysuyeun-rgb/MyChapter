@@ -105,7 +105,7 @@ export function HomePage() {
       : '기록 중'
 
   return (
-    <div className="desk-fade-in desk-blotter flex flex-1 flex-col overflow-y-auto">
+    <div className="desk-fade-in flex flex-1 flex-col overflow-y-auto bg-surface">
       {/* Brand masthead — hero-level signal */}
       <header className="px-5 pb-4 pt-6">
         <div className="flex items-start justify-between gap-3">
@@ -133,12 +133,8 @@ export function HomePage() {
       <main className="pb-10">
         {/* Desk blotter + book stage */}
         <section className="px-5">
-          <div className="desk-ink-panel relative overflow-hidden px-5 pb-6 pt-5 text-surface">
-            <div
-              className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-sage/20 blur-2xl"
-              aria-hidden
-            />
-            <div className="relative flex items-center justify-between">
+          <div className="desk-ink-panel px-5 pb-6 pt-5 text-surface">
+            <div className="flex items-center justify-between">
               <p className="text-[10px] font-semibold tracking-[0.22em] text-surface/50">
                 {isPublished ? 'PUBLISHED' : 'ON THE DESK'}
               </p>
@@ -151,7 +147,7 @@ export function HomePage() {
               </button>
             </div>
 
-            <div className="relative mt-6 flex gap-5">
+            <div className="mt-6 flex gap-5">
               <div className="flex h-44 w-[108px] shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-[#F2E6D4] p-3.5 text-ink shadow-[10px_12px_0_rgba(0,0,0,.18)]">
                 <span className="text-[7px] tracking-[0.18em] text-ink/45">MY CHAPTER</span>
                 <div>
@@ -185,7 +181,7 @@ export function HomePage() {
               </div>
             </div>
 
-            <div className="relative mt-6">
+            <div className="mt-6">
               <button
                 type="button"
                 className="flex min-h-[52px] w-full items-center justify-center bg-[#F7F2E8] px-5 text-[15px] font-semibold text-ink transition-opacity active:translate-y-px active:opacity-90"
@@ -199,7 +195,7 @@ export function HomePage() {
             {isReady && (
               <button
                 type="button"
-                className="relative mt-3 min-h-10 w-full text-center text-[12px] text-surface/70"
+                className="mt-3 min-h-10 w-full text-center text-[12px] text-surface/70"
                 onClick={() => navigate('/record/mode')}
               >
                 계속 기록하기 →
@@ -208,7 +204,7 @@ export function HomePage() {
             {isPublished && (
               <button
                 type="button"
-                className="relative mt-3 min-h-10 w-full text-center text-[12px] text-surface/70"
+                className="mt-3 min-h-10 w-full text-center text-[12px] text-surface/70"
                 onClick={() => navigate('/project/workspace')}
               >
                 책 작업실 열기 →

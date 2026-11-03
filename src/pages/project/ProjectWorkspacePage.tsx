@@ -164,7 +164,7 @@ export function ProjectWorkspacePage() {
   ]
 
   return (
-    <div className="desk-fade-in desk-blotter mx-auto min-h-dvh w-full max-w-phone overflow-y-auto">
+    <div className="desk-fade-in mx-auto min-h-dvh w-full max-w-phone overflow-y-auto bg-surface">
       <header className="px-5 pb-5 pt-6">
         <button
           type="button"
