@@ -95,7 +95,7 @@ export function HomePage() {
         }
       : {
           label: '오늘 한 페이지 쓰기',
-          hint: 'AI 질문 · 자유 기록 · 사진 기록',
+          hint: '',
           to: '/record/mode',
         }
 
@@ -188,7 +188,9 @@ export function HomePage() {
               >
                 {primary.label}
               </button>
-              <p className="mt-2.5 text-center text-[11px] text-surface/55">{primary.hint}</p>
+              {primary.hint ? (
+                <p className="mt-2.5 text-center text-[11px] text-surface/55">{primary.hint}</p>
+              ) : null}
             </div>
 
             {isReady && (
