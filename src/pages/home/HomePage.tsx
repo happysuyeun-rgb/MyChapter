@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Badge, DeskProgress, EmptyState, ErrorState, FlatIcon, LoadingBlock } from '@/components/common'
 import { BrandMasthead } from '@/components/layout/BrandMasthead'
 import bookDefaultCover from '@/assets/images/home/Book_defualt.png'
+import jandiImage from '@/assets/images/home/jandi.png'
 import pageNoteImage from '@/assets/images/home/page-note/page_c.png'
 import { getUnreadCount } from '@/lib/api/notifications'
 import { getPublishedBook, type PublishedBook } from '@/lib/api/books'
@@ -136,7 +137,7 @@ export function HomePage() {
             안녕하세요, {profile?.nickname ?? '회원'}님{' '}
             <span aria-hidden>🌱</span>
           </p>
-          <h1 className="mt-2 font-serif text-[22px] font-bold leading-[1.35] tracking-[-0.02em] text-[#3A4638]">
+          <h1 className="mt-2 font-serif text-[26px] font-bold leading-[1.35] tracking-[-0.02em] text-[#3A4638]">
             당신의 이야기가
             <br />
             한 권의 책이 됩니다.
@@ -148,7 +149,7 @@ export function HomePage() {
           </p>
         </div>
         <img
-          src={pageNoteImage}
+          src={jandiImage}
           alt=""
           width={112}
           height={112}
