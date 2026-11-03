@@ -9,6 +9,7 @@ import {
   type StudioStep,
 } from '@/components/common'
 import { BrandMasthead } from '@/components/layout/BrandMasthead'
+import bookDefaultCover from '@/assets/images/home/Book_defualt.png'
 import pageNoteImage from '@/assets/images/home/page-note/page_c.png'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { useActiveProject } from '@/hooks/useActiveProject'
@@ -190,10 +191,20 @@ export function ProjectWorkspacePage() {
           }
         />
         <div className="mt-4 flex gap-5">
-          <div className="flex h-32 w-[86px] shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-ink p-3 text-surface shadow-[8px_10px_0_rgba(59,53,45,.14)]">
-            <span className="text-[6px] tracking-[0.18em] opacity-55">MY CHAPTER</span>
-            <span className="line-clamp-4 font-serif text-[11px] font-bold leading-[1.45]">{project.title}</span>
-            <span className="h-px w-5 bg-sage" />
+          <div className="relative h-32 w-[86px] shrink-0">
+            <img
+              src={bookDefaultCover}
+              alt=""
+              width={86}
+              height={128}
+              className="h-full w-full object-contain drop-shadow-[6px_8px_0_rgba(59,53,45,.12)]"
+              decoding="async"
+            />
+            <div className="pointer-events-none absolute inset-x-[10%] top-[10%] flex h-[40%] items-center justify-center px-0.5">
+              <span className="line-clamp-4 text-center font-serif text-[10px] font-bold leading-[1.35] text-ink">
+                {project.title}
+              </span>
+            </div>
           </div>
           <div className="min-w-0 flex-1 pt-1">
             <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">BOOK WORKSPACE</p>
