@@ -133,9 +133,6 @@ export function HomePage() {
       <main className="pb-10">
         <section className="px-5 text-ink">
           <div className="flex flex-col items-center">
-            <h1 className="mb-4 border-b border-ink pb-1 text-center font-serif text-[22px] font-bold leading-snug tracking-[-0.02em] text-ink">
-              당신의 이야기를 책으로
-            </h1>
             <button
               type="button"
               className="relative w-[200px] shrink-0 active:translate-y-px"
