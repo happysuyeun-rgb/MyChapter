@@ -140,9 +140,16 @@ export function HomePage() {
 
             <div className="min-w-0 flex-1 self-center">
               <p className="text-[11px] text-ink-muted">{typeLabel}</p>
-              <h2 className="mt-1.5 line-clamp-3 font-serif text-[20px] font-bold leading-snug tracking-[-0.02em] text-ink">
-                {bookTitle}
-              </h2>
+              <button
+                type="button"
+                className="mt-1.5 w-full text-left"
+                onClick={() => navigate('/record/mode')}
+                aria-label={`${bookTitle} 이어쓰기`}
+              >
+                <h2 className="line-clamp-3 font-serif text-[20px] font-bold leading-snug tracking-[-0.02em] text-ink underline-offset-4 active:underline">
+                  {bookTitle}
+                </h2>
+              </button>
               {isPublished ? (
                 <div className="mt-4">
                   <p className="font-serif text-2xl font-bold text-ink">v{latestPublication.version}</p>
