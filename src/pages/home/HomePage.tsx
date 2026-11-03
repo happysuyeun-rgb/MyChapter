@@ -227,17 +227,15 @@ export function HomePage() {
         {/* PAGE note — character + editorial quote */}
         <section className="px-5 pb-2 pt-8">
           <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">PAGE&apos;S NOTE</p>
-          <div className="mt-4 flex items-center gap-4">
-            <div className="relative shrink-0 overflow-hidden rounded-[18px] bg-ink shadow-paper ring-1 ring-ink/10">
-              <img
-                src={pageNoteImage}
-                alt="PAGE"
-                width={112}
-                height={112}
-                className="h-[112px] w-[112px] object-cover object-center"
-                decoding="async"
-              />
-            </div>
+          <div className="mt-4 flex items-center gap-3.5">
+            <img
+              src={pageNoteImage}
+              alt="PAGE"
+              width={80}
+              height={80}
+              className="h-20 w-20 shrink-0 object-contain"
+              decoding="async"
+            />
             <div className="quote-rule min-w-0 flex-1">
               <p className="font-serif text-[16px] font-semibold leading-7 text-ink">
                 {isPublished
