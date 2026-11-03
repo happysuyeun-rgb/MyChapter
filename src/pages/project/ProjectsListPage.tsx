@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { EmptyState, ErrorState, LoadingBlock } from '@/components/common'
 import { BrandMasthead } from '@/components/layout/BrandMasthead'
+import bookDefaultCover from '@/assets/images/home/Book_defualt.png'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { listPublishedBooks } from '@/lib/api/books'
 import { getProjects } from '@/lib/api/projects'
@@ -165,16 +166,20 @@ export function ProjectsListPage() {
                   >
                     <div className="flex gap-5">
                       <div className="relative shrink-0">
-                        <div className={[
-                          'flex h-[126px] w-[84px] flex-col justify-between rounded-r-md rounded-l-[3px] p-3 text-surface shadow-[7px_8px_0_rgba(59,53,45,.10)]',
-                          project.statusLabel === '발행완료' ? 'bg-sage' : 'bg-ink',
-                        ].join(' ')}>
-                          <span className="text-[6px] tracking-[0.18em] opacity-55">MY CHAPTER</span>
-                          <div>
-                            <span className="mb-3 block h-px w-6 bg-surface/45" />
-                            <span className="line-clamp-4 font-serif text-[11px] font-bold leading-[1.45]">{project.title}</span>
+                        <div className="relative h-[126px] w-[84px]">
+                          <img
+                            src={bookDefaultCover}
+                            alt=""
+                            width={84}
+                            height={126}
+                            className="h-full w-full object-contain drop-shadow-[5px_6px_0_rgba(59,53,45,.10)]"
+                            decoding="async"
+                          />
+                          <div className="pointer-events-none absolute inset-x-[10%] top-[10%] flex h-[40%] items-center justify-center px-0.5">
+                            <span className="line-clamp-4 text-center font-serif text-[10px] font-bold leading-[1.35] text-ink">
+                              {project.title}
+                            </span>
                           </div>
-                          <span className="text-[6px] opacity-55">{typeLabel}</span>
                         </div>
                         {isActive && (
                           <span className="absolute -right-2 top-2 bg-terracotta px-1.5 py-1 text-[8px] font-bold tracking-[0.08em] text-white">
