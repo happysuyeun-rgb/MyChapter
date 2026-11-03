@@ -78,7 +78,6 @@ export function HomePage() {
   const typeLabel = PROJECT_TYPES.find((p) => p.type === project.type)?.label ?? '나의 이야기'
   const readiness = getBookReadiness(project, recordCount)
   const isPublished = latestPublication !== null
-  const isReady = readiness.isReady && !isPublished
   const bookTitle = latestPublication?.title_snapshot ?? project.title
 
   const primary = isPublished
@@ -124,86 +123,56 @@ export function HomePage() {
       </header>
 
       <main className="pb-10">
-        <section className="px-5">
-          <div className="border border-border bg-surface-card px-5 pb-6 pt-5 text-ink">
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] font-semibold tracking-[0.22em] text-ink-faint">
-                {isPublished ? 'PUBLISHED' : 'ON THE DESK'}
-              </p>
-              <button
-                type="button"
-                className="text-[11px] font-medium text-ink-muted underline-offset-2 hover:underline"
-                onClick={() => navigate('/library')}
-              >
-                서재 보기
-              </button>
+        <section className="px-5 text-ink">
+          <p className="text-[10px] font-semibold tracking-[0.22em] text-ink-faint">
+            {isPublished ? 'PUBLISHED' : 'ON THE DESK'}
+          </p>
+
+          <div className="mt-5 flex gap-4">
+            <div className="flex h-32 w-[84px] shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-ink p-3 text-surface shadow-[6px_8px_0_rgba(59,53,45,.12)]">
+              <span className="text-[6px] tracking-[0.18em] text-surface/55">MY CHAPTER</span>
+              <div>
+                <span className="mb-2 block h-px w-6 bg-sage" />
+                <p className="line-clamp-4 font-serif text-[12px] font-bold leading-[1.4]">{bookTitle}</p>
+              </div>
+              <span className="text-[6px] text-surface/55">{typeLabel}</span>
             </div>
 
-            <div className="mt-6 flex gap-5">
-              <div className="flex h-44 w-[108px] shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-ink p-3.5 text-surface shadow-[8px_10px_0_rgba(59,53,45,.12)]">
-                <span className="text-[7px] tracking-[0.18em] text-surface/55">MY CHAPTER</span>
-                <div>
-                  <span className="mb-3 block h-px w-8 bg-sage" />
-                  <p className="line-clamp-5 font-serif text-[14px] font-bold leading-[1.4]">{bookTitle}</p>
+            <div className="min-w-0 flex-1 self-center">
+              <p className="text-[11px] text-ink-muted">{typeLabel}</p>
+              <h2 className="mt-1.5 line-clamp-3 font-serif text-[20px] font-bold leading-snug tracking-[-0.02em] text-ink">
+                {bookTitle}
+              </h2>
+              {isPublished ? (
+                <div className="mt-4">
+                  <p className="font-serif text-2xl font-bold text-ink">v{latestPublication.version}</p>
+                  <p className="mt-1 text-[11px] text-ink-muted">
+                    {new Date(latestPublication.published_at).toLocaleDateString('ko-KR')} 발행
+                  </p>
                 </div>
-                <span className="text-[7px] text-surface/55">{typeLabel}</span>
-              </div>
-
-              <div className="min-w-0 flex-1 self-end pb-1">
-                <p className="text-[11px] text-ink-muted">{typeLabel}</p>
-                <h2 className="mt-1.5 line-clamp-3 font-serif text-[22px] font-bold leading-snug tracking-[-0.02em] text-ink">
-                  {bookTitle}
-                </h2>
-                {isPublished ? (
-                  <div className="mt-5">
-                    <p className="font-serif text-2xl font-bold text-ink">v{latestPublication.version}</p>
-                    <p className="mt-1 text-[11px] text-ink-muted">
-                      {new Date(latestPublication.published_at).toLocaleDateString('ko-KR')} 발행
-                    </p>
-                  </div>
-                ) : (
-                  <DeskProgress
-                    className="mt-5"
-                    tone="paper"
-                    score={readiness.score}
-                    message={readiness.message}
-                    recordCount={recordCount}
-                  />
-                )}
-              </div>
+              ) : (
+                <DeskProgress
+                  className="mt-4"
+                  tone="paper"
+                  score={readiness.score}
+                  message={readiness.message}
+                  recordCount={recordCount}
+                />
+              )}
             </div>
+          </div>
 
-            <div className="mt-6">
-              <button
-                type="button"
-                className="flex min-h-[52px] w-full items-center justify-center border border-ink bg-ink px-5 text-[15px] font-semibold text-surface transition-opacity active:translate-y-px active:opacity-90"
-                onClick={() => navigate(primary.to)}
-              >
-                {primary.label}
-              </button>
-              {primary.hint ? (
-                <p className="mt-2.5 text-center text-[11px] text-ink-muted">{primary.hint}</p>
-              ) : null}
-            </div>
-
-            {isReady && (
-              <button
-                type="button"
-                className="mt-3 min-h-10 w-full text-center text-[12px] text-ink-muted"
-                onClick={() => navigate('/project/workspace')}
-              >
-                책 작업실 열기 →
-              </button>
-            )}
-            {isPublished && (
-              <button
-                type="button"
-                className="mt-3 min-h-10 w-full text-center text-[12px] text-ink-muted"
-                onClick={() => navigate('/project/workspace')}
-              >
-                책 작업실 열기 →
-              </button>
-            )}
+          <div className="mt-6">
+            <button
+              type="button"
+              className="flex min-h-[52px] w-full items-center justify-center border border-ink bg-ink px-5 text-[15px] font-semibold text-surface transition-opacity active:translate-y-px active:opacity-90"
+              onClick={() => navigate(primary.to)}
+            >
+              {primary.label}
+            </button>
+            {primary.hint ? (
+              <p className="mt-2.5 text-center text-[11px] text-ink-muted">{primary.hint}</p>
+            ) : null}
           </div>
         </section>
 
