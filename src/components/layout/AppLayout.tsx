@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { TabBar } from './TabBar'
 
 /** Bottom reserve for floating pill tab + safe-area */
-const TAB_DOCK_SPACE = 'pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]'
+const TAB_DOCK_SPACE = 'pb-[calc(5.5rem+20px+env(safe-area-inset-bottom,0px))]'
 
 export function AppLayout() {
   return (

@@ -57,7 +57,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="주요 메뉴"
-      className="safe-bottom w-full px-4 pb-3 pt-2"
+      className="w-full px-4 pb-[calc(20px+env(safe-area-inset-bottom,0px))] pt-2"
     >
       <div className="flex h-[58px] items-stretch rounded-full border border-border bg-surface-card/95 shadow-paper backdrop-blur-sm">
         {tabs.map((tab) => (
