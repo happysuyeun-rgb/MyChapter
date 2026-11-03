@@ -277,28 +277,15 @@ export function HomePage() {
           </section>
         </section>
 
-        {/* PAGE note — character + editorial quote */}
         <section className="px-5 pb-2 pt-8">
-          <p className="text-[10px] font-semibold tracking-[0.18em] text-sage">PAGE&apos;S NOTE</p>
-          <div className="mt-4 flex items-center gap-4">
-            <img
-              src={pageNoteImage}
-              alt="PAGE"
-              width={104}
-              height={104}
-              className="h-[104px] w-[104px] shrink-0 object-contain"
-              decoding="async"
-            />
-            <div className="flex min-h-[104px] min-w-0 flex-1 items-center">
-              <p className="font-serif text-[16px] font-semibold leading-7 text-ink">
-                {isPublished
-                  ? '당신의 이야기가 한 권의 책이 되었어요.'
-                  : readiness.isReady
-                    ? '이제 기록을 한 권의 이야기로 묶을 수 있어요.'
-                    : '지금은 잘 쓰는 것보다, 계속 남기는 것이 더 중요해요.'}
-              </p>
-            </div>
-          </div>
+          <img
+            src={pageNoteImage}
+            alt="PAGE"
+            width={104}
+            height={104}
+            className="h-[104px] w-[104px] object-contain"
+            decoding="async"
+          />
         </section>
       </main>
     </div>
