@@ -127,8 +127,8 @@ export function HomePage() {
             <button
               type="button"
               className="relative w-[200px] shrink-0 active:translate-y-px"
-              onClick={() => navigate('/record/mode')}
-              aria-label={`${bookTitle} 이어쓰기`}
+              onClick={() => navigate('/library')}
+              aria-label={`${bookTitle} 서재로 이동`}
             >
               <img
                 src={bookDefaultCover}
