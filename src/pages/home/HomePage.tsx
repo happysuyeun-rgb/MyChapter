@@ -109,7 +109,7 @@ export function HomePage() {
   return (
     <div className="desk-fade-in flex flex-1 flex-col overflow-y-auto bg-surface">
       {/* Brand masthead — hero-level signal */}
-      <header className="px-5 pb-4 pt-6">
+      <header className="px-5 pb-5 pt-6">
         <BrandMasthead
           right={
             <button
@@ -125,10 +125,13 @@ export function HomePage() {
             </button>
           }
         />
-        <p className="mt-4 text-[11px] tracking-[0.08em] text-ink-faint">{today}</p>
-        <h1 className="mt-1 truncate font-serif text-[26px] font-bold leading-tight tracking-[-0.03em] text-ink">
-          {profile?.nickname ?? '회원'}님 안녕하세요.
-        </h1>
+        {/* Equal vertical rhythm: 12px between logo → date → greeting */}
+        <div className="mt-3 flex flex-col gap-3">
+          <p className="text-[11px] tracking-[0.08em] text-ink-faint">{today}</p>
+          <h1 className="truncate font-serif text-[26px] font-bold leading-tight tracking-[-0.03em] text-ink">
+            {profile?.nickname ?? '회원'}님 안녕하세요.
+          </h1>
+        </div>
       </header>
 
       <main className="pb-10">
