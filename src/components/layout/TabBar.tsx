@@ -48,7 +48,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="주요 메뉴"
-      className="safe-bottom flex h-[62px] shrink-0 border-t border-ink/15 bg-[#EFE6D8]/95 backdrop-blur-sm"
+      className="safe-bottom flex h-[62px] w-full shrink-0 border-t border-border bg-transparent"
     >
       {tabs.map((tab) => (
         <NavLink
@@ -56,16 +56,13 @@ export function TabBar() {
           to={tab.to}
           className={({ isActive }) =>
             [
-              'relative flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-colors',
+              'flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-colors',
               isActive ? 'text-ink' : 'text-ink-faint',
             ].join(' ')
           }
         >
           {({ isActive }) => (
             <>
-              {isActive && (
-                <span className="absolute top-0 h-[3px] w-8 bg-ink" aria-hidden />
-              )}
               <TabIcon name={tab.icon} active={isActive} />
               <span className={['text-[10px] tracking-wide', isActive ? 'font-semibold' : 'font-medium'].join(' ')}>
                 {tab.label}
