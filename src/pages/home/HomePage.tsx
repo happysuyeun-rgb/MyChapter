@@ -87,17 +87,11 @@ export function HomePage() {
         hint: `PDF v${latestPublication.version} 열람·다운로드`,
         to: `/publication/${latestPublication.id}`,
       }
-    : isReady
-      ? {
-          label: '책 작업실 열기',
-          hint: '기록을 한 권의 이야기로 묶을 수 있어요',
-          to: '/project/workspace',
-        }
-      : {
-          label: '오늘 한 페이지 쓰기',
-          hint: '',
-          to: '/record/mode',
-        }
+    : {
+        label: '오늘 한 페이지 쓰기',
+        hint: '',
+        to: '/library',
+      }
 
   const statusLabel = isPublished
     ? `발행완료 · v${latestPublication.version}`
@@ -196,9 +190,9 @@ export function HomePage() {
               <button
                 type="button"
                 className="mt-3 min-h-10 w-full text-center text-[12px] text-ink-muted"
-                onClick={() => navigate('/record/mode')}
+                onClick={() => navigate('/project/workspace')}
               >
-                계속 기록하기 →
+                책 작업실 열기 →
               </button>
             )}
             {isPublished && (
