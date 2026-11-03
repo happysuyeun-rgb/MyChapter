@@ -132,13 +132,9 @@ export function HomePage() {
       <main className="pb-10">
         <section className="px-5 text-ink">
           <div className="flex flex-col items-center">
-            <Badge variant={isPublished ? 'accent' : 'gray'}>
-              {isPublished ? '발행완료' : readiness.isReady ? '발행가능' : '진행중'}
-            </Badge>
-
             <button
               type="button"
-              className="relative mt-4 w-[200px] shrink-0 active:translate-y-px"
+              className="relative w-[200px] shrink-0 active:translate-y-px"
               onClick={() => navigate('/record/mode')}
               aria-label={`${bookTitle} 이어쓰기`}
             >
@@ -150,7 +146,10 @@ export function HomePage() {
                 className="h-auto w-full object-contain drop-shadow-[6px_10px_0_rgba(59,53,45,.10)]"
                 decoding="async"
               />
-              <div className="pointer-events-none absolute inset-x-[14%] top-[12%] flex h-[38%] items-center justify-center px-1">
+              <div className="pointer-events-none absolute inset-x-[14%] top-[10%] flex h-[42%] flex-col items-center justify-center gap-2 px-1">
+                <Badge variant={isPublished ? 'accent' : 'gray'}>
+                  {isPublished ? '발행완료' : readiness.isReady ? '발행가능' : '진행중'}
+                </Badge>
                 <h2 className="line-clamp-4 text-center font-serif text-[22px] font-bold leading-snug tracking-[-0.02em] text-ink">
                   {bookTitle}
                 </h2>
