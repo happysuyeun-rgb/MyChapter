@@ -122,14 +122,14 @@ export function ProjectsListPage() {
           <h1 className="font-serif text-[32px] font-bold tracking-[-0.03em]">서재</h1>
           <p className="mt-2 text-xs text-ink-muted">{projects.length}권 · 내가 만드는 책 선반</p>
         </div>
-        <div className="shelf-rail mt-6 h-2 w-full" aria-hidden />
       </header>
 
       {projects.length === 0 ? (
         <EmptyState variant="library" />
       ) : (
-        <main className="px-5 pb-10">
-          <div className="flex border-b border-border bg-surface-card/60">
+        <>
+          <div className="shelf-rail h-2 w-full shrink-0" aria-hidden />
+          <div className="flex w-full border-b border-border bg-transparent">
             {FILTERS.map((item) => (
               <button
                 key={item}
@@ -145,6 +145,7 @@ export function ProjectsListPage() {
             ))}
           </div>
 
+          <main className="px-5 pb-10">
           {filteredProjects.length === 0 ? (
             <div className="border-b border-border py-14 text-center">
               <p className="font-serif text-base font-bold">{emptyFilterMessage}</p>
@@ -226,7 +227,8 @@ export function ProjectsListPage() {
             </span>
             <span className="text-xl text-ink">+</span>
           </button>
-        </main>
+          </main>
+        </>
       )}
     </div>
   )
