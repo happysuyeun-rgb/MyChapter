@@ -157,6 +157,7 @@ export function HomePage() {
           decoding="async"
         />
       </section>
+      <div className="mx-5 border-b border-ink" aria-hidden />
 
       <main className="pb-10">
         <section className="px-5 pt-5 text-ink">
