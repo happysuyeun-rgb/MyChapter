@@ -11,8 +11,23 @@ import { getProjects } from '@/lib/api/projects'
 import { listRecords } from '@/lib/api/records'
 import { useAuthStore } from '@/stores/authStore'
 import { useProjectStore } from '@/stores/projectStore'
-import type { Project } from '@/types/database'
+import type { JournalRecord, Project } from '@/types/database'
 import { getBookReadiness } from '@/utils/bookReadiness'
+
+function formatRecordDate(iso: string) {
+  const d = new Date(iso)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}.${m}.${day}`
+}
+
+function recordStatusLabel(record: JournalRecord) {
+  if (record.chapter_id) return 'AI 편집 완료'
+  if (record.mode === 'question') return 'AI 질문'
+  if (record.mode === 'photo') return '사진 기록'
+  return '자유 기록'
+}
 
 export function HomePage() {
   const navigate = useNavigate()
@@ -20,6 +35,7 @@ export function HomePage() {
   const { activeProjectId, setActiveProject } = useProjectStore()
   const [projects, setProjects] = useState<Project[]>([])
   const [recordCount, setRecordCount] = useState(0)
+  const [latestRecord, setLatestRecord] = useState<JournalRecord | null>(null)
   const [latestPublication, setLatestPublication] = useState<PublishedBook | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [retryKey, setRetryKey] = useState(0)
@@ -46,10 +62,12 @@ export function HomePage() {
           ])
           if (cancelled) return
           setRecordCount(records.length)
+          setLatestRecord(records[0] ?? null)
           setLatestPublication(publication)
           setUnreadCount(unread)
         } else {
           setLatestPublication(null)
+          setLatestRecord(null)
           setRecordCount(0)
           setUnreadCount(0)
         }
@@ -203,6 +221,60 @@ export function HomePage() {
               </button>
             ))}
           </div>
+
+          <section className="mt-5 rounded-2xl border border-border bg-surface-card px-4 py-4 shadow-paper">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-[15px] font-bold text-ink">최근 기록</h2>
+              <button
+                type="button"
+                className="text-[12px] font-medium text-ink-muted"
+                onClick={() => navigate('/records')}
+              >
+                전체 보기 &gt;
+              </button>
+            </div>
+
+            {latestRecord ? (
+              <button
+                type="button"
+                className="mt-3 flex w-full items-start gap-3 text-left active:opacity-90"
+                onClick={() => navigate(`/records/${latestRecord.id}`)}
+              >
+                {/* Polaroid slot — asset to be added later */}
+                <div
+                  className="h-[88px] w-[76px] shrink-0 rounded-sm bg-transparent"
+                  aria-hidden
+                />
+                <div className="min-w-0 flex-1 pt-0.5">
+                  <p className="line-clamp-1 text-[14px] font-bold leading-snug text-ink">
+                    {latestRecord.title?.trim() ||
+                      latestRecord.content.trim().slice(0, 24) ||
+                      `PAGE ${String(latestRecord.record_number).padStart(2, '0')}`}
+                  </p>
+                  <p className="mt-1.5 line-clamp-2 text-[12px] leading-5 text-ink-muted">
+                    {latestRecord.content.trim() || '내용 없는 기록이에요.'}
+                  </p>
+                  <p className="mt-2 text-[10px] leading-4 text-ink-faint">
+                    <span>{formatRecordDate(latestRecord.created_at)}</span>
+                    <span className="mx-1.5">|</span>
+                    <span>{latestRecord.content.length.toLocaleString('ko-KR')}자</span>
+                    <span className="mx-1.5">|</span>
+                    <span className="text-sage">{recordStatusLabel(latestRecord)}</span>
+                  </p>
+                </div>
+                <span
+                  className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border text-[14px] leading-none text-ink-faint"
+                  aria-hidden
+                >
+                  ···
+                </span>
+              </button>
+            ) : (
+              <p className="mt-4 text-[12px] leading-5 text-ink-muted">
+                아직 기록이 없어요. 오늘 한 페이지부터 남겨보세요.
+              </p>
+            )}
+          </section>
         </section>
 
         {/* PAGE note — character + editorial quote */}
