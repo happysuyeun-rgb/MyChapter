@@ -55,8 +55,11 @@ function TabIcon({ name, active }: { name: TabIconName; active: boolean }) {
 
 export function TabBar() {
   return (
-    <nav aria-label="주요 메뉴" className="safe-bottom w-full shrink-0 px-4 pb-3 pt-2">
-      <div className="flex h-[58px] items-stretch rounded-full border border-border bg-surface-card shadow-paper">
+    <nav
+      aria-label="주요 메뉴"
+      className="safe-bottom w-full px-4 pb-3 pt-2"
+    >
+      <div className="flex h-[58px] items-stretch rounded-full border border-border bg-surface-card/95 shadow-paper backdrop-blur-sm">
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}
