@@ -80,7 +80,6 @@ export function HomePage() {
   const isPublished = latestPublication !== null
   const isReady = readiness.isReady && !isPublished
   const bookTitle = latestPublication?.title_snapshot ?? project.title
-  const today = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' })
 
   const primary = isPublished
     ? {
@@ -125,26 +124,21 @@ export function HomePage() {
             </button>
           }
         />
-        {/* Equal vertical rhythm: 12px between logo → date → greeting */}
-        <div className="mt-3 flex flex-col gap-3">
-          <p className="text-[11px] tracking-[0.08em] text-ink-faint">{today}</p>
-          <h1 className="truncate font-serif text-[26px] font-bold leading-tight tracking-[-0.03em] text-ink">
-            {profile?.nickname ?? '회원'}님 안녕하세요.
-          </h1>
-        </div>
+        <h1 className="mt-3 truncate font-serif text-[26px] font-bold leading-tight tracking-[-0.03em] text-ink">
+          {profile?.nickname ?? '회원'}님 안녕하세요.
+        </h1>
       </header>
 
       <main className="pb-10">
-        {/* Desk blotter + book stage */}
         <section className="px-5">
-          <div className="desk-ink-panel px-5 pb-6 pt-5 text-surface">
+          <div className="border border-border bg-surface-card px-5 pb-6 pt-5 text-ink">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-semibold tracking-[0.22em] text-surface/50">
+              <p className="text-[10px] font-semibold tracking-[0.22em] text-ink-faint">
                 {isPublished ? 'PUBLISHED' : 'ON THE DESK'}
               </p>
               <button
                 type="button"
-                className="text-[11px] font-medium text-surface/70 underline-offset-2 hover:underline"
+                className="text-[11px] font-medium text-ink-muted underline-offset-2 hover:underline"
                 onClick={() => navigate('/library')}
               >
                 서재 보기
@@ -152,31 +146,31 @@ export function HomePage() {
             </div>
 
             <div className="mt-6 flex gap-5">
-              <div className="flex h-44 w-[108px] shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-[#F2E6D4] p-3.5 text-ink shadow-[10px_12px_0_rgba(0,0,0,.18)]">
-                <span className="text-[7px] tracking-[0.18em] text-ink/45">MY CHAPTER</span>
+              <div className="flex h-44 w-[108px] shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-ink p-3.5 text-surface shadow-[8px_10px_0_rgba(59,53,45,.12)]">
+                <span className="text-[7px] tracking-[0.18em] text-surface/55">MY CHAPTER</span>
                 <div>
                   <span className="mb-3 block h-px w-8 bg-sage" />
                   <p className="line-clamp-5 font-serif text-[14px] font-bold leading-[1.4]">{bookTitle}</p>
                 </div>
-                <span className="text-[7px] text-ink/45">{typeLabel}</span>
+                <span className="text-[7px] text-surface/55">{typeLabel}</span>
               </div>
 
               <div className="min-w-0 flex-1 self-end pb-1">
-                <p className="text-[11px] text-surface/55">{typeLabel}</p>
-                <h2 className="mt-1.5 line-clamp-3 font-serif text-[22px] font-bold leading-snug tracking-[-0.02em]">
+                <p className="text-[11px] text-ink-muted">{typeLabel}</p>
+                <h2 className="mt-1.5 line-clamp-3 font-serif text-[22px] font-bold leading-snug tracking-[-0.02em] text-ink">
                   {bookTitle}
                 </h2>
                 {isPublished ? (
                   <div className="mt-5">
-                    <p className="font-serif text-2xl font-bold">v{latestPublication.version}</p>
-                    <p className="mt-1 text-[11px] text-surface/60">
+                    <p className="font-serif text-2xl font-bold text-ink">v{latestPublication.version}</p>
+                    <p className="mt-1 text-[11px] text-ink-muted">
                       {new Date(latestPublication.published_at).toLocaleDateString('ko-KR')} 발행
                     </p>
                   </div>
                 ) : (
                   <DeskProgress
                     className="mt-5"
-                    tone="ink"
+                    tone="paper"
                     score={readiness.score}
                     message={readiness.message}
                     recordCount={recordCount}
@@ -188,20 +182,20 @@ export function HomePage() {
             <div className="mt-6">
               <button
                 type="button"
-                className="flex min-h-[52px] w-full items-center justify-center bg-[#F7F2E8] px-5 text-[15px] font-semibold text-ink transition-opacity active:translate-y-px active:opacity-90"
+                className="flex min-h-[52px] w-full items-center justify-center border border-ink bg-ink px-5 text-[15px] font-semibold text-surface transition-opacity active:translate-y-px active:opacity-90"
                 onClick={() => navigate(primary.to)}
               >
                 {primary.label}
               </button>
               {primary.hint ? (
-                <p className="mt-2.5 text-center text-[11px] text-surface/55">{primary.hint}</p>
+                <p className="mt-2.5 text-center text-[11px] text-ink-muted">{primary.hint}</p>
               ) : null}
             </div>
 
             {isReady && (
               <button
                 type="button"
-                className="mt-3 min-h-10 w-full text-center text-[12px] text-surface/70"
+                className="mt-3 min-h-10 w-full text-center text-[12px] text-ink-muted"
                 onClick={() => navigate('/record/mode')}
               >
                 계속 기록하기 →
@@ -210,7 +204,7 @@ export function HomePage() {
             {isPublished && (
               <button
                 type="button"
-                className="mt-3 min-h-10 w-full text-center text-[12px] text-surface/70"
+                className="mt-3 min-h-10 w-full text-center text-[12px] text-ink-muted"
                 onClick={() => navigate('/project/workspace')}
               >
                 책 작업실 열기 →
