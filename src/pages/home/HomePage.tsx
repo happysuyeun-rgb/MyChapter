@@ -157,8 +157,9 @@ export function HomePage() {
               </div>
             ) : (
               <DeskProgress
-                className="mt-5 w-1/2"
+                className="mt-2 w-1/2"
                 tone="paper"
+                compactScore
                 score={readiness.score}
                 message={readiness.message}
                 recordCount={recordCount}

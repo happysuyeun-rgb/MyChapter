@@ -6,6 +6,8 @@ interface DeskProgressProps {
   recordCount: number
   /** Dark ink panel (home hero) vs paper surface */
   tone?: 'ink' | 'paper'
+  /** Smaller score numeral (e.g. home cover stack) */
+  compactScore?: boolean
   className?: string
 }
 
@@ -17,6 +19,7 @@ export function DeskProgress({
   message,
   recordCount,
   tone = 'ink',
+  compactScore = false,
   className = '',
 }: DeskProgressProps) {
   const isInk = tone === 'ink'
@@ -30,7 +33,8 @@ export function DeskProgress({
         </span>
         <span
           className={[
-            'font-serif text-3xl font-bold',
+            'font-serif font-bold',
+            compactScore ? 'text-base' : 'text-3xl',
             isInk ? 'text-surface' : 'text-ink',
           ].join(' ')}
         >
