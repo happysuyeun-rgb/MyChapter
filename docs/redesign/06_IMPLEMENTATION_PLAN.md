@@ -10,7 +10,7 @@
 |-------|------|------|------|
 | **1** | UX 감사·유아이볼·전략·IA·DS·계획 | `docs/redesign/*` + 검토 PR | 서비스 코드·배포·DB |
 | **2** | 셸 UX: 홈 Desk · Tab · Empty · 용어 | UI만, API 동일 | 스키마·결제·발행 로직 |
-| **3** | 책 작업실 · 기록 원고대 · 성공/에러 | 컴포넌트·카피 | entitlement/RPC 변경 |
+| **3** | 책 작업실 · 기록 모드 · SuccessPanel | `StudioSection`/`StepperVisual`/`SuccessPanel` · 잠금 카피 | entitlement/RPC 변경 |
 | **4** | Pro 설득·동의 UI 자리 · 폴리시 | 결제 UI 카피만 | Secret·약관 무단 게시 |
 | **5** | 시각 토큰 미세조정 · a11y · QA | 체크리스트 | 무단 레퍼런스 복제 |
 

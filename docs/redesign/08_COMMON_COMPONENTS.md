@@ -30,9 +30,9 @@
 |------|-------|------------|------|--------|
 | `DeskProgress` | 2 | `score`, `message`, `recordCount`, `isReady`, `compact?` | 홈·서재 준비도 요약 | readiness **계산은 호출측** |
 | `EmptyState` (+`library`) | 2 | `variant` | 서재 빈 선반 | 라우트만 `/project/new` |
-| `StudioSection` | 3 | `title`, `eyebrow`, `locked?`, `lockReason?`, `children` | `/project/workspace` | 잠금 bool은 호출측 |
-| `SuccessPanel` | 3 | `title`, `description`, `primary`, `secondary?` | 기록/발행 완료 | |
-| `StepperVisual` | 3 | `steps`, `current` | 제작 단계 표시 | `BookStageGuard` 대체 금지 |
+| `StudioSection` | **3 적용** | `title`, `eyebrow`, `locked?`, `lockReason?`, `children` | `/project/workspace` | 잠금 bool은 호출측 |
+| `SuccessPanel` | **3 적용** | `leading?`, `title`, `description`, `primary`, `secondary?`, `tertiary?` | 기록/발행/새책 완료 | |
+| `StepperVisual` | **3 적용** | `steps[]` (ready/lockReason/onSelect) | 제작 단계 표시 | `BookStageGuard` 대체 금지 |
 | `PaywallCompare` | 4 | Free/Pro rows | 구독 UI | 결제 API 불변 |
 | `ConsentRow` | 4 | label, checked, required | 가입 동의 | 약관 본문 승인 후 |
 
