@@ -124,11 +124,7 @@ export function HomePage() {
 
       <main className="pb-10">
         <section className="px-5 text-ink">
-          <p className="text-[10px] font-semibold tracking-[0.22em] text-ink-faint">
-            {isPublished ? 'PUBLISHED' : 'ON THE DESK'}
-          </p>
-
-          <div className="mt-5 flex gap-4">
+          <div className="flex gap-4">
             <div className="flex h-32 w-[84px] shrink-0 flex-col justify-between rounded-r-md rounded-l-[3px] bg-ink p-3 text-surface shadow-[6px_8px_0_rgba(59,53,45,.12)]">
               <span className="text-[6px] tracking-[0.18em] text-surface/55">MY CHAPTER</span>
               <div>
