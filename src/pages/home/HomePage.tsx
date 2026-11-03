@@ -91,12 +91,6 @@ export function HomePage() {
         to: '/library',
       }
 
-  const statusLabel = isPublished
-    ? `발행완료 · v${latestPublication.version}`
-    : readiness.isReady
-      ? '책 만들기 가능'
-      : '기록 중'
-
   return (
     <div className="desk-fade-in flex flex-1 flex-col overflow-y-auto bg-surface">
       {/* Brand masthead — hero-level signal */}
@@ -208,18 +202,6 @@ export function HomePage() {
                 <span className="mt-1.5 text-[11px] leading-4 text-ink-muted">{item.description}</span>
               </button>
             ))}
-          </div>
-        </section>
-
-        {/* Ledger strip */}
-        <section className="mx-5 mt-5 grid grid-cols-2 border border-border bg-surface-card/80">
-          <div className="border-r border-border px-4 py-3.5">
-            <p className="text-[10px] tracking-[0.12em] text-ink-faint">PAGES</p>
-            <p className="mt-1 font-serif text-xl font-bold">{recordCount}</p>
-          </div>
-          <div className="px-4 py-3.5">
-            <p className="text-[10px] tracking-[0.12em] text-ink-faint">STATUS</p>
-            <p className="mt-1 font-serif text-sm font-bold leading-snug">{statusLabel}</p>
           </div>
         </section>
 
