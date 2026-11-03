@@ -31,7 +31,7 @@ function recordStatusLabel(record: JournalRecord) {
 
 export function HomePage() {
   const navigate = useNavigate()
-  const { user } = useAuthStore()
+  const { user, profile } = useAuthStore()
   const { activeProjectId, setActiveProject } = useProjectStore()
   const [projects, setProjects] = useState<Project[]>([])
   const [recordCount, setRecordCount] = useState(0)
@@ -130,8 +130,35 @@ export function HomePage() {
         />
       </header>
 
+      <section className="flex items-center gap-3 bg-surface px-5 py-5">
+        <div className="min-w-0 flex-1">
+          <p className="text-[13px] leading-5 text-ink">
+            안녕하세요, {profile?.nickname ?? '회원'}님{' '}
+            <span aria-hidden>🌱</span>
+          </p>
+          <h1 className="mt-2 font-serif text-[22px] font-bold leading-[1.35] tracking-[-0.02em] text-[#3A4638]">
+            당신의 이야기가
+            <br />
+            한 권의 책이 됩니다.
+          </h1>
+          <p className="mt-3 text-[12px] leading-5 text-ink-muted">
+            하루를 기록하고, 삶을 한 권으로.
+            <br />
+            지금 당신의 첫 챕터를 시작해보세요.
+          </p>
+        </div>
+        <img
+          src={pageNoteImage}
+          alt=""
+          width={112}
+          height={112}
+          className="h-[112px] w-[112px] shrink-0 object-contain"
+          decoding="async"
+        />
+      </section>
+
       <main className="pb-10">
-        <section className="px-5 pt-6 text-ink">
+        <section className="px-5 pt-5 text-ink">
           <div className="flex flex-col items-center">
             <button
               type="button"
