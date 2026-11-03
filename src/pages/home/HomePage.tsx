@@ -16,7 +16,7 @@ import { getBookReadiness } from '@/utils/bookReadiness'
 
 export function HomePage() {
   const navigate = useNavigate()
-  const { user, profile } = useAuthStore()
+  const { user } = useAuthStore()
   const { activeProjectId, setActiveProject } = useProjectStore()
   const [projects, setProjects] = useState<Project[]>([])
   const [recordCount, setRecordCount] = useState(0)
@@ -116,22 +116,14 @@ export function HomePage() {
             </button>
           }
         />
-        <div className="mt-3 flex items-center gap-2">
-          <h1 className="min-w-0 truncate font-serif text-[26px] font-bold leading-tight tracking-[-0.03em] text-ink">
-            {profile?.nickname ?? '회원'}님 안녕하세요.
-          </h1>
-          <span className="shrink-0 text-[22px] leading-none" aria-hidden>
-            👋
-          </span>
-        </div>
-        <p className="mt-2 truncate text-[12px] leading-5 text-ink-muted">
-          오늘의 기록이 당신의 책을 완성해가고 있어요.
-        </p>
       </header>
 
       <main className="pb-10">
         <section className="px-5 text-ink">
           <div className="flex flex-col items-center">
+            <h1 className="mb-4 text-center font-serif text-[22px] font-bold leading-snug tracking-[-0.02em] text-ink">
+              당신의 이야기를 책으로
+            </h1>
             <button
               type="button"
               className="relative w-[200px] shrink-0 active:translate-y-px"
@@ -174,10 +166,10 @@ export function HomePage() {
             )}
           </div>
 
-          <div className="mt-6">
+          <div className="mt-6 flex flex-col items-center">
             <button
               type="button"
-              className="flex min-h-[52px] w-full items-center justify-center border border-ink bg-transparent px-5 text-[15px] font-semibold text-ink transition-opacity active:translate-y-px active:opacity-90"
+              className="flex min-h-[52px] w-4/5 items-center justify-center border border-ink bg-transparent px-5 text-[15px] font-semibold text-ink transition-opacity active:translate-y-px active:opacity-90"
               onClick={() => navigate(primary.to)}
             >
               {primary.label}
