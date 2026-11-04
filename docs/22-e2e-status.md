@@ -119,7 +119,7 @@ Work를 통한 운영 검증. Supabase 요청 29건에서 4xx·5xx 없음.
 
 1. **책 생성 → 3모드 기록 저장 → 새로고침 유지 → PAGE 정합** (§4) — **LIVE PASS, 기본 사용자 여정 차단 해소**
 2. **AI 챕터·PDF 발행 LIVE** (필수 Secret 이름: `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`) — 서버 리스크·설계: `23-ai-pdf-safety.md`
-3. **운영에서 결제 우회 OFF** — `BILLING_DEV_BYPASS`≠true, `VITE_BILLING_DEV_MODE=false` (**2026-11-04: `BILLING_DEV_BYPASS` Secret 존재 확인, 값 미확인 — 삭제 권장**)
+3. **운영에서 결제 우회 OFF** — `BILLING_DEV_BYPASS`≠true, `VITE_BILLING_DEV_MODE=false` (**2026-11-04: `BILLING_DEV_BYPASS` Secret 삭제 완료.** Vercel `VITE_BILLING_DEV_MODE`는 본인 확인)
 
 ### 채널·플랫폼 선택 (이메일 웹만이면 당장 비차단)
 

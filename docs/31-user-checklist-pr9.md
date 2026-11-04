@@ -18,7 +18,7 @@
 | 준비 완료 날짜 UTC 정렬 ([PR #10](https://github.com/happysuyeun-rgb/MyChapter/pull/10)) | ✅ `ae6a679` 운영 배포 — 025 트리거와 날짜 기준 일치 |
 | Migration `025` | ✅ 운영 적용 (PR #10 배포 후) |
 | Secret `GOOGLE_AI_API_KEY` | ❌ **미등록** → AI 편집·AI 질문·챕터 생성이 실패/대체 동작. 등록 전에는 `VITE_AI_EDIT_ENABLED`를 켜지 말 것 |
-| Secret `BILLING_DEV_BYPASS` | ⚠ **등록되어 있음** → 운영에서는 삭제 권장 (값은 Cursor가 확인하지 않음) |
+| Secret `BILLING_DEV_BYPASS` | ✅ 2026-11-04 삭제 (승인 후 Cursor 실행). 삭제 전에도 운영 `verify-subscription`의 운영 프로젝트 차단(SEC-01)으로 개발용 결제는 거부되고 있었음 |
 | Secret `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | ❌ 미등록 → 실결제 서버 검증 불가 (Play 출시 전 등록) |
 
 ---
@@ -30,7 +30,7 @@
 | 1 | 운영 사이트에서 웹 화면 확인 (§1 항목을 운영 URL에서) | — |
 | 2 | ~~PR #9 머지 → 운영 웹 반영~~ ✅ 완료 (AI 편집 버튼은 숨김 상태) | — |
 | 3 | ~~운영 DB `025`, `026` · `edit-chapter` 배포~~ ✅ Cursor 완료 | — |
-| 4 | Secret `GOOGLE_AI_API_KEY` 등록 · `BILLING_DEV_BYPASS` 삭제 (§2.3, §2.5) | AI 전체 · 무료 Pro 승격 위험 |
+| 4 | Secret `GOOGLE_AI_API_KEY` 등록 (§2.3) · ~~`BILLING_DEV_BYPASS` 삭제~~ ✅ | AI 전체 |
 | 5 | Vercel `VITE_AI_EDIT_ENABLED=true` + 재배포 (§2.4) | AI 편집 버튼 노출 |
 | 6 | Play Console 구독 상품 + 내부 테스트 (§3) | 실결제 |
 | 7 | Android 실기기 테스트 (§4) | 출시 |
