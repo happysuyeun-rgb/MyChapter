@@ -28,8 +28,10 @@ export class AiEditError extends Error {
 
 let mockUsed = 0
 
-function mockEdit(text: string): AiEditResult {
-  if (mockUsed >= AI_EDIT_FREE_MONTHLY_LIMIT) {
+async function mockEdit(text: string): Promise<AiEditResult> {
+  const { mockGetSubscriptionPlan } = await import('@/mocks/subscriptions')
+  const isPro = mockGetSubscriptionPlan() === 'pro'
+  if (!isPro && mockUsed >= AI_EDIT_FREE_MONTHLY_LIMIT) {
     throw new AiEditError('AI_LIMIT', '이번 달 AI 편집 횟수를 모두 사용했어요.')
   }
   mockUsed += 1
@@ -41,7 +43,7 @@ function mockEdit(text: string): AiEditResult {
   return {
     text: edited,
     notes: ['띄어쓰기와 문장 부호를 정리했어요.', '문단 사이 빈 줄을 맞췄어요.'],
-    remaining: AI_EDIT_FREE_MONTHLY_LIMIT - mockUsed,
+    remaining: isPro ? null : AI_EDIT_FREE_MONTHLY_LIMIT - mockUsed,
   }
 }
 
