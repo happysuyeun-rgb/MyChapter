@@ -19,6 +19,7 @@ export async function getProjects(userId: string): Promise<Project[]> {
     .from('projects')
     .select('*')
     .eq('user_id', userId)
+    .is('archived_at', null)
     .order('created_at', { ascending: false })
 
   if (error) throw error
@@ -67,6 +68,7 @@ export async function ensureProjectReady(project: Project, userId: string): Prom
 export async function getProjectCount(userId: string): Promise<number> {
   if (isDevBypass()) return mockGetProjectCount()
 
+  // Matches DB Free slot: archived rows still consume the creation quota until deleted.
   const { count, error } = await supabase
     .from('projects')
     .select('*', { count: 'exact', head: true })
@@ -126,6 +128,42 @@ export async function getProjectById(projectId: string): Promise<Project | null>
   return data
 }
 
+
+export async function archiveProject(projectId: string, userId: string): Promise<Project> {
+  if (isDevBypass()) {
+    const { mockArchiveProject } = await import('@/mocks/projects')
+    return mockArchiveProject(projectId, userId)
+  }
+
+  const { data, error } = await supabase
+    .from('projects')
+    .update({ archived_at: new Date().toISOString() })
+    .eq('id', projectId)
+    .eq('user_id', userId)
+    .is('archived_at', null)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+/** Permanently removes the book row. Related child rows must cascade via DB RLS/FK. */
+export async function deleteProject(projectId: string, userId: string): Promise<void> {
+  if (isDevBypass()) {
+    const { mockDeleteProject } = await import('@/mocks/projects')
+    mockDeleteProject(projectId, userId)
+    return
+  }
+
+  const { error } = await supabase
+    .from('projects')
+    .delete()
+    .eq('id', projectId)
+    .eq('user_id', userId)
+
+  if (error) throw error
+}
 
 export async function updateProjectSettings(
   projectId: string,

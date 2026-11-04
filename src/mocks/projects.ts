@@ -5,11 +5,32 @@ import { calculateRoutine } from '@/utils/calculateRoutine'
 import { BOOK_READINESS_RULES } from '@/utils/bookReadiness'
 
 export function mockGetProjects(): Project[] {
-  return [...mockStore.projects]
+  return mockStore.projects.filter((p) => !p.archived_at)
 }
 
 export function mockGetProjectCount(): number {
   return mockStore.projects.length
+}
+
+export function mockArchiveProject(projectId: string, userId: string): Project {
+  const index = mockStore.projects.findIndex((p) => p.id === projectId && p.user_id === userId)
+  if (index < 0) throw new Error('책을 찾을 수 없어요.')
+  if (mockStore.projects[index].archived_at) throw new Error('이미 보관한 책이에요.')
+
+  const updated: Project = {
+    ...mockStore.projects[index],
+    archived_at: mockNowIso(),
+    updated_at: mockNowIso(),
+  }
+  mockStore.projects[index] = updated
+  return updated
+}
+
+export function mockDeleteProject(projectId: string, userId: string): void {
+  const index = mockStore.projects.findIndex((p) => p.id === projectId && p.user_id === userId)
+  if (index < 0) throw new Error('책을 찾을 수 없어요.')
+  mockStore.projects.splice(index, 1)
+  mockStore.records = mockStore.records.filter((r) => r.project_id !== projectId)
 }
 
 export function mockGetProjectById(projectId: string): Project | null {

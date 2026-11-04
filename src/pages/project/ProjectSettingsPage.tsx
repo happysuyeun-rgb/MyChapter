@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Input } from '@/components/common'
+import { Button, Input, Modal } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { useActiveProject } from '@/hooks/useActiveProject'
-import { updateProjectSettings } from '@/lib/api/projects'
+import { archiveProject, deleteProject, updateProjectSettings } from '@/lib/api/projects'
 import { useAuthStore } from '@/stores/authStore'
 import { useProjectStore } from '@/stores/projectStore'
 import type { ProjectType } from '@/types/database'
@@ -19,7 +19,11 @@ export function ProjectSettingsPage() {
   const [title, setTitle] = useState('')
   const [type, setType] = useState<ProjectType>('custom')
   const [saving, setSaving] = useState(false)
+  const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [archiveOpen, setArchiveOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [confirmText, setConfirmText] = useState('')
 
   useEffect(() => {
     if (!project) return
@@ -32,6 +36,7 @@ export function ProjectSettingsPage() {
     [type],
   )
   const readiness = BOOK_READINESS_RULES[type]
+  const canDelete = confirmText === '책 삭제'
 
   const handleSave = async () => {
     if (!user || !project || !title.trim()) return
@@ -48,6 +53,38 @@ export function ProjectSettingsPage() {
       setError('책 설정을 저장하지 못했어요. 다시 시도해주세요.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleArchive = async () => {
+    if (!user || !project) return
+    setBusy(true)
+    setError('')
+    try {
+      await archiveProject(project.id, user.id)
+      setActiveProject(null)
+      setArchiveOpen(false)
+      navigate('/library', { replace: true })
+    } catch {
+      setError('책을 보관하지 못했어요. 다시 시도해주세요.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!user || !project || !canDelete) return
+    setBusy(true)
+    setError('')
+    try {
+      await deleteProject(project.id, user.id)
+      setActiveProject(null)
+      setDeleteOpen(false)
+      navigate('/library', { replace: true })
+    } catch {
+      setError('책을 삭제하지 못했어요. 다시 시도해주세요.')
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -124,6 +161,39 @@ export function ProjectSettingsPage() {
           </section>
         )}
 
+        <section className="mt-10 border-t border-border pt-6">
+          <p className="text-[10px] font-semibold tracking-[0.16em] text-ink-faint">SHELF ACTIONS</p>
+          <h2 className="mt-2 font-serif text-base font-bold">서재에서 이 책 다루기</h2>
+          <p className="mt-2 text-xs leading-5 text-ink-muted">
+            보관은 선반에서만 내리고, 삭제는 기록·원고까지 함께 지워요. Free 플랜에서 새 책을 만들려면 삭제가 필요할 수 있어요.
+          </p>
+          <button
+            type="button"
+            className="mt-5 flex min-h-12 w-full items-center justify-between border border-border px-4 text-left active:bg-accent-light/40"
+            onClick={() => setArchiveOpen(true)}
+          >
+            <span>
+              <span className="block text-sm font-semibold text-ink">서재에서 보관</span>
+              <span className="mt-1 block text-[11px] text-ink-muted">선반 목록에서 숨겨요</span>
+            </span>
+            <span className="text-ink-faint">→</span>
+          </button>
+          <button
+            type="button"
+            className="mt-3 flex min-h-12 w-full items-center justify-between border border-danger/30 px-4 text-left active:bg-danger/5"
+            onClick={() => {
+              setConfirmText('')
+              setDeleteOpen(true)
+            }}
+          >
+            <span>
+              <span className="block text-sm font-semibold text-danger">책 영구 삭제</span>
+              <span className="mt-1 block text-[11px] text-ink-muted">복구할 수 없어요</span>
+            </span>
+            <span className="text-danger/50">→</span>
+          </button>
+        </section>
+
         {error && <p className="mt-5 text-sm text-danger">{error}</p>}
       </main>
 
@@ -132,6 +202,41 @@ export function ProjectSettingsPage() {
           {saving ? '저장 중...' : '책 설정 저장하기'}
         </Button>
       </div>
+
+      <Modal open={archiveOpen} onClose={() => setArchiveOpen(false)} title="책을 보관할까요?">
+        <p className="mb-5 text-sm leading-6 text-ink-muted">
+          <strong className="text-ink">{project.title}</strong>을(를) 서재 선반에서 내려요. 기록은 유지되지만 목록에는 보이지 않아요.
+        </p>
+        <Button disabled={busy} onClick={() => void handleArchive()}>
+          {busy ? '보관 중...' : '서재에서 보관'}
+        </Button>
+        <Button variant="ghost" className="mt-2" onClick={() => setArchiveOpen(false)}>
+          취소
+        </Button>
+      </Modal>
+
+      <Modal open={deleteOpen} onClose={() => setDeleteOpen(false)} title="책 삭제 확인">
+        <p className="mb-5 text-sm leading-6 text-ink-muted">
+          정말 삭제하려면 아래에 <strong className="text-ink">책 삭제</strong>를 입력해주세요. 원본 기록과 원고도 함께 사라질 수 있어요.
+        </p>
+        <Input
+          active
+          value={confirmText}
+          onChange={(e) => setConfirmText(e.target.value)}
+          placeholder="책 삭제"
+        />
+        <Button
+          variant="danger"
+          className="mt-5"
+          disabled={!canDelete || busy}
+          onClick={() => void handleDelete()}
+        >
+          {busy ? '삭제 중...' : '영구 삭제'}
+        </Button>
+        <Button variant="ghost" className="mt-2" onClick={() => setDeleteOpen(false)}>
+          취소
+        </Button>
+      </Modal>
     </div>
   )
 }

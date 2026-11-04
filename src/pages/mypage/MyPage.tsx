@@ -10,8 +10,9 @@ import { usePaywallStore } from '@/stores/paywallStore'
 const menuItems = [
   { index: '01', label: '완성한 책', description: '발행한 책과 PDF를 다시 열어봐요', to: '/mypage/completed-books' },
   { index: '02', label: '알림과 기록 설정', description: '기록 리마인드와 계정 설정을 관리해요', to: '/mypage/settings' },
-  { index: '03', label: '구독 관리', description: 'Free / Pro 플랜을 확인해요', to: '/mypage/subscription' },
-  { index: '04', label: '개인정보 처리방침', description: '기록과 개인정보 처리 기준을 확인해요', to: '/mypage/privacy-policy' },
+  { index: '03', label: 'AI 사용량', description: '이번 달 PAGE AI 도움을 확인해요', to: '/mypage/ai-usage' },
+  { index: '04', label: '구독 관리', description: 'Free / Pro 플랜을 확인해요', to: '/mypage/subscription' },
+  { index: '05', label: '개인정보 처리방침', description: '기록과 개인정보 처리 기준을 확인해요', to: '/mypage/privacy-policy' },
 ]
 
 export function MyPage() {
