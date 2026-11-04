@@ -13,7 +13,8 @@
 | PR #9 머지 · Vercel 운영 배포 | ✅ `4b62681` |
 | Migration `026` | ✅ 운영 적용 (`ai_edit` 확인) |
 | `edit-chapter` Function | ✅ 배포 |
-| Migration `025` | ⏸ 보류 — 앱의 준비 완료 날짜 계산(로컬일)과 트리거(UTC일) 불일치로 홈/서재 목록 오류 위험. 앱 수정 배포 후 적용 |
+| 준비 완료 날짜 UTC 정렬 ([PR #10](https://github.com/happysuyeun-rgb/MyChapter/pull/10)) | ✅ `ae6a679` 운영 배포 — 025 트리거와 날짜 기준 일치 |
+| Migration `025` | ✅ 운영 적용 (PR #10 배포 후) |
 | Secret `GOOGLE_AI_API_KEY` | ❌ **미등록** → AI 편집·AI 질문·챕터 생성이 실패/대체 동작. 등록 전에는 `VITE_AI_EDIT_ENABLED`를 켜지 말 것 |
 | Secret `BILLING_DEV_BYPASS` | ⚠ **등록되어 있음** → 운영에서는 삭제 권장 (값은 Cursor가 확인하지 않음) |
 | Secret `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | ❌ 미등록 → 실결제 서버 검증 불가 (Play 출시 전 등록) |
@@ -24,11 +25,11 @@
 
 | 순서 | 할 일 | 막히는 것 |
 |---|---|---|
-| 1 | PR #9 Preview에서 웹 화면 확인 (§1) | 머지 판단 |
-| 2 | PR #9 머지 승인 → 운영 웹 반영 | AI 편집 버튼은 아직 숨김 상태로 배포됨 (안전) |
-| 3 | 운영 DB에 `025`, `026` 적용 (§2) | Pro 표지 서버 강제, AI 편집 집계 |
-| 4 | `edit-chapter` Function 배포 (§2) | AI 편집 |
-| 5 | Vercel `VITE_AI_EDIT_ENABLED=true` + 재배포 (§2) | AI 편집 버튼 노출 |
+| 1 | 운영 사이트에서 웹 화면 확인 (§1 항목을 운영 URL에서) | — |
+| 2 | ~~PR #9 머지 → 운영 웹 반영~~ ✅ 완료 (AI 편집 버튼은 숨김 상태) | — |
+| 3 | ~~운영 DB `025`, `026` · `edit-chapter` 배포~~ ✅ Cursor 완료 | — |
+| 4 | Secret `GOOGLE_AI_API_KEY` 등록 · `BILLING_DEV_BYPASS` 삭제 (§2.3, §2.5) | AI 전체 · 무료 Pro 승격 위험 |
+| 5 | Vercel `VITE_AI_EDIT_ENABLED=true` + 재배포 (§2.4) | AI 편집 버튼 노출 |
 | 6 | Play Console 구독 상품 + 내부 테스트 (§3) | 실결제 |
 | 7 | Android 실기기 테스트 (§4) | 출시 |
 | 8 | 남은 제품 결정 회신 (§5) | AI 편집 한도 확정 |
@@ -56,30 +57,27 @@ Preview URL은 PR #9의 Vercel 봇 댓글에 있다. 실계정(Free 계정 권�
 
 ### 2.1 Migration `025` (Pro 표지 서버 강제)
 
-1. Supabase Dashboard → SQL Editor → `supabase/migrations/025_enforce_cover_and_readiness_guards.sql` 내용 실행
-2. `supabase/scripts/verify_025_publication_entitlement.sql` 실행 → 모든 항목 기대값 확인
-3. ☐ 완료
+✅ 2026-11-04 Cursor가 적용 (트리거 `projects_enforce_cover_entitlement`, `projects_enforce_readiness_integrity` 확인).
+
+> ⚠ `supabase/scripts/verify_025_publication_entitlement.sql`은 테이블을 TRUNCATE하는 **로컬 임시 DB 전용** 스크립트다. 운영에서 실행 금지.
+
+남은 확인 (운영 앱에서):
+- ☐ 홈·서재 목록이 평소처럼 열림 (한국 시간 오전 9시 전에도 한 번)
+- ☐ Free 계정: Pro 표지 저장 거부 + Paywall
 
 ### 2.2 Migration `026` (AI 편집 집계)
 
-1. SQL Editor에서 `supabase/migrations/026_ai_edit_feature.sql` 실행 (한 줄: `ai_feature`에 `ai_edit` 추가)
-2. 확인 쿼리:
-   ```sql
-   select unnest(enum_range(null::ai_feature));
-   ```
-   결과에 `ai_edit`가 있으면 완료
-3. ☐ 완료
+✅ 2026-11-04 Cursor가 적용 (`ai_feature`에 `ai_edit` 확인).
 
-### 2.3 `edit-chapter` Function 배포 (`026` 적용 후)
+### 2.3 `edit-chapter` Function 배포
 
-```bash
-npx supabase functions deploy edit-chapter
-```
+✅ 2026-11-04 Cursor가 배포. 단, Secret **`GOOGLE_AI_API_KEY`가 미등록**이라 지금 호출하면 "PAGE가 원고를 다듬지 못했어요"로 실패한다.
 
-- 필요한 Secret 이름 (값은 이미 다른 AI 기능에서 쓰는 것과 동일): `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`
-- ☐ 배포 완료 · ☐ Dashboard → Edge Functions에 `edit-chapter` 표시
+- ☐ Supabase Dashboard → Edge Functions → Secrets에 `GOOGLE_AI_API_KEY` 등록 (값 공유 금지 · 등록 후 재배포 불필요)
 
-### 2.4 AI 편집 버튼 켜기 (`2.2`, `2.3` 후)
+> CLI 참고: 이 저장소는 Supabase CLI **v2**가 필요하다 (`npx supabase@2 ...`). v3는 `config.toml`의 `[inbucket]` 때문에 실패한다.
+
+### 2.4 AI 편집 버튼 켜기 (`GOOGLE_AI_API_KEY` 등록 후)
 
 1. Vercel → Project → Settings → Environment Variables → Production에 `VITE_AI_EDIT_ENABLED` = `true`
 2. Redeploy (VITE_* 는 빌드 시점에 들어감)
