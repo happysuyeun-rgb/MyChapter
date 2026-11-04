@@ -77,7 +77,7 @@ export function AiUsagePage() {
             이번 달 PAGE가 도와준 양
           </h1>
           <p className="mt-3 text-sm leading-6 text-ink-muted">
-            AI 질문과 글감 힌트 사용량을 확인해요. 한도에 닿아도 fallback 질문으로 기록은 이어갈 수 있어요.
+            AI 질문·글감 힌트와 AI 편집 사용량을 확인해요. 한도에 닿아도 기록과 직접 편집은 계속할 수 있어요.
           </p>
         </header>
 
@@ -115,7 +115,12 @@ export function AiUsagePage() {
                   {String(index + 1).padStart(2, '0')}
                 </span>
                 <span className="min-w-0 flex-1 text-sm font-semibold">{feature.label}</span>
-                <span className="font-serif text-xl font-bold">{feature.count}</span>
+                <span className="font-serif text-xl font-bold">
+                  {feature.count}
+                  {feature.limit != null && (
+                    <span className="ml-1 font-sans text-xs font-normal text-ink-faint">/ {feature.limit}</span>
+                  )}
+                </span>
               </div>
             ))}
           </div>

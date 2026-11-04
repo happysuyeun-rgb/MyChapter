@@ -114,11 +114,11 @@ Replacement intent:
 
 Do not hard-code into product docs until decided:
 
-- exact Pro AI edit quota
-
-Confirmed (2026-11-04, PD-017): **Free AI edit = 월 3회** (monthly reset, `ai_usage` aggregation).
+- exact Pro AI edit quota (provisional in `edit-chapter`: 100 / month, pending confirmation)
 - AI custom-cover quota
 - chapter regeneration fair-use
+
+Confirmed (2026-11-04, PD-017): **Free AI edit = 월 3회** (UTC monthly reset, `ai_usage` aggregation). Failed generations do not count; "다시 다듬기" counts as one use (provisional default).
 
 ## Billing implementation note
 

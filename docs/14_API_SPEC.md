@@ -128,6 +128,7 @@ The repository contains these functions:
 | `generate-pdf` | `generateBookPdf` | **VERIFIED** |
 | `generate-question` | `generateQuestion` | full request/response audit pending |
 | `generate-freewriting-hint` | `generateFreewritingHint` | full request/response audit pending |
+| `edit-chapter` | `editChapterWithAi` | source-defined 2026-11-04 · **not deployed** |
 | `verify-subscription` | `verifyPurchase` | billing validation audit pending |
 | `delete-account` | `deleteAccount` | deletion contract audit pending |
 | `send-daily-reminder` | server/push workflow | schedule and authorization audit pending |
@@ -137,6 +138,14 @@ The repository contains these functions:
 - Returns 401 unauthenticated, 400 missing `record_id`, 404 record/project inaccessible.
 - Successful `{ "success": true, "analysis": { ... } }`; analysis contains `summary`, `themes`, `people`, `places`, `emotions`, `events`, `conflict`, `change`, `insight`, `goals`, `model`, `schema_version`, timestamps and ownership IDs.
 - Uses `record_analysis` upsert on conflict `record_id`; preserves original Records.
+
+**`edit-chapter` (R-06 / R-10, chapter scope)** — requires migration `026` (`ai_feature` value `ai_edit`):
+- Request `{ "chapter_id": "<UUID>", "text": "<current editor text>" }`, Bearer user; chapter must be owned.
+- `text` trimmed length 50–8000, else 400 `TEXT_TOO_SHORT` / `TEXT_TOO_LONG`.
+- Monthly window = UTC month start. Free 3 / active Pro 100 (provisional fair-use). Exhausted → 402 `AI_LIMIT` with `remaining: 0`, `plan`.
+- Gemini failure / unparsable JSON → 503 `AI_UNAVAILABLE`; **no usage row written**.
+- Success `{ "text": "...", "notes": ["..."], "remaining": 2, "plan": "free" }` and one `ai_usage(feature='ai_edit')` row. Does **not** write the chapter; the client applies the text and saves through `updateChapterContent`.
+- Client exposure gated by `VITE_AI_EDIT_ENABLED=true` (dev bypass always on).
 
 **Verified `generate-chapter` client response**:
 - Request `{ "project_id": "<UUID>" }`.

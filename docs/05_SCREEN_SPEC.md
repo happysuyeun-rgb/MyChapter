@@ -248,11 +248,11 @@ Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky · **서�
 | R-04 | Free | `/record/write/free` | Implemented |
 | R-04P | Photo | `/record/write/photo` | Implemented / E2E Pending |
 | R-05 | Complete | `/record/complete` | Implemented |
-| R-06 | AI Edit Result | — | Planned · Designed (29 D4) |
+| R-06 | AI Edit Result | B-04 Modal | Implemented (챕터만 · 코드) · 운영 배포 대기 (`026` + `edit-chapter` + `VITE_AI_EDIT_ENABLED`) |
 | R-07 | Detail | `/records/:id` | Implemented |
 | R-08 | Edit | `/records/:id/edit` | Implemented |
 | R-09 | Delete/Exit Confirm | modal | Implemented |
-| R-10 | AI Edit Quota | policy / G-01 | Planned · Free 월 3회 확정 (PD-017) |
+| R-10 | AI Edit Quota | B-04 / M-03 / G-01 | Implemented (코드) · Free 월 3회 (PD-017) · Pro 잠정 100 |
 
 ### R-02 · 모드 선택
 
@@ -469,7 +469,7 @@ Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky · **서�
 | P-07 / M-03 / H-04 | 책 보관·삭제 · AI 사용량 · 발행 홈 secondary CTA |
 | path | 유지 (IA 라벨·카피·레이아웃만 갱신) · `/mypage/ai-usage` 추가 |
 
-> 아직 Planned: **P-04** AI 제목, **R-06** AI 편집 결과, **R-10** AI 편집 한도 전용, **B-08** AI 생성 표지(post-MVP).  
+> 아직 Planned: **P-04** AI 제목, **B-08** AI 생성 표지(post-MVP), 기록(R-05) 단위 AI 편집본. R-06/R-10은 챕터 범위로 구현(2026-11-04, 운영 배포 대기).  
 > 2026-11-04 설계 추가: L-06 보관함 · P-06 NEXT STEP · B-09 목차 · R-06/R-10 플로우 → `29-design-shelf-workspace-toc-ai-edit.md`
 
 문서 충돌 시: `02_PRODUCT_DECISIONS` > `01_PRODUCT_SPEC` > **본 문서** > 디자인 시스템.

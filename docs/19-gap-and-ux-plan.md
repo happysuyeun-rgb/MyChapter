@@ -61,7 +61,7 @@
 | ID | 항목 | 설계 | 현재 | 비고 |
 |----|------|------|------|------|
 | G-10 | Play Billing 네이티브 | `MyChapterBilling` | JS `dev_`만 · Android 브리지 없음 | **유일한 대형 코드 갭** |
-| G-11 | 구독 복원 (Restore) | Play restore | 버튼+Toast 스텁만 | 실 API 미연동 |
+| G-11 | 구독 복원 (Restore) | Play restore | ✅ 코드 (2026-11-04) — `queryPurchasesAsync` → `verify-subscription` | 실기기 확인 대기 |
 | G-12 | 로그아웃 시 FCM 토큰 삭제 | Phase 6 | ✅ `authStore` → `removeAllDeviceTokens` (코드 반영; FCM E2E는 Firebase 후) | |
 | G-13 | S-04 OS 알림 권한 | Capacitor Push 요청 | DB 플래그만 (푸시는 네이티브 init 시) | 푸시 품질 |
 | G-14 | PDF 실패 UI | 사용자 안내 | ✅ FinalReview 인라인 실패+재시도 | 구 gap 해소 |

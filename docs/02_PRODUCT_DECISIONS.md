@@ -192,8 +192,8 @@ Free 사용자의 AI 편집(R-06)은 **월 3회**다.
 
 아래 항목은 아직 수치 확정 금지:
 
-- Pro AI edit quota/fair-use
-- AI 편집 "다시 다듬기"의 한도 차감 여부
+- Pro AI edit quota/fair-use (코드 잠정값 월 100 — 확정 시 `edit-chapter` 상수 수정)
+- AI 편집 "다시 다듬기"의 한도 차감 여부 (코드 잠정: 1회 차감)
 - 기록 편집본 저장 구조 (DB 설계 필요)
 - Pro AI cover fair-use quota
 - EPUB를 어느 milestone에 포함할지
