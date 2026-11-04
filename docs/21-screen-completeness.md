@@ -22,12 +22,12 @@
 | Auth | A-01~02 | `/login`, `/login/email` | ✅ (실연동 E2E 대기) |
 | Onboarding | A-03, O-01 | `/onboarding/*` | ✅ |
 | Home | H-01~04 | `/home` | ✅ (H-04 표지 snapshot·재발행 CTA는 부분) |
-| Library | L-01~05 | `/library` (`/projects`→redirect) | ✅ |
-| Project | P-01~03, P-05~07 | `/project/*` | ✅ (P-07 보관/삭제 ✅) |
+| Library | L-01~06 | `/library`, `/library/archived` (`/projects`→redirect) | ✅ (L-06 보관함 ✅) |
+| Project | P-01~03, P-05~07 | `/project/*` | ✅ (P-06 NEXT STEP ✅ · P-07 보관/삭제 ✅) |
 | Records | R-01~05, R-07~09 | `/records*`, `/record/*` | ✅ |
 | Book | B-01~05, B-07 | `/book*` | ✅ |
 | Cover Pro/AI | B-08 | `/book/cover` | 부분 (Pro 템플릿 ✅ · AI 표지 post-MVP) |
-| TOC | B-09 | FinalReview 임베드 | 부분 |
+| TOC | B-09 | FinalReview 임베드 | ✅ (기록 수·분량·빈 원고 경고 · 재정렬은 `/book`) |
 | Publish | U-01~07 | `/book/review`, `/book/publish/complete`, `/publication/:id` | ✅ |
 | My | M-01~09 | `/mypage*`, `/notifications`, `/mypage/ai-usage` | ✅ |
 | Paywall | G-01 | 전역 Modal | ✅ (네이티브 결제 미완) |
@@ -37,7 +37,7 @@
 | ID | 이유 |
 |----|------|
 | P-04 AI Title | Not MVP |
-| R-06 AI Edit Result, R-10 AI Edit Quota | Planned |
+| R-06 AI Edit Result, R-10 AI Edit Quota | Planned (설계 `29` D4 · 한도 수치 Open) |
 | H-05 Publishing Home | Deprecated (U-04/U-06으로 흡수) |
 | `/project/new/mode` (구 S-07) | 삭제됨 — 기록마다 모드 선택 (명세와 일치) |
 
@@ -83,7 +83,7 @@ U-02 Preview, U-03 Confirm, U-04 Publishing, U-06 Failed, B-06 Manuscript Edit, 
 | `expand-caption` | Function 없음 |
 | Capacitor Camera | `<input type=file>` |
 | AI 표지 / iOS / POD | post-MVP |
-| R-06 / R-10 AI 편집 UX | Planned |
+| R-06 / R-10 AI 편집 UX | Planned (설계 완료 · 한도 결정 후 DB/Edge 설계) |
 
 ---
 

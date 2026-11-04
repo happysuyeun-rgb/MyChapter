@@ -177,11 +177,23 @@ Hallmark는 반복 카드, AI-template UI, 과도한 장식 등을 줄이는 디
 
 MY CHAPTER의 고유 Paper × Editorial 시스템이 우선한다.
 
+## PD-017 · Free AI edit quota is monthly
+
+**Status: CONFIRMED (2026-11-04)**
+
+Free 사용자의 AI 편집(R-06)은 **월 3회**다.
+
+- AI 질문(월 10회)과 같은 월 단위 주기 · `ai_usage` 월 집계 재사용
+- 한도 소진 시 G-01 Paywall, 원본 기록 작성/수정은 계속 가능
+- M-03 AI 사용량 화면에 `AI 편집` 행으로 노출
+- 설계: `29-design-shelf-workspace-toc-ai-edit.md` D4
+
 ## Open decisions
 
 아래 항목은 아직 수치 확정 금지:
 
-- Free AI edit quota: 총 3회 vs 월 3회
 - Pro AI edit quota/fair-use
+- AI 편집 "다시 다듬기"의 한도 차감 여부
+- 기록 편집본 저장 구조 (DB 설계 필요)
 - Pro AI cover fair-use quota
 - EPUB를 어느 milestone에 포함할지

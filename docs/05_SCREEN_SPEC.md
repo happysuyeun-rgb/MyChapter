@@ -147,6 +147,7 @@ API 연동 화면은 다음을 정의한다.
 | L-03 | 발행가능 | `/library` (필터) | Implemented |
 | L-04 | 발행완료 | `/library` (필터) | Implemented |
 | L-05 | 권한/Pro 제한 | G-01 | Implemented |
+| L-06 | 보관함 | `/library/archived` | Implemented |
 
 ### 레이아웃
 
@@ -155,9 +156,21 @@ API 연동 화면은 다음을 정의한다.
 - 행: `Book_defualt` 표지(제목 오버레이) + 상태 · 제목 · Story Readiness % · 기록 수  
 - 활성 책 `NOW` 뱃지  
 - 하단: `선반에 빈 책 추가` → 생성 플로우 / Free 제한 시 G-01  
+- 하단: `보관함 · N권 →` (보관 ≥1일 때만) → L-06  
+- 활성 책 0 · 보관 ≥1: `서재가 잠시 비어 있어요` 빈 상태 + `보관함 열기` (생성 CTA 아님)  
 - `/projects` → `/library` 리다이렉트
 
 책 상태 SoT: **publications + Readiness** (`projects.is_completed`만으로 판단하지 않음).
+
+### L-06 · 보관함
+
+설계: `29-design-shelf-workspace-toc-ai-edit.md` D1  
+
+- AppLayout 하위(탭바 유지) · `←` 서재 · eyebrow `ARCHIVE` · H1 `보관함`  
+- Free 안내: `보관한 책도 Free 1권에 포함돼요. 새 책을 만들려면 보관한 책을 삭제하거나 Pro로 전환하세요.`  
+- 행: 작은 표지 · `보관 YYYY.MM.DD` · 제목 · 유형 · 기록 수 · `서재로 꺼내기`(sage) · `영구 삭제`(terracotta, `책 삭제` 입력 Modal)  
+- 꺼내기는 확인 없이 즉시 · 활성 책은 바꾸지 않음  
+- 빈 상태: `보관한 책이 없어요` · `서재로 돌아가기`
 
 ---
 
@@ -170,14 +183,15 @@ API 연동 화면은 다음을 정의한다.
 | P-03 | Basic Info | `/project/new/setup` | Implemented |
 | P-04 | AI Title | — | Not MVP |
 | P-05 | Created | `/project/new/complete` | Implemented |
-| P-06 | Book Workspace | `/project/workspace` | Implemented / Partial |
+| P-06 | Book Workspace | `/project/workspace` | Implemented |
 | P-07 | Book Settings | `/project/settings` | Implemented |
 
 ### P-02 · 유형 (9)
 
 나의 성장 · 나의 이야기 · 일과 커리어 · 가족과 육아 · 사랑과 관계 · 여행과 모험 · 취미와 일상 · 배움과 도전 · 자유 기록  
 
-유형은 AI 질문·Readiness·챕터 방향에 영향. 기록 주제를 강제하지 않음.
+유형은 AI 질문·Readiness·챕터 방향에 영향. 기록 주제를 강제하지 않음.  
+헤더 우측 `건너뛰기` → `/home` (책 없이 홈 진입 시 H 빈 상태 `첫 번째 책 만들기`로 언제든 재시작).
 
 ### P-03 · 필드
 
@@ -187,7 +201,7 @@ API 연동 화면은 다음을 정의한다.
 
 ### P-06 · 책 작업실
 
-**Status:** Implemented / Partial  
+**Status:** Implemented (NEXT STEP 2026-11-04)  
 
 헤더: CI · 뒤로(서재) · 책 설정 · `Book_defualt` 표지 + 제목 · 유형·기록 수  
 
@@ -201,7 +215,21 @@ API 연동 화면은 다음을 정의한다.
 6. 발행  
 
 잠금: readiness / entitlement / `BookStageGuard` 기존 로직 유지.  
-목표: `manuscript_reviewed_at` · `final_review_completed_at` 등 마일스톤 영속.
+마일스톤: `manuscript_reviewed_at` · `final_review_completed_at` 영속 (완료 단계 설명에 `MM.DD … 완료` 표시).
+
+**NEXT STEP 블록** (설계 D2 · 화면 유일한 Primary)
+
+| 상태 | Primary | Secondary |
+|------|---------|-----------|
+| 준비도 미충족 | `+ 오늘 기록하기` | — |
+| 챕터 0 | `챕터 만들기` → `/book` | `+ 오늘 기록하기` 텍스트 |
+| 원고 미확인 | `원고 확인하기` | 동일 |
+| 표지 미선택 | `표지 고르기` | 동일 |
+| 검수 미완료 | `최종 검수하기` | 동일 |
+| 검수 완료 · 미발행 | `발행하러 가기` | 동일 |
+| 발행됨 | `발행본 보기` → `/publication/:id` | 동일 |
+
+다음 단계 = PRODUCTION 목록의 첫 `ready && !done` 단계. 원고 단계는 챕터 ≥1이면 `확인 필요`(active).
 
 ### P-07 · 책 설정
 
@@ -220,11 +248,11 @@ Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky · **서�
 | R-04 | Free | `/record/write/free` | Implemented |
 | R-04P | Photo | `/record/write/photo` | Implemented / E2E Pending |
 | R-05 | Complete | `/record/complete` | Implemented |
-| R-06 | AI Edit Result | — | Planned |
+| R-06 | AI Edit Result | — | Planned · Designed (29 D4) |
 | R-07 | Detail | `/records/:id` | Implemented |
 | R-08 | Edit | `/records/:id/edit` | Implemented |
 | R-09 | Delete/Exit Confirm | modal | Implemented |
-| R-10 | AI Edit Quota | policy / G-01 | Planned |
+| R-10 | AI Edit Quota | policy / G-01 | Planned · Free 월 3회 확정 (PD-017) |
 
 ### R-02 · 모드 선택
 
@@ -274,7 +302,7 @@ Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky · **서�
 | B-06 | Manuscript Edit | chapter edit 경유 | Partial |
 | B-07 | Free Cover | `/book/cover` | Implemented |
 | B-08 | Pro / AI Cover | `/book/cover` | Partial |
-| B-09 | TOC | Final Review 내장 | Partial |
+| B-09 | TOC | Final Review 내장 | Implemented |
 
 ### 규칙
 
@@ -304,6 +332,14 @@ Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky · **서�
 ### U-01 필수 체크
 
 표지 · TOC · 원고 — 충족 시에만 발행 CTA 활성
+
+### U-01 · B-09 목차 (설계 D3)
+
+- 섹션: COVER → CONTENTS → CHECKLIST → 플랜 노트 → 진행/실패 상태  
+- 목차 행: `01` · 제목 · `기록 N개 · 약 N자` / 빈 본문은 terracotta `원고가 비어 있어요` → 챕터 편집  
+- `목차 순서 바꾸기 →` → `/book` (재정렬은 B-02에서)  
+- 빈 챕터 ≥1이면 `원고 최종 확인` 체크 비활성  
+- **Primary 1개**: 검수 미저장 `최종 검수 완료 저장` / 저장됨 `이 책 발행하기`(Free 소진 시 `Pro로 계속 발행하기`) · 저장됨 상태에서 `검수 다시 하기` 텍스트
 
 ### U-04 단계
 
@@ -433,6 +469,7 @@ Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky · **서�
 | P-07 / M-03 / H-04 | 책 보관·삭제 · AI 사용량 · 발행 홈 secondary CTA |
 | path | 유지 (IA 라벨·카피·레이아웃만 갱신) · `/mypage/ai-usage` 추가 |
 
-> 아직 Planned: **P-04** AI 제목, **R-06** AI 편집 결과, **R-10** AI 편집 한도 전용, **B-08** AI 생성 표지(post-MVP).
+> 아직 Planned: **P-04** AI 제목, **R-06** AI 편집 결과, **R-10** AI 편집 한도 전용, **B-08** AI 생성 표지(post-MVP).  
+> 2026-11-04 설계 추가: L-06 보관함 · P-06 NEXT STEP · B-09 목차 · R-06/R-10 플로우 → `29-design-shelf-workspace-toc-ai-edit.md`
 
 문서 충돌 시: `02_PRODUCT_DECISIONS` > `01_PRODUCT_SPEC` > **본 문서** > 디자인 시스템.

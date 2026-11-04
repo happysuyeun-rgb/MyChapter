@@ -8,7 +8,7 @@ import pageNoteImage from '@/assets/images/home/page-note/page_c.png'
 import { getUnreadCount } from '@/lib/api/notifications'
 import { getPublishedBook, type PublishedBook } from '@/lib/api/books'
 import { isDevBypass } from '@/lib/devBypass'
-import { getProjects } from '@/lib/api/projects'
+import { getArchivedProjects, getProjects } from '@/lib/api/projects'
 import { listRecords } from '@/lib/api/records'
 import { useAuthStore } from '@/stores/authStore'
 import { useProjectStore } from '@/stores/projectStore'
@@ -41,6 +41,7 @@ export function HomePage() {
   const [loadError, setLoadError] = useState(false)
   const [retryKey, setRetryKey] = useState(0)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [archivedCount, setArchivedCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -67,6 +68,9 @@ export function HomePage() {
           setLatestPublication(publication)
           setUnreadCount(unread)
         } else {
+          const archived = await getArchivedProjects(user.id)
+          if (cancelled) return
+          setArchivedCount(archived.length)
           setLatestPublication(null)
           setLatestRecord(null)
           setRecordCount(0)
@@ -91,7 +95,7 @@ export function HomePage() {
       />
     )
   }
-  if (projects.length === 0) return <EmptyState variant="home" />
+  if (projects.length === 0) return <EmptyState variant="home" archivedCount={archivedCount} />
 
   const project = projects.find((item) => item.id === activeProjectId) ?? projects[0]
   const readiness = getBookReadiness(project, recordCount)

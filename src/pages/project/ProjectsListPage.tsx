@@ -5,7 +5,7 @@ import { BrandMasthead } from '@/components/layout/BrandMasthead'
 import bookDefaultCover from '@/assets/images/home/Book_defualt.png'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { listPublishedBooks } from '@/lib/api/books'
-import { getProjects } from '@/lib/api/projects'
+import { getArchivedProjects, getProjects } from '@/lib/api/projects'
 import { listRecords } from '@/lib/api/records'
 import { isDevBypass } from '@/lib/devBypass'
 import { useProjectLimit } from '@/hooks/useProjectLimit'
@@ -31,6 +31,7 @@ export function ProjectsListPage() {
   const { canCreate } = useProjectLimit()
   const { showPaywall } = usePaywallStore()
   const [projects, setProjects] = useState<ProjectWithProgress[]>([])
+  const [archivedCount, setArchivedCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<Filter>('전체')
   const [loadError, setLoadError] = useState(false)
@@ -43,9 +44,10 @@ export function ProjectsListPage() {
       setLoading(true)
       setLoadError(false)
       try {
-        const [projectData, publishedBooks] = await Promise.all([
+        const [projectData, publishedBooks, archived] = await Promise.all([
           getProjects(user.id),
           isDevBypass() ? Promise.resolve([]) : listPublishedBooks(user.id),
+          getArchivedProjects(user.id),
         ])
         const publishedProjectIds = new Set(publishedBooks.map((book) => book.project_id))
 
@@ -62,6 +64,7 @@ export function ProjectsListPage() {
         }))
         if (cancelled) return
         setProjects(withProgress)
+        setArchivedCount(archived.length)
       } catch {
         if (!cancelled) setLoadError(true)
       } finally {
@@ -126,7 +129,7 @@ export function ProjectsListPage() {
       </header>
 
       {projects.length === 0 ? (
-        <EmptyState variant="library" />
+        <EmptyState variant="library" archivedCount={archivedCount} />
       ) : (
         <>
           <div className="shelf-rail h-2 w-full shrink-0" aria-hidden />
@@ -232,6 +235,17 @@ export function ProjectsListPage() {
             </span>
             <span className="text-xl text-ink">+</span>
           </button>
+
+          {archivedCount > 0 && (
+            <button
+              type="button"
+              className="mt-4 flex min-h-11 w-full items-center justify-between text-left text-xs font-semibold text-ink-muted"
+              onClick={() => navigate('/library/archived')}
+            >
+              <span>보관함 · {archivedCount}권</span>
+              <span aria-hidden>→</span>
+            </button>
+          )}
           </main>
         </>
       )}

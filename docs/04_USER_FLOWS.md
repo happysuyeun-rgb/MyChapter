@@ -158,6 +158,22 @@ Home
 
 Active book selection must persist across navigation and refresh, but must be validated against the currently authenticated user.
 
+## 9-1. Archive / restore / delete
+
+```text
+Book Settings (P-07)
+→ 서재에서 보관 → Library (book hidden, "보관함 · N권")
+→ 보관함 /library/archived (L-06)
+   ├─ 서재로 꺼내기 → back on Library (active book unchanged)
+   └─ 영구 삭제 → type "책 삭제" → removed, Free slot freed
+```
+
+Rules:
+
+- archived books still use the Free 1-book slot; only delete frees it (`06_FREE_PRO_POLICY`)
+- if the archived book was active, the first remaining active book becomes active
+- no active books but archived ≥1 → Home/Library show "보관함 열기" instead of "첫 번째 책 만들기"
+
 ## 10. Published book revisit
 
 Target:

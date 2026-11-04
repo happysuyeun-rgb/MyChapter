@@ -32,9 +32,18 @@ export function ProjectTypePage() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
       <header className="px-5 pb-7 pt-6">
-        <button type="button" className="flex min-h-11 items-center text-sm text-ink-muted" onClick={() => navigate(-1)}>
-          ← 내 서재
-        </button>
+        <div className="flex items-center justify-between">
+          <button type="button" className="flex min-h-11 items-center text-sm text-ink-muted" onClick={() => navigate(-1)}>
+            ← 내 서재
+          </button>
+          <button
+            type="button"
+            className="flex min-h-11 items-center text-sm font-semibold text-ink-muted"
+            onClick={() => navigate('/home', { replace: true })}
+          >
+            건너뛰기
+          </button>
+        </div>
         <div className="mt-7 border-b border-ink pb-6">
           <p className="text-[11px] font-semibold tracking-[0.22em] text-sage">NEW BOOK · 01</p>
           <h1 className="mt-3 font-serif text-[30px] font-bold leading-[1.32] tracking-[-0.03em]">

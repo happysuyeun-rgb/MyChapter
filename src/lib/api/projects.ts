@@ -148,6 +148,42 @@ export async function archiveProject(projectId: string, userId: string): Promise
   return data
 }
 
+export async function getArchivedProjects(userId: string): Promise<Project[]> {
+  if (isDevBypass()) {
+    const { mockGetArchivedProjects } = await import('@/mocks/projects')
+    return mockGetArchivedProjects(userId)
+  }
+
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('user_id', userId)
+    .not('archived_at', 'is', null)
+    .order('archived_at', { ascending: false })
+
+  if (error) throw error
+  return data ?? []
+}
+
+export async function restoreProject(projectId: string, userId: string): Promise<Project> {
+  if (isDevBypass()) {
+    const { mockRestoreProject } = await import('@/mocks/projects')
+    return mockRestoreProject(projectId, userId)
+  }
+
+  const { data, error } = await supabase
+    .from('projects')
+    .update({ archived_at: null })
+    .eq('id', projectId)
+    .eq('user_id', userId)
+    .not('archived_at', 'is', null)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
 /** Permanently removes the book row. Related child rows must cascade via DB RLS/FK. */
 export async function deleteProject(projectId: string, userId: string): Promise<void> {
   if (isDevBypass()) {

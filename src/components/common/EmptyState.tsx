@@ -7,6 +7,8 @@ type EmptyVariant = 'home' | 'library' | 'records' | 'book'
 
 interface EmptyStateProps {
   variant: EmptyVariant
+  /** Home/Library only: when every book is archived, point to the archive instead of creation. */
+  archivedCount?: number
 }
 
 const config: Record<
@@ -47,9 +49,19 @@ const config: Record<
   },
 }
 
-export function EmptyState({ variant }: EmptyStateProps) {
+export function EmptyState({ variant, archivedCount = 0 }: EmptyStateProps) {
   const navigate = useNavigate()
-  const { icon, eyebrow, title, description, cta, to } = config[variant]
+  const showArchived = archivedCount > 0 && (variant === 'home' || variant === 'library')
+  const { icon, eyebrow, title, description, cta, to } = showArchived
+    ? {
+        icon: config.library.icon,
+        eyebrow: 'ARCHIVED',
+        title: '서재가 잠시 비어 있어요',
+        description: `보관한 책 ${archivedCount}권이 있어요.\n다시 꺼내 이어 쓸 수 있어요.`,
+        cta: '보관함 열기',
+        to: '/library/archived',
+      }
+    : config[variant]
 
   return (
     <div className="desk-fade-in flex flex-1 flex-col justify-center px-8 py-14">

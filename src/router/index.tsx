@@ -14,6 +14,7 @@ import { SubscriptionPage } from '@/pages/mypage/SubscriptionPage'
 import { NotificationsPage } from '@/pages/notifications/NotificationsPage'
 import { NicknamePage } from '@/pages/onboarding/NicknamePage'
 import { NotificationPage } from '@/pages/onboarding/NotificationPage'
+import { ArchivedProjectsPage } from '@/pages/project/ArchivedProjectsPage'
 import { ProjectCompletePage } from '@/pages/project/ProjectCompletePage'
 import { ProjectWorkspacePage } from '@/pages/project/ProjectWorkspacePage'
 import { ProjectSetupPage } from '@/pages/project/ProjectSetupPage'
@@ -102,6 +103,7 @@ export const router = createBrowserRouter([
                 children: [
                   { path: '/home', element: <HomePage /> },
                   { path: '/library', element: <ProjectsListPage /> },
+                  { path: '/library/archived', element: <ArchivedProjectsPage /> },
                   { path: '/mypage', element: <MyPage /> },
                   { path: '/records', element: <RecordsListPage /> },
                   { path: '/book', element: <BookPage /> },
