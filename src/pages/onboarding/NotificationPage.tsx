@@ -2,19 +2,25 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, FlatIcon } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
+import { requestPushPermission } from '@/lib/push'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/authStore'
+import { useToastStore } from '@/stores/toastStore'
 
 export function NotificationPage() {
   const navigate = useNavigate()
   const { user, setProfile } = useAuthStore()
+  const { showToast } = useToastStore()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const complete = async (enabled: boolean) => {
+  const complete = async (wantsNotification: boolean) => {
     if (!user) return
     setLoading(true)
     setError('')
+
+    const permission = wantsNotification ? await requestPushPermission() : 'unsupported'
+    const enabled = wantsNotification && permission !== 'denied'
 
     const { data, error: updateError } = await supabase
       .from('users')
@@ -34,6 +40,9 @@ export function NotificationPage() {
     }
 
     setProfile(data)
+    if (wantsNotification && permission === 'denied') {
+      showToast('기기 알림이 꺼져 있어요. 휴대폰 설정에서 켜면 알림을 받을 수 있어요.')
+    }
     navigate('/project/new')
   }
 

@@ -93,6 +93,7 @@
 | **[23-ai-pdf-safety.md](./23-ai-pdf-safety.md)** | **AI 챕터·PDF 서버 안전성·설계안** | 담당자 + Cursor (기능 수정 승인 전) | 2026-10-24 |
 | **[29-design-shelf-workspace-toc-ai-edit.md](./29-design-shelf-workspace-toc-ai-edit.md)** | **설계: 보관함 · 작업실 NEXT STEP · Final Review 목차 · AI 편집(설계만)** | 제품·개발 | 2026-11-04 |
 | **[30-dev-plan-shelf-workspace-toc.md](./30-dev-plan-shelf-workspace-toc.md)** | **개발 계획: 29 설계의 구현 순서·검증 기준** | 개발 | 2026-11-04 |
+| **[31-user-checklist-pr9.md](./31-user-checklist-pr9.md)** | **본인 체크리스트: PR #9 확인 · 025/026 · edit-chapter 배포 · Play 상품 · 실기기 테스트** | **서비스 담당자 (지금)** | 2026-11-04 |
 | **[06-play-store-listing-draft.md](./06-play-store-listing-draft.md)** | **Play 스토어 등록정보 초안** | 사용자 + Cursor | 2026-10-23 |
 | **[07-manual-setup-checklist.md](./07-manual-setup-checklist.md)** | **수동 설정 체크리스트** (Secrets, Vercel, Play 등) | 사용자 | 2026-10-23 |
 

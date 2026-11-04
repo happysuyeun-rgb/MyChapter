@@ -165,7 +165,7 @@
 | 플랜 조회 실패 | `'free'` 위장 | silent | **gap** |
 | 설정(알림·시간·닉네임·이모지) 저장 실패 | 피드백 없음 | silent | **gap** |
 | 닉네임 규칙 위반(설정) | 버튼 눌러도 무반응 | silent | **gap** |
-| 구독 「구매 복원하기」 | Toast 「모바일 앱에서…」만 (스텁) | Toast | partial |
+| 구독 「구매 복원하기」 | 웹: 「모바일 앱에서…」 Toast · 앱: Play 복원 → 서버 검증, 없음/실패 시 Toast | Toast | handled (실기기 확인 대기) |
 | 계정 삭제 확인문구 불일치 | 버튼 비활성 | silent | handled |
 | 계정 삭제 Edge 실패 | 「계정 삭제에 실패했어요…」 | inline | handled |
 | 완성한 책 목록 실패 | 빈 상태로 오표시 | Empty(오표시) | **gap** |

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { Button, Input, Modal } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { PRO_PRICE_LABEL } from '@/constants/billing'
+import { requestPushPermission } from '@/lib/push'
 import { updateNotificationSettings, updateNickname, updateProfileEmoji } from '@/lib/api/users'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthStore } from '@/stores/authStore'
@@ -28,9 +29,14 @@ export function SettingsPage() {
 
   const handleNotificationToggle = async () => {
     if (!user || !profile) return
+    const turningOn = !profile.notification_enabled
+    if (turningOn && (await requestPushPermission()) === 'denied') {
+      setError('기기 알림이 꺼져 있어요. 휴대폰 설정에서 MY CHAPTER 알림을 켠 뒤 다시 시도해주세요.')
+      return
+    }
     try {
       const updated = await updateNotificationSettings(user.id, {
-        notification_enabled: !profile.notification_enabled,
+        notification_enabled: turningOn,
       })
       setProfile(updated)
       setError('')

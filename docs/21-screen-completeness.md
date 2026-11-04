@@ -30,14 +30,14 @@
 | TOC | B-09 | FinalReview 임베드 | ✅ (기록 수·분량·빈 원고 경고 · 재정렬은 `/book`) |
 | Publish | U-01~07 | `/book/review`, `/book/publish/complete`, `/publication/:id` | ✅ |
 | My | M-01~09 | `/mypage*`, `/notifications`, `/mypage/ai-usage` | ✅ |
-| Paywall | G-01 | 전역 Modal | ✅ (네이티브 결제 미완) |
+| Paywall | G-01 | 전역 Modal | ✅ (네이티브 결제 코드 완료 · 실기기 검증 대기) |
 
 ### 의도적으로 없는 화면 (Not MVP / Planned / Deprecated)
 
 | ID | 이유 |
 |----|------|
 | P-04 AI Title | Not MVP |
-| R-06 AI Edit Result, R-10 AI Edit Quota | Planned (설계 `29` D4 · 한도 수치 Open) |
+| 기록(R-05) 단위 AI 편집본 | Planned (편집본 저장 DB 설계 필요) — 챕터 R-06/R-10은 구현됨 |
 | H-05 Publishing Home | Deprecated (U-04/U-06으로 흡수) |
 | `/project/new/mode` (구 S-07) | 삭제됨 — 기록마다 모드 선택 (명세와 일치) |
 
@@ -53,7 +53,7 @@ U-02 Preview, U-03 Confirm, U-04 Publishing, U-06 Failed, B-06 Manuscript Edit, 
 
 | 항목 | 근거 |
 |------|------|
-| Play Billing 네이티브 브리지 | `billing.ts`가 `MyChapterBilling` 기대, Android `MainActivity`에 구현 없음 |
+| Play Billing 네이티브 브리지 | ✅ 코드 — `MyChapterBillingPlugin.java`(구매·복원·acknowledge) · **Play Console 상품 `mychapter_pro_monthly` + 실기기 테스트 대기** |
 | Production에서 Dev billing 차단 | `VITE_BILLING_DEV_MODE` / 서버 `BILLING_DEV_BYPASS` 확인 필요 |
 | 실연동 E2E | Secrets·OAuth·bypass off — `18-user-next-steps.md` |
 
@@ -71,9 +71,10 @@ U-02 Preview, U-03 Confirm, U-04 Publishing, U-06 Failed, B-06 Manuscript Edit, 
 
 | 항목 | 현재 |
 |------|------|
-| 구독 복원 | 버튼은 있으나 Toast 스텁만 (**Billing 네이티브 후**) |
-| Pro 표지 서버 강제 | 클라만 차단 — 서버 검증 재확인 필요 |
-| Legal iframe 실패 UI | 대체 화면 없음 |
+| 구독 복원 | ✅ 코드 — Play `queryPurchasesAsync` → `verify-purchase` → 플랜 갱신 (실기기 확인 대기) |
+| Pro 표지 서버 강제 | 코드 완료 — DB 트리거(`025`) + `generate-pdf` + 발행 RPC. **운영 DB `025` 적용 대기(승인 필요)** · 표지 화면은 서버 거부 시 미리보기 복원 + Paywall |
+| Legal iframe 실패 UI | ✅ 로딩 표시 · 10초 타임아웃/HTTP 오류 시 오류 화면 + 다시 시도 + 브라우저에서 열기 |
+| 알림 권한 거부 처리 | ✅ 온보딩/설정에서 기기 권한 거부 시 앱 알림 OFF 유지 + 안내 (권한 팝업 자체는 기존 `useNativeBridge`에서 요청) |
 
 ### P2 — 출시 후 / 선택
 
@@ -83,7 +84,8 @@ U-02 Preview, U-03 Confirm, U-04 Publishing, U-06 Failed, B-06 Manuscript Edit, 
 | `expand-caption` | Function 없음 |
 | Capacitor Camera | `<input type=file>` |
 | AI 표지 / iOS / POD | post-MVP |
-| R-06 / R-10 AI 편집 UX | Planned (설계 완료 · 한도 결정 후 DB/Edge 설계) |
+| R-06 / R-10 AI 편집 (챕터) | ✅ 코드 — `edit-chapter` · `026` · B-04 결과 Modal · M-03 `n / 3`. **운영: 026 적용 + Function 배포 + `VITE_AI_EDIT_ENABLED=true` 후 노출** |
+| 기록 단위 AI 편집본 | 보류 (DB 설계 필요) |
 
 ---
 

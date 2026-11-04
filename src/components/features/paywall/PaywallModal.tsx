@@ -34,12 +34,13 @@ export function PaywallModal() {
     setError('')
 
     try {
-      const purchase = await purchasePro()
+      const purchase = await purchasePro(user.id)
       const plan = await verifyPurchase(purchase.purchaseToken, purchase.productId, purchase.orderId)
       setPlan(plan)
       completePurchase()
     } catch (err) {
-      if (err instanceof BillingError) setError(err.message)
+      if (err instanceof BillingError && err.code === 'USER_CANCELED') setError('')
+      else if (err instanceof BillingError) setError(err.message)
       else if (err instanceof Error) setError(err.message)
       else setError('결제에 실패했어요. 다시 시도해주세요.')
     } finally {
