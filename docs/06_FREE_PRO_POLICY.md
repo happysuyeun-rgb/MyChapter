@@ -80,6 +80,22 @@ publication_count = 0
 
 Repeated publication allowed subject to service fair-use.
 
+## Archived books and the Free slot
+
+**Status: CONFIRMED (2026-11-04, design 29 D1)**
+
+```text
+Free book slot = all project rows (archived included)
+archive  → hidden from Library/Home, slot still used
+restore  → always allowed, no slot change
+delete   → frees the slot (records/chapters cascade)
+```
+
+- DB SoT: `023_enforce_free_project_limit` counts every `projects` row. No migration.
+- Client `getProjectCount` matches the DB rule.
+- 보관함 Free 안내: “보관한 책도 Free 1권에 포함돼요. 새 책을 만들려면 보관한 책을 삭제하거나 Pro로 전환하세요.”
+- 보관한 책의 발행본은 계속 열람 가능하다.
+
 ## Current copy issue
 
 Paywall currently contains:
@@ -98,7 +114,7 @@ Replacement intent:
 
 Do not hard-code into product docs until decided:
 
-- Free AI edit: total vs monthly
+- Free AI edit: total vs monthly (candidates Q1 총 3회 / Q2 월 3회 / Q3 첫 책 진행 중 5회 — `29-design-shelf-workspace-toc-ai-edit.md` D4, recommended Q2, not confirmed)
 - exact Pro AI edit quota
 - AI custom-cover quota
 - chapter regeneration fair-use
