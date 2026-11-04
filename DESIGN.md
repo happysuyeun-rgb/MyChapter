@@ -1,6 +1,6 @@
 # MY CHAPTER Design Source of Truth
 
-**Updated:** 2026-09-28
+**Updated:** 2026-11-03
 
 The canonical design specification is:
 
@@ -8,11 +8,13 @@ The canonical design specification is:
 2. `docs/02_PRODUCT_DECISIONS.md`
 3. `docs/05_SCREEN_SPEC.md`
 
+Redesign analysis & token/component plans: `docs/redesign/` (`01`–`08`).
+
 This root file exists only as an entry point for Cursor/agents.
 
 ## Product visual identity
 
-**Paper × Botanical × Vintage × Editorial × AI**
+**Paper × Botanical × Vintage × Editorial × AI** · **Editorial Book Desk** (confirmed)
 
 MY CHAPTER should feel like a quiet **digital publishing desk**, not a generic wellness/journal app.
 
@@ -36,6 +38,8 @@ MY CHAPTER should feel like a quiet **digital publishing desk**, not a generic w
 - Motion must be restrained and informative.
 
 ## Current redesigned surfaces
+
+Phase 2 Desk shell (tokens CSS vars, `DeskProgress`, Empty/Error/Tab alignment): Home · Library · TabBar.
 
 - Splash / Login / Email Login
 - Onboarding

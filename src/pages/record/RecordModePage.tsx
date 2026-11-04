@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FlatIcon } from '@/components/common'
+import { FlatIcon, LoadingBlock } from '@/components/common'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { getRecordCount } from '@/lib/api/records'
 import type { RecordModeInstance } from '@/types/database'
@@ -51,17 +51,21 @@ export function RecordModePage() {
   }, [project])
 
   if (loading || !project) {
-    return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <LoadingBlock label="기록 방식을 준비하는 중..." />
+      </div>
+    )
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+    <div className="desk-fade-in mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
       <header className="px-5 pb-6 pt-6">
         <button type="button" className="flex min-h-11 items-center text-sm text-ink-muted" onClick={() => navigate(-1)}>
           ← 돌아가기
         </button>
 
-        <div className="mt-7 flex items-end justify-between border-b border-ink pb-6">
+        <div className="desk-rule mt-7 flex items-end justify-between pb-6">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.22em] text-sage">
               PAGE {String(recordNumber).padStart(2, '0')}

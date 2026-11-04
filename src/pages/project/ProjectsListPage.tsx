@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { EmptyState, ErrorState, LoadingBlock } from '@/components/common'
+import { BrandMasthead } from '@/components/layout/BrandMasthead'
+import bookDefaultCover from '@/assets/images/home/Book_defualt.png'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { listPublishedBooks } from '@/lib/api/books'
 import { getProjects } from '@/lib/api/projects'
@@ -104,25 +106,31 @@ export function ProjectsListPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col overflow-y-auto bg-surface">
-      <header className="px-5 pb-6 pt-7">
-        <div className="flex items-end justify-between border-b border-ink pb-5">
-          <div>
-            <p className="text-[11px] font-semibold tracking-[0.22em] text-sage">MY LIBRARY</p>
-            <h1 className="mt-2 font-serif text-[30px] font-bold tracking-[-0.03em]">내 서재</h1>
-            <p className="mt-2 text-xs text-ink-muted">{projects.length}권의 책 · 기록과 발행을 한곳에서</p>
-          </div>
-          <button type="button" className="min-h-11 text-sm font-semibold" onClick={handleCreate}>
-            새 책 +
-          </button>
+    <div className="desk-fade-in flex flex-1 flex-col overflow-y-auto bg-surface">
+      <header className="px-5 pb-5 pt-4">
+        <BrandMasthead
+          right={
+            <button
+              type="button"
+              className="min-h-11 border border-ink bg-ink px-3 text-sm font-semibold text-surface"
+              onClick={handleCreate}
+            >
+              새 책 +
+            </button>
+          }
+        />
+        <div className="mt-4">
+          <h1 className="font-serif text-[32px] font-bold tracking-[-0.03em]">서재</h1>
+          <p className="mt-2 text-xs text-ink-muted">{projects.length}권 · 내가 만드는 책 선반</p>
         </div>
       </header>
 
       {projects.length === 0 ? (
-        <EmptyState variant="home" />
+        <EmptyState variant="library" />
       ) : (
-        <main className="px-5 pb-10">
-          <div className="flex border-b border-border">
+        <>
+          <div className="shelf-rail h-2 w-full shrink-0" aria-hidden />
+          <div className="flex w-full border-b border-border bg-transparent">
             {FILTERS.map((item) => (
               <button
                 key={item}
@@ -138,6 +146,7 @@ export function ProjectsListPage() {
             ))}
           </div>
 
+          <main className="px-5 pb-10">
           {filteredProjects.length === 0 ? (
             <div className="border-b border-border py-14 text-center">
               <p className="font-serif text-base font-bold">{emptyFilterMessage}</p>
@@ -157,16 +166,20 @@ export function ProjectsListPage() {
                   >
                     <div className="flex gap-5">
                       <div className="relative shrink-0">
-                        <div className={[
-                          'flex h-[126px] w-[84px] flex-col justify-between rounded-r-md rounded-l-[3px] p-3 text-surface shadow-[7px_8px_0_rgba(59,53,45,.10)]',
-                          project.statusLabel === '발행완료' ? 'bg-sage' : 'bg-ink',
-                        ].join(' ')}>
-                          <span className="text-[6px] tracking-[0.18em] opacity-55">MY CHAPTER</span>
-                          <div>
-                            <span className="mb-3 block h-px w-6 bg-surface/45" />
-                            <span className="line-clamp-4 font-serif text-[11px] font-bold leading-[1.45]">{project.title}</span>
+                        <div className="relative h-[126px] w-[84px]">
+                          <img
+                            src={bookDefaultCover}
+                            alt=""
+                            width={84}
+                            height={126}
+                            className="h-full w-full object-contain drop-shadow-[5px_6px_0_rgba(59,53,45,.10)]"
+                            decoding="async"
+                          />
+                          <div className="pointer-events-none absolute inset-x-[10%] top-[10%] flex h-[40%] items-center justify-center px-0.5">
+                            <span className="line-clamp-4 text-center font-serif text-[10px] font-bold leading-[1.35] text-ink">
+                              {project.title}
+                            </span>
                           </div>
-                          <span className="text-[6px] opacity-55">{typeLabel}</span>
                         </div>
                         {isActive && (
                           <span className="absolute -right-2 top-2 bg-terracotta px-1.5 py-1 text-[8px] font-bold tracking-[0.08em] text-white">
@@ -210,16 +223,17 @@ export function ProjectsListPage() {
 
           <button
             type="button"
-            className="mt-7 flex min-h-[54px] w-full items-center justify-between border-y border-dashed border-border px-1 text-left"
+            className="mt-7 flex min-h-[56px] w-full items-center justify-between border border-dashed border-ink/30 bg-surface-card/70 px-4 text-left"
             onClick={handleCreate}
           >
             <span>
-              <span className="block font-serif text-sm font-bold">새로운 한 권 시작하기</span>
-              <span className="mt-1 block text-[11px] text-ink-muted">또 다른 이야기를 위한 빈 책</span>
+              <span className="block font-serif text-sm font-bold">선반에 빈 책 추가</span>
+              <span className="mt-1 block text-[11px] text-ink-muted">새로운 한 권의 시작</span>
             </span>
-            <span className="text-xl text-ink-faint">+</span>
+            <span className="text-xl text-ink">+</span>
           </button>
-        </main>
+          </main>
+        </>
       )}
     </div>
   )

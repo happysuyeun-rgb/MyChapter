@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Badge, FlatIcon } from '@/components/common'
-import { NavBar } from '@/components/layout/NavBar'
+import { BrandMasthead } from '@/components/layout/BrandMasthead'
 import { PRO_PRICE_LABEL } from '@/constants/billing'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useUserStats } from '@/hooks/useUserStats'
@@ -23,10 +23,19 @@ export function MyPage() {
 
   return (
     <div className="flex flex-1 flex-col overflow-y-auto bg-surface">
-      <NavBar title="마이" rightLabel="설정" onRightClick={() => navigate('/mypage/settings')} />
-
-      <header className="px-5 pb-6 pt-7">
-        <p className="text-[11px] font-semibold tracking-[0.22em] text-sage">AUTHOR PROFILE</p>
+      <header className="px-5 pb-5 pt-4">
+        <BrandMasthead
+          right={
+            <button
+              type="button"
+              className="min-h-11 text-[12px] font-medium text-ink-muted"
+              onClick={() => navigate('/mypage/settings')}
+            >
+              설정
+            </button>
+          }
+        />
+        <p className="mt-5 text-[11px] font-semibold tracking-[0.22em] text-sage">AUTHOR PROFILE</p>
         <div className="mt-3 flex items-end justify-between gap-4 border-b border-ink pb-6">
           <div className="min-w-0">
             <h1 className="truncate font-serif text-[28px] font-bold tracking-[-0.03em]">

@@ -3,7 +3,7 @@ import type { FlatIconName } from './FlatIcon'
 import { FlatIcon } from './FlatIcon'
 import { Button } from './Button'
 
-type EmptyVariant = 'home' | 'records' | 'book'
+type EmptyVariant = 'home' | 'library' | 'records' | 'book'
 
 interface EmptyStateProps {
   variant: EmptyVariant
@@ -18,7 +18,15 @@ const config: Record<
     eyebrow: 'FIRST BOOK',
     title: '아직 펼쳐진 책이 없어요',
     description: '오늘 한 페이지를 남기면\n당신의 첫 번째 책이 시작됩니다.',
-    cta: '첫 번째 책 시작하기',
+    cta: '첫 번째 책 만들기',
+    to: '/project/new',
+  },
+  library: {
+    icon: 'books',
+    eyebrow: 'MY LIBRARY',
+    title: '서재가 비어 있어요',
+    description: '내가 만드는 책을 여기에 모아 둡니다.\n첫 권을 시작하면 선반이 채워집니다.',
+    cta: '첫 번째 책 만들기',
     to: '/project/new',
   },
   records: {
@@ -44,16 +52,20 @@ export function EmptyState({ variant }: EmptyStateProps) {
   const { icon, eyebrow, title, description, cta, to } = config[variant]
 
   return (
-    <div className="flex flex-1 flex-col justify-center px-8 py-14">
-      <div className="border-y border-ink py-8 text-left">
+    <div className="desk-fade-in flex flex-1 flex-col justify-center px-8 py-14">
+      <div className="desk-rule border-t border-ink py-8 text-left">
         <div className="flex items-center justify-between">
           <p className="text-[10px] font-semibold tracking-[0.2em] text-sage">{eyebrow}</p>
           <FlatIcon name={icon} size={28} className="text-sage" />
         </div>
-        <h2 className="mt-5 font-serif text-[24px] font-bold leading-snug tracking-[-0.03em] text-ink">{title}</h2>
+        <h2 className="mt-5 font-serif text-[24px] font-bold leading-snug tracking-[-0.03em] text-ink">
+          {title}
+        </h2>
         <p className="mt-4 whitespace-pre-line text-sm leading-6 text-ink-muted">{description}</p>
       </div>
-      <Button className="mt-7" onClick={() => navigate(to)}>{cta}</Button>
+      <Button className="mt-7" onClick={() => navigate(to)}>
+        {cta}
+      </Button>
     </div>
   )
 }

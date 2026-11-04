@@ -18,6 +18,7 @@ export type FlatIconName =
   | 'settings'
   | 'badge'
   | 'wave'
+  | 'hello'
   | 'document'
   | 'alert'
 
@@ -181,6 +182,16 @@ export function FlatIcon({ name, size = 24, className = '' }: FlatIconProps) {
         <svg {...props}>
           <path d="M2 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0" />
           <path d="M2 17c2-3 4-3 6 0s4 3 6 0 4-3 6 0" />
+        </svg>
+      )
+    case 'hello':
+      return (
+        <svg {...props}>
+          <path d="M8 13.5V8.2a1.2 1.2 0 0 1 2.4 0V12" />
+          <path d="M10.4 11.5V6.8a1.2 1.2 0 1 1 2.4 0V12" />
+          <path d="M12.8 11.8V7.5a1.2 1.2 0 1 1 2.4 0v6.2" />
+          <path d="M15.2 12.2v-2a1.2 1.2 0 1 1 2.4 0v3.8c0 2.6-1.7 4.8-4.4 4.8H13a4.5 4.5 0 0 1-4.5-4.5V13" />
+          <path d="M8 13.2V11a1.2 1.2 0 0 0-2.4 0v2.8a6 6 0 0 0 6 6h.2" />
         </svg>
       )
     case 'alert':
