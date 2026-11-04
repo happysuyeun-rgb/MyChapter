@@ -4,6 +4,7 @@ import { RootLayout } from '@/components/layout/RootLayout'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { EmailLoginPage } from '@/pages/auth/EmailLoginPage'
 import { HomePage } from '@/pages/home/HomePage'
+import { AiUsagePage } from '@/pages/mypage/AiUsagePage'
 import { CompletedBooksPage } from '@/pages/mypage/CompletedBooksPage'
 import { DeleteAccountPage } from '@/pages/mypage/DeleteAccountPage'
 import { LegalPage } from '@/pages/mypage/LegalPage'
@@ -92,6 +93,7 @@ export const router = createBrowserRouter([
 
               { path: '/mypage/settings', element: <SettingsPage /> },
               { path: '/mypage/subscription', element: <SubscriptionPage /> },
+              { path: '/mypage/ai-usage', element: <AiUsagePage /> },
               { path: '/mypage/completed-books', element: <CompletedBooksPage /> },
               { path: '/mypage/delete-account', element: <DeleteAccountPage /> },
 

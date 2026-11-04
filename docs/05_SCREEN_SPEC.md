@@ -120,10 +120,12 @@ API 연동 화면은 다음을 정의한다.
 
 ### H-04 · Published Home
 
-**Status:** Implemented (Target 정렬 진행)  
+**Status:** Implemented  
 
-- 표지 위 `발행완료` · 버전/발행일 표시  
-- Primary: 발행본 보기  
+- 표지 위 `발행완료` · 버전/발행일 표시 (`title_snapshot` 우선)  
+- Primary: 발행본 보기 → `/publication/:id`  
+- Secondary: 책 작업실 열기 → `/project/workspace`  
+- 발행 완료 시 기록 단축 카드는 숨김  
 - Free 재발행은 G-01 · Pro는 Final Review 경로
 
 ### H-05 · Publishing Home
@@ -169,7 +171,7 @@ API 연동 화면은 다음을 정의한다.
 | P-04 | AI Title | — | Not MVP |
 | P-05 | Created | `/project/new/complete` | Implemented |
 | P-06 | Book Workspace | `/project/workspace` | Implemented / Partial |
-| P-07 | Book Settings | `/project/settings` | Implemented / Partial |
+| P-07 | Book Settings | `/project/settings` | Implemented |
 
 ### P-02 · 유형 (9)
 
@@ -203,8 +205,8 @@ API 연동 화면은 다음을 정의한다.
 
 ### P-07 · 책 설정
 
-Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky  
-미구현: 책 보관/삭제 · 선택적 책별 설정
+Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky · **서재 보관(`archived_at`)** · **책 영구 삭제(확인 문구 `책 삭제`)**  
+선택적 책별 고급 설정은 후속.
 
 ---
 
@@ -321,7 +323,7 @@ Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky
 |----|------|-------|--------|
 | M-01 | My | `/mypage` | Implemented |
 | M-02 | Subscription | `/mypage/subscription` | Implemented |
-| M-03 | AI Usage | — | Planned |
+| M-03 | AI Usage | `/mypage/ai-usage` | Implemented |
 | M-04 | Publication History | `/mypage/completed-books` | Implemented |
 | M-05 | Notifications | `/notifications` | Implemented |
 | M-06 | Settings | `/mypage/settings` | Implemented |
@@ -332,7 +334,14 @@ Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky
 
 ### M-01
 
-닉네임·이메일 · FREE/PRO · 기록/챕터/완성 책 통계 · 스트릭 · Pro 업셀 · 메뉴(완성책·설정·구독·개인정보) · 로그아웃
+닉네임·이메일 · FREE/PRO · 기록/챕터/완성 책 통계 · 스트릭 · Pro 업셀 · 메뉴(완성책·설정·AI 사용량·구독·개인정보) · 로그아웃
+
+### M-03
+
+- 이번 달 AI 질문·글감 힌트 사용량 (`ai_usage`)  
+- Free 월 10회 한도 표시 · Pro는 확장 사용 안내  
+- 한도 초과 시에도 fallback 기록 가능 문구  
+- Free → Paywall / Pro → 구독 관리 링크
 
 ### M-02 / G-01
 
@@ -421,6 +430,9 @@ Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky
 | 서재/작업실 | 동일 기본 표지 에셋 · 제목 오버레이 |
 | TabBar | floating pill · 솔리드+opacity |
 | CTA | 홈 primary 아웃라인 · 서재 진입/발행본 보기 분기 |
-| path | 유지 (IA 라벨·카피·레이아웃만 갱신) |
+| P-07 / M-03 / H-04 | 책 보관·삭제 · AI 사용량 · 발행 홈 secondary CTA |
+| path | 유지 (IA 라벨·카피·레이아웃만 갱신) · `/mypage/ai-usage` 추가 |
+
+> 아직 Planned: **P-04** AI 제목, **R-06** AI 편집 결과, **R-10** AI 편집 한도 전용, **B-08** AI 생성 표지(post-MVP).
 
 문서 충돌 시: `02_PRODUCT_DECISIONS` > `01_PRODUCT_SPEC` > **본 문서** > 디자인 시스템.

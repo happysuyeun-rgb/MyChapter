@@ -1,8 +1,8 @@
 # MyChapter — 화면 완성도 · 미개발 점검
 
 > **Status:** CURRENT (code-audited)  
-> **최종 갱신:** 2026-10-23  
-> **기준:** `05_SCREEN_SPEC.md` v1.1 ↔ `src/router/index.tsx` + `src/pages/**`  
+> **최종 갱신:** 2026-11-04  
+> **기준:** `05_SCREEN_SPEC.md` v1.2 ↔ `src/router/index.tsx` + `src/pages/**`  
 > **관련:** `19-gap-and-ux-plan.md`, `20-error-cases.md`, `SCREEN_IMPLEMENTATION_GAP.md`
 
 ---
@@ -23,13 +23,13 @@
 | Onboarding | A-03, O-01 | `/onboarding/*` | ✅ |
 | Home | H-01~04 | `/home` | ✅ (H-04 표지 snapshot·재발행 CTA는 부분) |
 | Library | L-01~05 | `/library` (`/projects`→redirect) | ✅ |
-| Project | P-01~03, P-05~07 | `/project/*` | ✅ (P-07 책 삭제/보관 ❌) |
+| Project | P-01~03, P-05~07 | `/project/*` | ✅ (P-07 보관/삭제 ✅) |
 | Records | R-01~05, R-07~09 | `/records*`, `/record/*` | ✅ |
 | Book | B-01~05, B-07 | `/book*` | ✅ |
 | Cover Pro/AI | B-08 | `/book/cover` | 부분 (Pro 템플릿 ✅ · AI 표지 post-MVP) |
 | TOC | B-09 | FinalReview 임베드 | 부분 |
 | Publish | U-01~07 | `/book/review`, `/book/publish/complete`, `/publication/:id` | ✅ |
-| My | M-01~02, M-04~09 | `/mypage*`, `/notifications` | ✅ |
+| My | M-01~09 | `/mypage*`, `/notifications`, `/mypage/ai-usage` | ✅ |
 | Paywall | G-01 | 전역 Modal | ✅ (네이티브 결제 미완) |
 
 ### 의도적으로 없는 화면 (Not MVP / Planned / Deprecated)
@@ -38,7 +38,6 @@
 |----|------|
 | P-04 AI Title | Not MVP |
 | R-06 AI Edit Result, R-10 AI Edit Quota | Planned |
-| M-03 AI Usage | Planned |
 | H-05 Publishing Home | Deprecated (U-04/U-06으로 흡수) |
 | `/project/new/mode` (구 S-07) | 삭제됨 — 기록마다 모드 선택 (명세와 일치) |
 
@@ -83,8 +82,8 @@ U-02 Preview, U-03 Confirm, U-04 Publishing, U-06 Failed, B-06 Manuscript Edit, 
 | S-32 기록→챕터 이동 | ActionSheet 수정·삭제만 |
 | `expand-caption` | Function 없음 |
 | Capacitor Camera | `<input type=file>` |
-| 책 삭제·보관 (P-07) | 미구현 |
 | AI 표지 / iOS / POD | post-MVP |
+| R-06 / R-10 AI 편집 UX | Planned |
 
 ---
 
