@@ -6,6 +6,20 @@
 
 ---
 
+## 운영 반영 현황 (2026-11-04 Cursor 실행)
+
+| 항목 | 상태 |
+|---|---|
+| PR #9 머지 · Vercel 운영 배포 | ✅ `4b62681` |
+| Migration `026` | ✅ 운영 적용 (`ai_edit` 확인) |
+| `edit-chapter` Function | ✅ 배포 |
+| Migration `025` | ⏸ 보류 — 앱의 준비 완료 날짜 계산(로컬일)과 트리거(UTC일) 불일치로 홈/서재 목록 오류 위험. 앱 수정 배포 후 적용 |
+| Secret `GOOGLE_AI_API_KEY` | ❌ **미등록** → AI 편집·AI 질문·챕터 생성이 실패/대체 동작. 등록 전에는 `VITE_AI_EDIT_ENABLED`를 켜지 말 것 |
+| Secret `BILLING_DEV_BYPASS` | ⚠ **등록되어 있음** → 운영에서는 삭제 권장 (값은 Cursor가 확인하지 않음) |
+| Secret `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | ❌ 미등록 → 실결제 서버 검증 불가 (Play 출시 전 등록) |
+
+---
+
 ## 0. 한눈에 — 권장 순서
 
 | 순서 | 할 일 | 막히는 것 |

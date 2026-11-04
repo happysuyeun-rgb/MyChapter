@@ -36,9 +36,10 @@ export async function ensureProjectReady(project: Project, userId: string): Prom
   const minDays = project.readiness_min_days ?? BOOK_READINESS_RULES[project.type]?.minDays ?? 30
   const start = project.started_at || project.created_at.slice(0, 10)
   // If time requirement has not elapsed, avoid a needless record-count query.
+  // UTC day, matching the DB readiness trigger's CURRENT_DATE (025).
   const nowDate = new Date()
   const startDate = new Date(start)
-  const today = Date.UTC(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate())
+  const today = Date.UTC(nowDate.getUTCFullYear(), nowDate.getUTCMonth(), nowDate.getUTCDate())
   const firstDay = Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate())
   if (Math.floor((today - firstDay) / 86_400_000) + 1 < minDays) return project
 
@@ -58,6 +59,8 @@ export async function ensureProjectReady(project: Project, userId: string): Prom
     .update({ ready_at: new Date().toISOString() })
     .eq('id', project.id).eq('user_id', userId).is('ready_at', null)
     .select().maybeSingle()
+  // Server is authoritative; a not-yet-ready verdict must not break project lists.
+  if (error && String(error.message ?? '').includes('BOOK_NOT_READY')) return project
   if (error) throw error
   if (data) return data
   // A concurrent read may have marked the book ready: fetch its authoritative row.
