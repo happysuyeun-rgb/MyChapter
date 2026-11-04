@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { NavBar } from '@/components/layout/NavBar'
 import { Button } from '@/components/common'
 import { PRO_PRICE_LABEL } from '@/constants/billing'
-import { getSubscription } from '@/lib/api/subscriptions'
+import { getSubscription, verifyPurchase } from '@/lib/api/subscriptions'
+import { restoreProPurchases } from '@/lib/billing'
+import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { useAuthStore } from '@/stores/authStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -20,7 +22,9 @@ export function SubscriptionPage() {
   const { isPro } = useSubscription()
   const { showPaywall } = usePaywallStore()
   const { showToast } = useToastStore()
+  const { setPlan } = useSubscriptionStore()
   const [expiresAt, setExpiresAt] = useState<string | null>(null)
+  const [restoring, setRestoring] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -32,8 +36,26 @@ export function SubscriptionPage() {
       })
   }, [user])
 
-  const handleRestore = () => {
-    showToast('구독 복원은 모바일 앱에서 이용할 수 있어요.')
+  const handleRestore = async () => {
+    if (!user || restoring) return
+    setRestoring(true)
+    try {
+      const purchases = await restoreProPurchases()
+      if (purchases.length === 0) {
+        showToast('복원할 Pro 구독이 없어요.')
+        return
+      }
+      const purchase = purchases[0]
+      const plan = await verifyPurchase(purchase.purchaseToken, purchase.productId, purchase.orderId)
+      setPlan(plan)
+      const sub = await getSubscription(user.id).catch(() => null)
+      if (sub) setExpiresAt(sub.expires_at)
+      showToast(plan === 'pro' ? 'Pro 구독을 복원했어요.' : '구독이 만료되어 복원할 수 없어요.')
+    } catch (error) {
+      showToast(error instanceof Error && error.message ? error.message : '구독을 복원하지 못했어요. 다시 시도해주세요.')
+    } finally {
+      setRestoring(false)
+    }
   }
 
   return (
@@ -84,8 +106,8 @@ export function SubscriptionPage() {
             </section>
 
             <Button className="mt-8" onClick={() => showPaywall()}>{PRO_PRICE_LABEL}으로 Pro 시작</Button>
-            <Button variant="ghost" className="mt-2" onClick={handleRestore}>
-              구매 복원하기
+            <Button variant="ghost" className="mt-2" disabled={restoring} onClick={() => void handleRestore()}>
+              {restoring ? '복원 중...' : '구매 복원하기'}
             </Button>
           </>
         ) : (
@@ -94,8 +116,8 @@ export function SubscriptionPage() {
             <p className="mt-2 text-xs leading-5 text-ink-muted">
               결제와 해지는 Google Play 스토어의 결제 및 정기 결제 메뉴에서 관리할 수 있어요.
             </p>
-            <Button variant="secondary" className="mt-4" onClick={handleRestore}>
-              구매 복원하기
+            <Button variant="secondary" className="mt-4" disabled={restoring} onClick={() => void handleRestore()}>
+              {restoring ? '복원 중...' : '구매 복원하기'}
             </Button>
           </section>
         )}

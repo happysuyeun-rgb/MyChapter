@@ -1,4 +1,4 @@
-import { Capacitor } from '@capacitor/core'
+import { Capacitor, registerPlugin } from '@capacitor/core'
 import { PRO_PRODUCT_ID } from '@/constants/billing'
 
 export interface PurchaseResult {
@@ -16,35 +16,49 @@ export class BillingError extends Error {
   }
 }
 
-interface NativeBillingBridge {
-  purchase: (productId: string) => Promise<PurchaseResult>
+/** Implemented by `android/.../MyChapterBillingPlugin.java`. */
+interface MyChapterBillingPlugin {
+  purchase(options: { productId: string; accountId?: string }): Promise<PurchaseResult>
+  restore(): Promise<{ purchases: PurchaseResult[] }>
 }
 
-function getNativeBilling(): NativeBillingBridge | null {
-  const bridge = (window as Window & { MyChapterBilling?: NativeBillingBridge }).MyChapterBilling
-  return bridge ?? null
+const MyChapterBilling = registerPlugin<MyChapterBillingPlugin>('MyChapterBilling')
+
+function isWebDevBilling(): boolean {
+  return import.meta.env.DEV || import.meta.env.VITE_BILLING_DEV_MODE === 'true'
+}
+
+function toBillingError(error: unknown, fallback: string): BillingError {
+  const { code, message } = (error ?? {}) as { code?: unknown; message?: unknown }
+  return new BillingError(
+    typeof code === 'string' ? code : 'BILLING_FAILED',
+    typeof message === 'string' && message ? message : fallback,
+  )
 }
 
 export function isBillingAvailable(): boolean {
   if (Capacitor.isNativePlatform()) {
-    return getNativeBilling() !== null
+    return Capacitor.isPluginAvailable('MyChapterBilling')
   }
-  return import.meta.env.DEV || import.meta.env.VITE_BILLING_DEV_MODE === 'true'
+  return isWebDevBilling()
 }
 
-export async function purchasePro(): Promise<PurchaseResult> {
+export async function purchasePro(accountId?: string): Promise<PurchaseResult> {
   if (Capacitor.isNativePlatform()) {
-    const billing = getNativeBilling()
-    if (!billing) {
+    if (!Capacitor.isPluginAvailable('MyChapterBilling')) {
       throw new BillingError(
         'NATIVE_UNAVAILABLE',
         '결제 모듈을 불러올 수 없어요. 앱을 업데이트해주세요.',
       )
     }
-    return billing.purchase(PRO_PRODUCT_ID)
+    try {
+      return await MyChapterBilling.purchase({ productId: PRO_PRODUCT_ID, accountId })
+    } catch (error) {
+      throw toBillingError(error, '결제에 실패했어요. 다시 시도해주세요.')
+    }
   }
 
-  if (import.meta.env.DEV || import.meta.env.VITE_BILLING_DEV_MODE === 'true') {
+  if (isWebDevBilling()) {
     return {
       purchaseToken: `dev_${crypto.randomUUID()}`,
       productId: PRO_PRODUCT_ID,
@@ -53,4 +67,20 @@ export async function purchasePro(): Promise<PurchaseResult> {
   }
 
   throw new BillingError('WEB_UNAVAILABLE', '모바일 앱에서 결제해주세요.')
+}
+
+/** Active Pro subscriptions owned by the device's Google account. */
+export async function restoreProPurchases(): Promise<PurchaseResult[]> {
+  if (!Capacitor.isNativePlatform()) {
+    throw new BillingError('WEB_UNAVAILABLE', '구독 복원은 모바일 앱에서 이용할 수 있어요.')
+  }
+  if (!Capacitor.isPluginAvailable('MyChapterBilling')) {
+    throw new BillingError('NATIVE_UNAVAILABLE', '결제 모듈을 불러올 수 없어요. 앱을 업데이트해주세요.')
+  }
+  try {
+    const { purchases } = await MyChapterBilling.restore()
+    return purchases.filter((purchase) => purchase.productId === PRO_PRODUCT_ID)
+  } catch (error) {
+    throw toBillingError(error, '구매 내역을 불러오지 못했어요.')
+  }
 }
