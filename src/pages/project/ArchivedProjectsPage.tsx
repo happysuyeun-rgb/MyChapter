@@ -142,7 +142,7 @@ export function ArchivedProjectsPage() {
         )}
 
         {projects.length === 0 ? (
-          <div className="desk-rule mt-6 border-t border-ink py-10">
+          <div className="mt-6 border-t border-ink py-10">
             <h2 className="font-serif text-[22px] font-bold tracking-[-0.02em]">보관한 책이 없어요</h2>
             <p className="mt-3 text-sm leading-6 text-ink-muted">서재에서 잠시 내려둔 책이 여기에 모여요.</p>
             <Button className="mt-7" variant="secondary" onClick={() => navigate('/library')}>
@@ -185,7 +185,7 @@ export function ArchivedProjectsPage() {
                       <div className="mt-4 flex items-center gap-5">
                         <button
                           type="button"
-                          className="min-h-11 border-b border-sage text-xs font-semibold text-sage disabled:opacity-50"
+                          className="min-h-11 text-xs font-semibold text-sage underline underline-offset-4 disabled:opacity-50"
                           disabled={busy}
                           onClick={() => void handleRestore(project)}
                         >

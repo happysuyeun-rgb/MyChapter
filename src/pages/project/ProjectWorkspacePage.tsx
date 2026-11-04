@@ -20,6 +20,22 @@ import { isDevBypass } from '@/lib/devBypass'
 import { useAuthStore } from '@/stores/authStore'
 import { getBookReadiness } from '@/utils/bookReadiness'
 
+/** Indexed like `productionSteps`; drives the single primary CTA. */
+const NEXT_STEP_COPY = [
+  { title: '재료를 모으는 시간이에요', cta: '+ 오늘 기록하기', to: '/record/mode' },
+  { title: '챕터를 만들어볼까요', cta: '챕터 만들기', to: '/book' },
+  { title: '원고를 처음부터 읽어봐요', cta: '원고 확인하기', to: '/book/manuscript' },
+  { title: '표지를 골라주세요', cta: '표지 고르기', to: '/book/cover' },
+  { title: '마지막으로 확인해주세요', cta: '최종 검수하기', to: '/book/review' },
+  { title: '이제 발행할 수 있어요', cta: '발행하러 가기', to: '/book/review' },
+] as const
+
+function formatMilestone(value: string | null): string {
+  if (!value) return ''
+  const date = new Date(value)
+  return `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
+}
+
 export function ProjectWorkspacePage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
@@ -29,6 +45,7 @@ export function ProjectWorkspacePage() {
   const [manuscriptComplete, setManuscriptComplete] = useState(false)
   const [finalReviewComplete, setFinalReviewComplete] = useState(false)
   const [publishedVersion, setPublishedVersion] = useState<number | null>(null)
+  const [publicationId, setPublicationId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
   const [retryKey, setRetryKey] = useState(0)
@@ -53,6 +70,7 @@ export function ProjectWorkspacePage() {
             ? 1
             : publication?.version ?? null,
         )
+        setPublicationId(publication?.id ?? null)
       })
       .catch(() => {
         if (!cancelled) setLoadError(true)
@@ -126,11 +144,15 @@ export function ProjectWorkspacePage() {
     },
     {
       label: '원고',
-      description: manuscriptReady ? '챕터 원고가 준비되어 있어요' : '챕터를 먼저 만든 뒤 원고를 확인해요',
-      statusLabel: manuscriptReady ? '완료' : '대기',
+      description: manuscriptReady
+        ? `${formatMilestone(project.manuscript_reviewed_at)} 원고 확인 완료`
+        : chapterCount > 0
+          ? '챕터 원고를 처음부터 읽고 확인해요'
+          : '챕터를 먼저 만든 뒤 원고를 확인해요',
+      statusLabel: manuscriptReady ? '완료' : chapterCount > 0 ? '확인 필요' : '대기',
       ready: readiness.isReady && chapterCount > 0,
       lockReason: !readiness.isReady ? readinessLock : chapterLock,
-      state: manuscriptReady ? 'done' : 'pending',
+      state: manuscriptReady ? 'done' : chapterCount > 0 ? 'active' : 'pending',
       onSelect: () => navigate('/book/manuscript'),
     },
     {
@@ -145,7 +167,7 @@ export function ProjectWorkspacePage() {
     {
       label: '최종 검수',
       description: finalReviewComplete
-        ? '표지·목차·원고의 최종 검수를 완료했어요'
+        ? `${formatMilestone(project.final_review_completed_at)} 최종 검수 완료`
         : coverSelected
           ? '표지·목차·원고를 마지막으로 확인해주세요'
           : '표지 선택 후 진행할 수 있어요',
@@ -162,9 +184,30 @@ export function ProjectWorkspacePage() {
       ready: readiness.isReady && chapterCount > 0 && coverSelected,
       lockReason: !readiness.isReady ? readinessLock : !coverSelected ? coverLock : chapterLock,
       state: published ? 'done' : coverSelected ? 'active' : 'pending',
-      onSelect: () => navigate('/book/review'),
+      onSelect: () => navigate(publicationId ? `/publication/${publicationId}` : '/book/review'),
     },
   ]
+
+  const nextIndex = readiness.isReady
+    ? productionSteps.findIndex((step) => step.ready && step.state !== 'done')
+    : 0
+  const nextCopy = NEXT_STEP_COPY[nextIndex] ?? NEXT_STEP_COPY[0]
+  const nextStep = published
+    ? {
+        eyebrow: `PUBLISHED · v${publishedVersion}`,
+        title: '이 책은 발행되었어요',
+        description: '발행본은 그대로 보존돼요. 기록을 이어가면 다음 버전을 준비할 수 있어요.',
+        cta: '발행본 보기',
+        to: publicationId ? `/publication/${publicationId}` : '/mypage/completed-books',
+      }
+    : {
+        eyebrow: nextIndex > 0 ? `NEXT STEP · ${String(nextIndex + 1).padStart(2, '0')}` : 'NEXT STEP',
+        title: nextCopy.title,
+        description: nextIndex > 0 ? productionSteps[nextIndex].description : readiness.message,
+        cta: nextCopy.cta,
+        to: nextCopy.to,
+      }
+  const showRecordLink = nextStep.to !== '/record/mode'
 
   return (
     <div className="desk-fade-in mx-auto min-h-dvh w-full max-w-phone overflow-y-auto bg-surface">
@@ -220,6 +263,28 @@ export function ProjectWorkspacePage() {
       </header>
 
       <main className="px-5 pb-8">
+        <section className="border-b border-border pb-7">
+          <p className="text-[10px] font-semibold tracking-[0.16em] text-sage">{nextStep.eyebrow}</p>
+          <h2 className="mt-1 font-serif text-lg font-bold tracking-[-0.02em] text-ink">{nextStep.title}</h2>
+          <p className="mt-2 text-xs leading-5 text-ink-muted">{nextStep.description}</p>
+          <button
+            type="button"
+            className="mt-5 min-h-[48px] w-full border border-ink bg-ink px-4 py-3.5 text-sm font-semibold text-surface"
+            onClick={() => navigate(nextStep.to)}
+          >
+            {nextStep.cta}
+          </button>
+          {showRecordLink && (
+            <button
+              type="button"
+              className="mt-3 min-h-11 w-full text-center text-xs font-semibold text-ink-muted"
+              onClick={() => navigate('/record/mode')}
+            >
+              + 오늘 기록하기
+            </button>
+          )}
+        </section>
+
         <StudioSection eyebrow="READINESS" title="이야기 준비도" meta={`${readiness.score}%`}>
           <div className="border border-border bg-surface-card/80 px-4 py-4">
             <DeskProgress
@@ -234,13 +299,6 @@ export function ProjectWorkspacePage() {
                 : `기록 ${recordCount}/${readiness.rule.minRecords}개 · ${readiness.elapsedDays}/${readiness.rule.minDays}일 · 책 만들기까지 ${readiness.recordsRemaining > 0 ? `기록 ${readiness.recordsRemaining}개` : ''}${readiness.recordsRemaining > 0 && readiness.daysRemaining > 0 ? ' · ' : ''}${readiness.daysRemaining > 0 ? `${readiness.daysRemaining}일` : ''}`}
             </p>
           </div>
-          <button
-            type="button"
-            className="mt-5 min-h-[48px] w-full border border-ink bg-ink px-4 py-3.5 text-sm font-semibold text-surface"
-            onClick={() => navigate('/record/mode')}
-          >
-            + 오늘 기록하기
-          </button>
         </StudioSection>
 
         <StudioSection
