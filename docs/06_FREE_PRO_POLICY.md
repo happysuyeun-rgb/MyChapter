@@ -114,8 +114,9 @@ Replacement intent:
 
 Do not hard-code into product docs until decided:
 
-- Free AI edit: total vs monthly (candidates Q1 총 3회 / Q2 월 3회 / Q3 첫 책 진행 중 5회 — `29-design-shelf-workspace-toc-ai-edit.md` D4, recommended Q2, not confirmed)
 - exact Pro AI edit quota
+
+Confirmed (2026-11-04, PD-017): **Free AI edit = 월 3회** (monthly reset, `ai_usage` aggregation).
 - AI custom-cover quota
 - chapter regeneration fair-use
 

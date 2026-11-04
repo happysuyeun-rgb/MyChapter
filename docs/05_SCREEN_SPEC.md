@@ -251,7 +251,7 @@ Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky · **서�
 | R-07 | Detail | `/records/:id` | Implemented |
 | R-08 | Edit | `/records/:id/edit` | Implemented |
 | R-09 | Delete/Exit Confirm | modal | Implemented |
-| R-10 | AI Edit Quota | policy / G-01 | Planned · 수치 Open (29 D4) |
+| R-10 | AI Edit Quota | policy / G-01 | Planned · Free 월 3회 확정 (PD-017) |
 
 ### R-02 · 모드 선택
 
