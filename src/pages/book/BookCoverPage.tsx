@@ -54,14 +54,22 @@ export function BookCoverPage() {
     if (!user || !project) return
     if (proOnly && !isPro) return showPaywall()
 
+    const persistedCover = project.selected_cover_id ?? project.cover_template_id
     setSelectedCoverId(id)
 
     try {
       const updated = await updateProjectCoverSelection(project.id, user.id, id)
       setActiveProject(updated)
       setCoverConfirmed(true)
-    } catch {
-      // Keep the preview responsive; persistence will be retried on the next selection.
+    } catch (error) {
+      // Preview must match what is persisted, otherwise Final Review shows a different cover.
+      if (persistedCover) setSelectedCoverId(persistedCover)
+      const message = String((error as { message?: unknown } | null)?.message ?? '')
+      if (message.includes('COVER_PRO_ONLY') || message.includes('Pro에서')) {
+        setIsPro(false)
+        showPaywall()
+        return
+      }
       showToast('표지를 저장하지 못했어요. 다시 선택해주세요.')
     }
   }

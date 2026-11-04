@@ -72,8 +72,9 @@ U-02 Preview, U-03 Confirm, U-04 Publishing, U-06 Failed, B-06 Manuscript Edit, 
 | 항목 | 현재 |
 |------|------|
 | 구독 복원 | 버튼은 있으나 Toast 스텁만 (**Billing 네이티브 후**) |
-| Pro 표지 서버 강제 | 클라만 차단 — 서버 검증 재확인 필요 |
-| Legal iframe 실패 UI | 대체 화면 없음 |
+| Pro 표지 서버 강제 | 코드 완료 — DB 트리거(`025`) + `generate-pdf` + 발행 RPC. **운영 DB `025` 적용 대기(승인 필요)** · 표지 화면은 서버 거부 시 미리보기 복원 + Paywall |
+| Legal iframe 실패 UI | ✅ 로딩 표시 · 10초 타임아웃/HTTP 오류 시 오류 화면 + 다시 시도 + 브라우저에서 열기 |
+| 알림 권한 거부 처리 | ✅ 온보딩/설정에서 기기 권한 거부 시 앱 알림 OFF 유지 + 안내 (권한 팝업 자체는 기존 `useNativeBridge`에서 요청) |
 
 ### P2 — 출시 후 / 선택
 

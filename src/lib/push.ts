@@ -9,6 +9,20 @@ export function getLastFcmToken(): string | null {
   return lastFcmToken
 }
 
+/** Web has no push; only native returns granted/denied. */
+export async function requestPushPermission(): Promise<'granted' | 'denied' | 'unsupported'> {
+  if (!Capacitor.isNativePlatform()) return 'unsupported'
+  try {
+    let permission = await PushNotifications.checkPermissions()
+    if (permission.receive === 'prompt' || permission.receive === 'prompt-with-rationale') {
+      permission = await PushNotifications.requestPermissions()
+    }
+    return permission.receive === 'granted' ? 'granted' : 'denied'
+  } catch {
+    return 'denied'
+  }
+}
+
 export async function initPushNotifications(
   userId: string,
   onNavigate: (path: string) => void,
