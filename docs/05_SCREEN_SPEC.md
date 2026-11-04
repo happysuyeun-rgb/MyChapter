@@ -1,464 +1,426 @@
-# 05. Screen Specification
+# 05. 화면 명세서 (Screen Specification)
 
-**Status:** Final Screen Spec v1.1  
-**Updated:** 2026-10-24  
-**Source of truth:** product-facing screen/UX behavior. Product policy still follows 02_PRODUCT_DECISIONS.md.
+**Status:** Screen Spec v1.2 — Editorial Book Desk  
+**Updated:** 2026-11-04  
+**역할:** 화면/UX 최종 기준 (PRIMARY UX SoT)  
+**상위 정책:** `02_PRODUCT_DECISIONS.md` · `01_PRODUCT_SPEC.md` · `06_FREE_PRO_POLICY.md`  
+**IA/플로우:** `03_IA.md` · `04_USER_FLOWS.md` · `docs/redesign/04_IA_AND_SCREEN_MAP.md`  
+**디자인:** `10_DESIGN_SYSTEM.md`  
+**라우트 근거:** `src/router/index.tsx`
 
-## Status legend
-
-- **Implemented**: current route/UI exists.
-- **Partial**: core UI exists but policy, persistence, or final state is incomplete.
-- **Target**: final v1.1 design is fixed but code is not aligned yet.
-- **Planned**: not part of current MVP completion path.
-- **E2E Pending**: implementation exists but production real-data flow is not verified.
-
-## ID policy
-
-Existing IDs are not renumbered. Newly discovered real screens use non-breaking extension IDs.
-
-Examples:
-
-- R-04P = Photo Record
-- B-04A = Chapter Preview
-- U-05A = Publish Complete
-- U-05B = Publication Viewer
-- G-01 = global Paywall modal
-
-Current MVP onboarding is two steps: A-03 Nickname + O-01 Notification. Old O-01~04 conceptual onboarding is not implemented as four separate screens.
+> 라우트 path는 유지한다. v1.2는 Editorial Book Desk 리뉴얼(홈·서재·작업실·탭)과 제품 정책을 화면에 맞게 정리한 것이다.  
+> 기존 화면 ID는 재번호하지 않는다.
 
 ---
 
-## Entry / Auth
+## 0. 공통 원칙
 
-| ID | Screen | Route | Status | Primary behavior |
-|---|---|---|---|---|
-| SP-01 | Splash | /splash | Implemented | single post-auth routing checkpoint |
-| A-01 | Login | /login | Implemented | Google / Kakao / Email entry |
-| A-02 | Email Login / Auth | /login/email | Implemented / **E2E PASS — LIVE** (2026-10-24, prod `7ab565a6`) | magic-link sign in; OAuth·SMTP 일반화는 별도 PENDING |
-| A-03 | Nickname | /onboarding/nickname | Implemented | save 2~10 char author name |
-| O-01 | Notification Onboarding | /onboarding/notification | Implemented | save notification preference and complete onboarding |
+### 0.1 내비게이션
 
-### Final rules
+| 구분 | 구성 | 비고 |
+|------|------|------|
+| TabBar | 홈 `/home` · 서재 `/library` · 마이 `/mypage` | floating pill · 솔리드 아이콘 · 비활성 opacity |
+| 스택 | 기록·책만들기·설정·알림 등 | TabBar 밖. 홈/작업실에서 진입 |
+| Brand | `BrandMasthead` (CI) | 탭·상세 공통 상단 |
 
-- Web OAuth and Email callback route to /splash.
-- Splash routes by session/profile/onboarding state.
-- O-01 must advance only after successful profile persistence.
-- Terms and Privacy linked from Login must be viewable by guests.
+기록하기는 **독립 탭이 아니다.** 활성 책 맥락에서 홈 CTA·모드 선택으로 진입한다.
+
+### 0.2 용어
+
+| 쓰지 말 것 | 쓸 것 |
+|------------|--------|
+| 일기장 / 다이어리 앱 | 기록 · 원고 · 내 책 |
+| 서재 = 도서몰 | 서재 = 내가 만드는 책(프로젝트) |
+| 구독하고 무제한 읽기 | Pro 혜택만 실제 정책대로 |
+
+### 0.3 시각 방향 (Editorial Book Desk)
+
+- Ink / Warm Ivory / Sage / Terracotta
+- 표지 기본 에셋: `Book_defualt.png` (홈·서재·작업실)
+- 진행도는 **Story Readiness만** 사용자-facing 기준으로 사용
+- 화면당 primary CTA **1개**
+
+### 0.4 상태 범례
+
+| 표기 | 의미 |
+|------|------|
+| Implemented | 라우트/UI 존재 |
+| Partial | 핵심 UI는 있으나 정책·영속·최종 상태 미완 |
+| Target | 설계 확정, 코드 미정렬 |
+| Planned | MVP 완료 경로 밖 |
+| E2E Pending | 구현 있으나 운영 실데이터 검증 미완 |
+
+### 0.5 공통 상태 매트릭스
+
+API 연동 화면은 다음을 정의한다.
+
+- Loading · Empty · Error+Retry · 소유권 실패 · (구분 가능 시) 네트워크 실패 · Success · Paywall(권한 게이트)
+
+색 변화만으로 상태를 전달하지 않는다.
 
 ---
 
-## Home
+## 1. Entry / Auth
+
+| ID | 화면 | Route | Status | 핵심 동작 |
+|----|------|-------|--------|-----------|
+| SP-01 | Splash | `/splash` | Implemented | 세션·프로필·온보딩 후 단일 라우팅 체크포인트 |
+| A-01 | Login | `/login` | Implemented | Google / Kakao / Email 진입 |
+| A-02 | Email Login | `/login/email` | Implemented / E2E PASS | Magic Link |
+| A-03 | Nickname | `/onboarding/nickname` | Implemented | 작가명 2~10자 저장 |
+| O-01 | Notification Onboarding | `/onboarding/notification` | Implemented | 알림 선호 저장 후 온보딩 완료 |
+
+### 최종 규칙
+
+- OAuth·Email 콜백 → `/splash`
+- Splash가 세션/프로필/온보딩 상태로 분기
+- O-01은 프로필 영속 성공 후에만 진행
+- 온보딩 완료 후 **홈을 거치지 않고** `/project/new`로 이동 (`04_USER_FLOWS`)
+- 로그인 화면의 약관·개인정보는 **비로그인 열람 가능**
+
+---
+
+## 2. Home (`/home`)
+
+홈은 Desk다. 질문: **오늘 내가 뭘 해야 하지?**
+
+### 2.1 레이아웃 (v1.2 현행)
+
+1. **헤더** — CI + 알림 (`BrandMasthead`), `surface-alt` 배경, 세로 약 60px  
+2. **히어로 배너** — 인사(`안녕하세요, {닉네임}님`) · 헤드라인 · 서브카피 · 우측 `jandi` 캐릭터  
+3. **구분선** — 히어로와 책 영역 분리  
+4. **책 표지 블록** — `Book_defualt` 중앙 · 표지 위 뱃지(진행중/발행가능/발행완료) + 제목 · 탭 → `/library`  
+5. **준비도 게이지** — 표지 아래, 가로 약 50%, 점수 숫자 compact  
+6. **Primary CTA** — 미발행: `오늘 한 페이지 쓰기` → `/library` / 발행됨: `발행한 책 보기` → `/publication/:id` (아웃라인 버튼)  
+7. **기록 단축 카드 2열** — `AI 질문으로 기록` → `/record/write/question` · `자유롭게 기록` → `/record/write/free`  
+8. **최근 기록** — 최신 1건 · 좌측 폴라로이드 슬롯(에셋 대기) · `전체 보기` → `/records` · 행 탭 → `/records/:id`  
+9. **PAGE 노트** — 캐릭터(`page_c`) + 상태별 한 줄 문구 (라벨 PAGE'S NOTE 없음)
 
 ### H-01 · Empty Home
 
-**Status:** Implemented
+**Status:** Implemented  
 
-- First value explanation.
-- Primary CTA: 첫 번째 책 만들기.
+- 프로젝트 0개  
+- EmptyState: 첫 책 만들기 → `/project/new`
 
 ### H-02 · In-progress Home
 
-**Status:** Implemented
+**Status:** Implemented  
 
-Shows:
-
-- current Book
-- Story Readiness
-- PAGE note
-- record count
-- dominant 오늘 한 페이지 쓰기 CTA
-- notification entry
-
-Only Story Readiness is shown as progress. Legacy targetCount progress must not compete with it.
+- 활성 책 표지 + Readiness  
+- CTA: 오늘 한 페이지 쓰기 / 기록 단축  
+- 알림 진입
 
 ### H-03 · Ready Home
 
-**Status:** Implemented / QA
+**Status:** Implemented  
 
-When Readiness minimum conditions are met:
-
-- explain that Book Making is available
-- primary CTA: 책 작업실 열기
-- secondary behavior: user may continue recording
+- 뱃지 `발행가능`  
+- 기록 계속 가능 · 작업실/책만들기는 서재·작업실에서 진입
 
 ### H-04 · Published Home
 
-**Status:** Target
+**Status:** Implemented (Target 정렬 진행)  
 
-Final state:
-
-- latest publication version and published date
-- latest immutable cover snapshot
-- primary CTA: 발행본 보기
-- secondary CTA: 책 작업실 열기
-- Pro: republish through Final Review flow
-- Free after first publication: republish opens G-01 Paywall
-- new Book entry reflects Free/Pro entitlement
-
-Published state must be derived from publications, not only legacy projects.is_completed.
+- 표지 위 `발행완료` · 버전/발행일 표시  
+- Primary: 발행본 보기  
+- Free 재발행은 G-01 · Pro는 Final Review 경로
 
 ### H-05 · Publishing Home
 
-**Status:** Deprecated as standalone screen
+**Status:** Deprecated  
 
-Publishing progress/failure is finalized as U-04/U-06 state inside Final Review. Do not add a separate publishing route.
-
----
-
-## Library
-
-| ID | Screen | Route | Status |
-|---|---|---|---|
-| L-01 | All Books | /library | Implemented |
-| L-02 | 진행중 | /library | Implemented |
-| L-03 | 발행가능 | /library | Implemented |
-| L-04 | 발행완료 | /library | Implemented |
-| L-05 | Project Limit / Pro | G-01 | Implemented |
-
-Final Book status should use publications + Readiness. Free users opening a restricted second Book flow see G-01 only at the restricted action.
+- 독립 발행 중 화면 없음. U-01/U-04/U-06 상태로 처리
 
 ---
 
-## Project
+## 3. Library — 서재 (`/library`)
 
-| ID | Screen | Route | Status |
-|---|---|---|---|
-| P-01 | New Book Entry | /project/new | Implemented |
-| P-02 | Book Type | /project/new | Implemented |
-| P-03 | Basic Info | /project/new/setup | Implemented |
-| P-04 | AI Title | - | Not MVP |
-| P-05 | Created | /project/new/complete | Implemented |
-| P-06 | Book Workspace | /project/workspace | Implemented / Partial |
-| P-07 | Book Settings | /project/settings | Implemented / Partial |
+질문: **내 책들이 어디까지 왔지?**
 
-### P-03 final fields
+| ID | 화면 | Route | Status |
+|----|------|-------|--------|
+| L-01 | 전체 | `/library` | Implemented |
+| L-02 | 진행중 | `/library` (필터) | Implemented |
+| L-03 | 발행가능 | `/library` (필터) | Implemented |
+| L-04 | 발행완료 | `/library` (필터) | Implemented |
+| L-05 | 권한/Pro 제한 | G-01 | Implemented |
 
-- Book title: 1~50 chars
-- Story Readiness minimum guidance
-- no competing period/frequency target UI
-- recording mode is chosen per Record
+### 레이아웃
 
-### P-06 final stages
+- 헤더: CI · `+ 새 책`  
+- 필터 칩: 전체 / 진행중 / 발행가능 / 발행완료 (풀블리드)  
+- 행: `Book_defualt` 표지(제목 오버레이) + 상태 · 제목 · Story Readiness % · 기록 수  
+- 활성 책 `NOW` 뱃지  
+- 하단: `선반에 빈 책 추가` → 생성 플로우 / Free 제한 시 G-01  
+- `/projects` → `/library` 리다이렉트
 
-1. 기록
-2. 챕터
-3. 원고
-4. 표지
-5. 최종 검수
-6. 발행
-
-Current code infers manuscript/review completion from content/published state. Final target is persisted workflow milestones such as manuscript_reviewed_at and final_review_completed_at.
-
-### P-07
-
-Implemented:
-
-- title change
-- type change
-- readiness snapshot update
-- sticky ready_at preservation
-
-Still not implemented:
-
-- Book archive/delete
-- optional Book-specific settings
+책 상태 SoT: **publications + Readiness** (`projects.is_completed`만으로 판단하지 않음).
 
 ---
 
-## Records
+## 4. Project — 책 만들기 / 작업실
 
-| ID | Screen | Route / form | Status |
-|---|---|---|---|
-| R-01 | Record List | /records | Implemented |
-| R-02 | Mode Select | /record/mode | Implemented |
-| R-03 | AI Question Record | /record/write/question | Implemented / E2E Pending |
-| R-04 | Free Record | /record/write/free | Implemented |
-| R-04P | Photo Record | /record/write/photo | Implemented / E2E Pending |
-| R-05 | Saved / Complete | /record/complete | Implemented |
-| R-06 | AI Record Edit Result | - | Planned |
-| R-07 | Record Detail | /records/:id | Implemented |
-| R-08 | Record Edit | /records/:id/edit | Implemented |
-| R-09 | Delete / Exit Confirm | modal / flow | Implemented |
-| R-10 | AI Edit Quota | policy / paywall | Planned |
+| ID | 화면 | Route | Status |
+|----|------|-------|--------|
+| P-01 | New Book Entry | `/project/new` | Implemented |
+| P-02 | Book Type | `/project/new` | Implemented |
+| P-03 | Basic Info | `/project/new/setup` | Implemented |
+| P-04 | AI Title | — | Not MVP |
+| P-05 | Created | `/project/new/complete` | Implemented |
+| P-06 | Book Workspace | `/project/workspace` | Implemented / Partial |
+| P-07 | Book Settings | `/project/settings` | Implemented / Partial |
+
+### P-02 · 유형 (9)
+
+나의 성장 · 나의 이야기 · 일과 커리어 · 가족과 육아 · 사랑과 관계 · 여행과 모험 · 취미와 일상 · 배움과 도전 · 자유 기록  
+
+유형은 AI 질문·Readiness·챕터 방향에 영향. 기록 주제를 강제하지 않음.
+
+### P-03 · 필드
+
+- 책 제목 1~50자  
+- Story Readiness 안내 (기간+건수 경쟁 UI 금지)  
+- 기록 모드는 **프로젝트에 고정하지 않음** (매 기록 시 선택)
+
+### P-06 · 책 작업실
+
+**Status:** Implemented / Partial  
+
+헤더: CI · 뒤로(서재) · 책 설정 · `Book_defualt` 표지 + 제목 · 유형·기록 수  
+
+스테이지(시각 스테퍼 + 섹션):
+
+1. 기록 → `/record/mode`  
+2. 챕터 → `/book`  
+3. 원고 → `/book/manuscript`  
+4. 표지 → `/book/cover`  
+5. 최종 검수 → `/book/review`  
+6. 발행  
+
+잠금: readiness / entitlement / `BookStageGuard` 기존 로직 유지.  
+목표: `manuscript_reviewed_at` · `final_review_completed_at` 등 마일스톤 영속.
+
+### P-07 · 책 설정
+
+Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky  
+미구현: 책 보관/삭제 · 선택적 책별 설정
+
+---
+
+## 5. Records — 기록
+
+| ID | 화면 | Route | Status |
+|----|------|-------|--------|
+| R-01 | Record List | `/records` | Implemented |
+| R-02 | Mode Select | `/record/mode` | Implemented |
+| R-03 | AI Question | `/record/write/question` | Implemented / E2E Pending |
+| R-04 | Free | `/record/write/free` | Implemented |
+| R-04P | Photo | `/record/write/photo` | Implemented / E2E Pending |
+| R-05 | Complete | `/record/complete` | Implemented |
+| R-06 | AI Edit Result | — | Planned |
+| R-07 | Detail | `/records/:id` | Implemented |
+| R-08 | Edit | `/records/:id/edit` | Implemented |
+| R-09 | Delete/Exit Confirm | modal | Implemented |
+| R-10 | AI Edit Quota | policy / G-01 | Planned |
+
+### R-02 · 모드 선택
+
+- PAGE에게 질문 받기 · 빈 페이지에서 시작하기 · 한 장면으로 남기기  
+- 홈에서 AI/자유 단축은 R-03/R-04로 직행 가능
 
 ### R-03
 
-- AI question + answer + emotion tags
-- body 10~2000 chars
-- draft restore
-- AI_LIMIT may open G-01, but fallback question keeps writing available
+- AI 질문 + 답변 + 감정 태그  
+- 본문 10~2000자 · 드래프트 복원  
+- AI_LIMIT → G-01 가능, **fallback 질문으로 기록 계속 가능**
 
 ### R-04
 
-- optional title
-- optional freewriting hint
-- body 10~5000 chars
-- blank title falls back to date-based title
-- current title max length is not yet defined
+- 선택 제목 · 선택 AI 힌트 · 본문 10~5000자  
+- 빈 제목 → 날짜 기반 폴백  
+- 제목 최대 길이: 미확정(오픈)
 
 ### R-04P
 
-- photo required
-- caption 1~100 chars
-- emotion tags
-- record photo stored separately
-- file size/resolution policy is still open and must be fixed before launch
+- 사진 필수 · 캡션 1~100자 · 감정 태그  
+- 파일 크기/해상도 정책: 런치 전 확정 필요
 
 ### R-05
 
-Shows:
+- 저장 페이지 번호 · Readiness · 스트릭/뱃지  
+- Ready 시 작업실 CTA
 
-- saved page number
-- Story Readiness
-- streak message / next streak goal
-- earned badge titles
-- Ready state CTA to Book Workspace
+### 공통
 
-### Record common behavior
-
-- unsaved exit supports continue / save draft / discard
-- analyze-record runs asynchronously after create/update
-- analysis failure must not fail the original Record save
-- original Records are never overwritten by Chapter generation
+- 미저장 이탈: 계속 / 임시저장 / 버리기  
+- `analyze-record`는 저장 후 비동기 · 분석 실패가 원본 저장을 실패시키지 않음  
+- **원본 Record는 챕터 생성으로 덮어쓰지 않음** (`09_AI_POLICY`)
 
 ---
 
-## Book Making
+## 6. Book Making — 원고 / 표지
 
-| ID | Screen / state | Route | Status |
-|---|---|---|---|
-| B-01 | Chapter Start | /book | Implemented |
-| B-02 | Chapter Desk / List | /book | Implemented |
-| B-03 | Generate State | /book | Implemented / E2E Pending |
-| B-04A | Chapter Preview | /book/chapter/:id | Implemented |
-| B-04 | Chapter Edit | /book/chapter/:id/edit | Implemented |
-| B-05 | Manuscript Review | /book/manuscript | Implemented |
-| B-06 | Manuscript Edit | embedded via chapter edit | Partial |
-| B-07 | Free Cover | /book/cover | Implemented |
-| B-08 | Pro / AI Cover | /book/cover | Partial |
-| B-09 | TOC | Final Review embedded | Partial |
+| ID | 화면 | Route | Status |
+|----|------|-------|--------|
+| B-01 | Chapter Start | `/book` | Implemented |
+| B-02 | Chapter Desk/List | `/book` | Implemented |
+| B-03 | Generate State | `/book` | Implemented / E2E Pending |
+| B-04A | Chapter Preview | `/book/chapter/:id` | Implemented |
+| B-04 | Chapter Edit | `/book/chapter/:id/edit` | Implemented |
+| B-05 | Manuscript Review | `/book/manuscript` | Implemented |
+| B-06 | Manuscript Edit | chapter edit 경유 | Partial |
+| B-07 | Free Cover | `/book/cover` | Implemented |
+| B-08 | Pro / AI Cover | `/book/cover` | Partial |
+| B-09 | TOC | Final Review 내장 | Partial |
 
-### Final Book Making rules
+### 규칙
 
-- Ready is required before /book.
-- chapter_records is the Chapter↔Record source of truth.
-- B-03 requires enough unassigned material; current threshold is 3 Records.
-- Chapter regenerate reads original source Records and does not mutate them.
-- Manuscript is a workflow over Chapter content, not a duplicate manuscript body table.
-- B-07 persists selected_cover_id.
-- Pro template covers exist; AI-generated cover remains post-MVP.
-- TOC has no dedicated route; Final Review contains it.
+- `/book` 진입에 Ready 필요  
+- `chapter_records`가 Chapter↔Record SoT  
+- B-03: 미배정 기록 충분(현재 임계 3)  
+- 재생성은 원본 Record를 읽기만 하고 변형하지 않음  
+- 원고는 Chapter 콘텐츠 워크플로 (별도 manuscript body 테이블 아님)  
+- B-07: `selected_cover_id` 영속 · AI 생성 표지는 post-MVP  
+- TOC 전용 라우트 없음 → U-01에 포함
 
 ---
 
-## Publication
+## 7. Publication — 발행
 
-| ID | Screen / state | Route / location | Status |
-|---|---|---|---|
-| U-01 | Final Review | /book/review | Implemented |
-| U-02 | Preview | embedded in U-01 | Final |
+| ID | 화면/상태 | Route | Status |
+|----|-----------|-------|--------|
+| U-01 | Final Review | `/book/review` | Implemented |
+| U-02 | Preview | U-01 내장 | Final |
 | U-03 | Publish Confirm | U-01 CTA | Final |
-| U-04 | Publishing | U-01 state | Implemented |
-| U-05A | Publish Complete | /book/publish/complete | Implemented |
-| U-05B | Publication Viewer | /publication/:id | Implemented / E2E Pending |
-| U-06 | Failed | U-01 state | Implemented |
-| U-07 | Free Publication Limit | G-01 | Implemented / E2E Pending |
+| U-04 | Publishing | U-01 상태 | Implemented |
+| U-05A | Publish Complete | `/book/publish/complete` | Implemented |
+| U-05B | Publication Viewer | `/publication/:id` | Implemented / E2E Pending |
+| U-06 | Failed | U-01 상태 | Implemented |
+| U-07 | Free 발행 한도 | G-01 | Implemented / E2E Pending |
 
-### U-01 required checks
+### U-01 필수 체크
 
-- cover
-- TOC
-- manuscript
+표지 · TOC · 원고 — 충족 시에만 발행 CTA 활성
 
-The publish CTA activates only when required checks and prerequisites are satisfied.
+### U-04 단계
 
-### U-04
+표지 → TOC → 본문 → PDF (독립 publishing 라우트 없음)
 
-Publishing stages:
+### 정책
 
-1. cover
-2. TOC
-3. body
-4. PDF
-
-No standalone publishing route is required.
-
-### U-05 / U-06 / U-07
-
-- Publish Complete receives publicationId + version.
-- Viewer opens one immutable publication snapshot.
-- failed retry reuses the same version when possible.
-- Free allows the first published publication only; republish requires Pro.
-- entitlement must be enforced on server and client.
+- Free: 첫 발행 1권 · 재발행은 Pro  
+- 실패 재시도는 가능하면 동일 version 재사용  
+- entitlement는 서버+클라이언트 모두 강제
 
 ---
 
-## My / Settings / Global
+## 8. My / Settings / Global
 
-| ID | Screen | Route / form | Status |
-|---|---|---|---|
-| M-01 | My | /mypage | Implemented |
-| M-02 | Subscription | /mypage/subscription | Implemented |
-| M-03 | AI Usage | - | Planned |
-| M-04 | Publication History | /mypage/completed-books | Implemented |
-| M-05 | Notifications | /notifications | Implemented / error-state gap |
-| M-06 | Settings | /mypage/settings | Implemented |
-| M-07 | Privacy Policy | /mypage/privacy-policy | Implemented |
-| M-08 | Terms | /mypage/terms-of-service | Implemented |
-| M-09 | Delete Account | /mypage/delete-account | Implemented / E2E Pending |
+| ID | 화면 | Route | Status |
+|----|------|-------|--------|
+| M-01 | My | `/mypage` | Implemented |
+| M-02 | Subscription | `/mypage/subscription` | Implemented |
+| M-03 | AI Usage | — | Planned |
+| M-04 | Publication History | `/mypage/completed-books` | Implemented |
+| M-05 | Notifications | `/notifications` | Implemented |
+| M-06 | Settings | `/mypage/settings` | Implemented |
+| M-07 | Privacy | `/mypage/privacy-policy` | Implemented (공개) |
+| M-08 | Terms | `/mypage/terms-of-service` | Implemented (공개) |
+| M-09 | Delete Account | `/mypage/delete-account` | Implemented / E2E Pending |
 | G-01 | Paywall Modal | global | Implemented |
 
 ### M-01
 
-Shows:
+닉네임·이메일 · FREE/PRO · 기록/챕터/완성 책 통계 · 스트릭 · Pro 업셀 · 메뉴(완성책·설정·구독·개인정보) · 로그아웃
 
-- nickname and email
-- FREE / PRO badge
-- Record / Chapter / completed Book stats
-- streak when available
-- Pro upsell for Free
-- publication/settings/subscription/privacy links
-- logout
+### M-02 / G-01
 
-### M-02
-
-Current code:
-
-- Pro monthly label: 월 5,900원
-- multiple Books
-- republish / additional publish
-- expanded AI
-- Pro covers
-- first Book Free message
-
-If billing is unavailable on web, show 모바일 앱에서 결제해주세요.
-
-### M-05
-
-- unread count
-- mark all read
-- type/title/body/relative time
-- tap marks read, then follows notification link
-- empty state exists
-- final target adds explicit error + retry state
+- Pro 월 5,900원 라벨  
+- 여러 권 · 재발행 · 확장 AI · Pro 표지 · 첫 책 Free 메시지  
+- 웹 결제 불가 시: 모바일 앱에서 결제해주세요
 
 ### M-06
 
-Includes:
-
-- recording notification ON/OFF
-- notification time
-- nickname edit
-- profile emoji
-- plan status and Pro entry
-- Terms / Privacy
-- app version
-- logout
-- delete account
-
-Each persistence failure needs local feedback.
-
-### M-07 / M-08
-
-Login links point to these pages. Final route policy: legal pages are publicly readable for guests. Add loading/error handling around iframe/content loading.
+기록 알림 ON/OFF · 알림 시각 · **닉네임 변경** · 프로필 이모지 · 플랜 · 약관 · 버전 · 로그아웃 · 탈퇴  
+영속 실패 시 로컬 피드백 필수
 
 ### M-09
 
-- explains permanent deletion impact
-- requires exact phrase 계정 삭제
-- deleting/loading/error states
-- production E2E must verify Auth + DB + Storage cleanup
-
-### G-01
-
-Paywall includes:
-
-- multiple Books
-- republish / additional publish
-- expanded AI + Pro covers
-- current price label 월 5,900원
-- first Book Free message
-- Pro 시작하기 / 나중에 하기
-- billing unavailable / loading / error states
+영향 안내 · 확인 문구 `계정 삭제` 정확 일치 · Auth/DB/Storage 정리 E2E 필요
 
 ---
 
-## Common state matrix
+## 9. 입력 검증
 
-Every API-backed screen must define:
-
-- Loading
-- Empty when relevant
-- Error + retry
-- Permission / ownership failure
-- Offline/network failure where distinguishable
-- Success
-- Paywall when entitlement-gated
-
-A color change alone is not sufficient to communicate state.
+| 입력 | 규칙 | 오픈 이슈 |
+|------|------|-----------|
+| 닉네임 | 2~10자, 한글·영문·숫자 | 공백 불가 |
+| 책 제목 | 1~50자 | 금칙어 정책 없음 |
+| AI 질문 기록 | 10~2000자 | — |
+| 자유 기록 | 10~5000자 | 제목 max 미확정 |
+| 사진 기록 | 사진 + 캡션 1~100자 | 파일 크기/해상도 |
+| 계정 삭제 | `계정 삭제` 정확 일치 | — |
+| 챕터 제목/본문 | 구현 max 미통일 | 런치 리뷰 |
 
 ---
 
-## Validation matrix
+## 10. Direct URL / Guard
 
-| Input | Current rule | Open item |
-|---|---|---|
-| Nickname | 2~10 chars, Korean/English/numbers | no spaces |
-| Book title | 1~50 chars | no banned-word policy |
-| AI Question Record | 10~2000 chars | fixed |
-| Free Record | 10~5000 chars | title max length not fixed |
-| Photo Record | photo + caption 1~100 chars | file size/resolution not fixed |
-| Delete Account | exact phrase 계정 삭제 | fixed |
-| Chapter title/body | current implementation has no final max policy | launch review needed |
+1. `/project/*` — Auth + 온보딩 완료  
+2. `/record/*` — Auth + 온보딩 + 활성 책  
+3. `/records/:id*` — Record 소유권  
+4. `/book` — 활성 책 + Ready  
+5. `/book/chapter/:id*` — Ready + Chapter 소유권  
+6. `/book/manuscript` — Chapter ≥ 1  
+7. `/book/cover` — Ready + Chapter ≥ 1  
+8. `/book/review` — Ready + Chapter + 영속된 Cover  
+9. `/book/publish/complete` — 유효 publishResult (직접 진입 거부)  
+10. `/publication/:id` — Publication 소유권  
+11. `/mypage/privacy-policy`, `/mypage/terms-of-service` — 공개  
 
----
-
-## Direct URL / guard requirements
-
-Final route rules:
-
-1. /project/* requires Auth + completed onboarding.
-2. /record/* requires Auth + onboarding + active Book.
-3. /records/:id* also requires Record ownership.
-4. /book requires active Book + Ready.
-5. /book/chapter/:id* requires Ready + Chapter ownership.
-6. /book/manuscript requires at least one Chapter.
-7. /book/cover requires Ready + at least one Chapter.
-8. /book/review requires Ready + Chapter + persisted Cover.
-9. /book/publish/complete requires valid publishResult; direct entry is rejected.
-10. /publication/:id requires publication ownership.
-11. /mypage/privacy-policy and /mypage/terms-of-service are public legal routes.
-
-Current implementation differences are tracked in SCREEN_IMPLEMENTATION_GAP.md.
+구현 차이: `SCREEN_IMPLEMENTATION_GAP.md`
 
 ---
 
-## Accessibility / responsive requirements
+## 11. 접근성 / 반응형
 
-- primary phone widths: 320 / 375 / 414 / 768
-- no horizontal overflow
-- touch targets approximately 44px or larger
-- icon-only controls require accessible labels
-- keyboard focus must remain visible
-- Modal/BottomSheet focus behavior and Escape should be verified
-- state is not communicated only by color
-- long Book/Chapter titles safely wrap or truncate
-- fixed bottom actions respect safe-area inset
-- motion expansion should support prefers-reduced-motion
+- 기준 폭: 320 / 375 / 414 / 768  
+- 가로 오버플로 금지 · 터치 타깃 ≈ 44px+  
+- 아이콘-only 컨트롤에 accessible name  
+- 키보드 포커스 가시 · Modal/BottomSheet Escape  
+- 상태를 색만으로 전달하지 않음  
+- 긴 제목 wrap/truncate  
+- 하단 고정 액션: safe-area  
+- `prefers-reduced-motion` 존중
 
 ---
 
-## Launch QA exit criteria
+## 12. 런치 QA Exit Criteria
 
-- Guest can open Terms/Privacy from Login.
-- Failed O-01 persistence does not advance onboarding.
-- Incomplete-onboarding user cannot deep-link into Project/Record/Book flows.
-- Home/Library/Workspace publication state matches publications source of truth.
-- Published Home opens the latest publication and returns to Workspace correctly.
-- Record draft restore, photo upload/delete, and analyze-record failure are verified.
-- Ready gating, chapter_records, generate/regenerate, and reorder failure recovery are verified.
-- manuscript/final review completion survives refresh through persisted milestone.
-- Free v1, Pro v2, failed retry, and signed URL viewer all pass.
-- multi-account Record/Chapter/Publication access is blocked.
-- account deletion cleans Auth/DB/record photos/versioned PDFs.
-- 320/375/414/768, long titles, empty/error/loading states render without breakage.
+- 게스트가 Login에서 약관·개인정보 열람  
+- O-01 영속 실패 시 온보딩 진행 금지  
+- 미완료 온보딩 deep-link 차단  
+- Home/Library/Workspace 발행 상태가 publications SoT와 일치  
+- Published Home이 최신 발행본을 열고 Workspace로 복귀  
+- 드래프트 복원 · 사진 업로드/삭제 · analyze-record 실패 격리  
+- Ready 게이트 · chapter_records · 생성/재생성 · 재정렬 실패 복구  
+- manuscript/final review 마일스톤 새로고침 후 유지  
+- Free v1 · Pro v2 · 실패 재시도 · signed URL 뷰어  
+- 교차 계정 Record/Chapter/Publication 차단  
+- 계정 삭제 시 Auth/DB/사진/PDF 정리  
+- 320/375/414/768 · Empty/Error/Loading 깨짐 없음
+
+---
+
+## 13. v1.2 변경 요약 (vs v1.1)
+
+| 영역 | 변경 |
+|------|------|
+| 홈 | 히어로 배너 · 중앙 `Book_defualt` · 기록 단축 2카드 · 최근 기록 · PAGE 라벨 제거 |
+| 서재/작업실 | 동일 기본 표지 에셋 · 제목 오버레이 |
+| TabBar | floating pill · 솔리드+opacity |
+| CTA | 홈 primary 아웃라인 · 서재 진입/발행본 보기 분기 |
+| path | 유지 (IA 라벨·카피·레이아웃만 갱신) |
+
+문서 충돌 시: `02_PRODUCT_DECISIONS` > `01_PRODUCT_SPEC` > **본 문서** > 디자인 시스템.
