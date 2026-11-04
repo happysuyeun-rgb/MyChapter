@@ -1,7 +1,7 @@
 # MY CHAPTER 문서 인덱스
 
 **Status:** CURRENT  
-**Updated:** 2026-10-24
+**Updated:** 2026-11-04
 
 이 문서는 MY CHAPTER 저장소의 문서 구조와 우선순위를 정의한다.
 
@@ -42,7 +42,7 @@
 | 02 | [02_PRODUCT_DECISIONS.md](./02_PRODUCT_DECISIONS.md) | 확정 의사결정 | **PRIMARY SoT** |
 | 03 | [03_IA.md](./03_IA.md) | IA / 메뉴 구조 | CURRENT |
 | 04 | [04_USER_FLOWS.md](./04_USER_FLOWS.md) | 핵심 사용자 플로우 | CURRENT |
-| 05 | [05_SCREEN_SPEC.md](./05_SCREEN_SPEC.md) | 화면/UX v1.1 | **PRIMARY UX SoT** |
+| 05 | [05_SCREEN_SPEC.md](./05_SCREEN_SPEC.md) | 화면/UX v1.2 (Editorial Book Desk) | **PRIMARY UX SoT** |
 | 06 | [06_FREE_PRO_POLICY.md](./06_FREE_PRO_POLICY.md) | Free/Pro / 과금 정책 | CURRENT |
 | 09 | [09_AI_POLICY.md](./09_AI_POLICY.md) | AI 역할/안전/원본 보존 | CURRENT |
 | 10 | [10_DESIGN_SYSTEM.md](./10_DESIGN_SYSTEM.md) | 디자인 시스템 | CURRENT |
