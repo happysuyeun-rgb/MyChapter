@@ -1,7 +1,8 @@
 # 30 · 개발 계획 — 보관함 · 작업실 · Final Review 목차
 
 > 작성 2026-11-04 · 설계: [29-design-shelf-workspace-toc-ai-edit.md](./29-design-shelf-workspace-toc-ai-edit.md)  
-> 브랜치: `feat/shelf-archive-workspace-toc` · 단계별 커밋 → 단일 PR → 사용자 승인 후 main 머지
+> 브랜치: `feat/shelf-archive-workspace-toc` · 단계별 커밋 → 단일 PR → 사용자 승인 후 main 머지  
+> **진행:** Step 1~4 구현 완료 (2026-11-04) · build 통과 · mock 모드 화면 확인(보관함 꺼내기, 작업실 NEXT STEP, Final Review 빈 챕터 경고)
 
 ## 제약
 

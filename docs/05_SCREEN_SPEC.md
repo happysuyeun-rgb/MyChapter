@@ -147,7 +147,7 @@ API 연동 화면은 다음을 정의한다.
 | L-03 | 발행가능 | `/library` (필터) | Implemented |
 | L-04 | 발행완료 | `/library` (필터) | Implemented |
 | L-05 | 권한/Pro 제한 | G-01 | Implemented |
-| L-06 | 보관함 | `/library/archived` | Designed |
+| L-06 | 보관함 | `/library/archived` | Implemented |
 
 ### 레이아웃
 
@@ -183,7 +183,7 @@ API 연동 화면은 다음을 정의한다.
 | P-03 | Basic Info | `/project/new/setup` | Implemented |
 | P-04 | AI Title | — | Not MVP |
 | P-05 | Created | `/project/new/complete` | Implemented |
-| P-06 | Book Workspace | `/project/workspace` | Implemented / Partial |
+| P-06 | Book Workspace | `/project/workspace` | Implemented |
 | P-07 | Book Settings | `/project/settings` | Implemented |
 
 ### P-02 · 유형 (9)
@@ -200,7 +200,7 @@ API 연동 화면은 다음을 정의한다.
 
 ### P-06 · 책 작업실
 
-**Status:** Implemented / Partial  
+**Status:** Implemented (NEXT STEP 2026-11-04)  
 
 헤더: CI · 뒤로(서재) · 책 설정 · `Book_defualt` 표지 + 제목 · 유형·기록 수  
 
@@ -301,7 +301,7 @@ Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky · **서�
 | B-06 | Manuscript Edit | chapter edit 경유 | Partial |
 | B-07 | Free Cover | `/book/cover` | Implemented |
 | B-08 | Pro / AI Cover | `/book/cover` | Partial |
-| B-09 | TOC | Final Review 내장 | Designed |
+| B-09 | TOC | Final Review 내장 | Implemented |
 
 ### 규칙
 
