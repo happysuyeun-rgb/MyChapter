@@ -13,6 +13,8 @@
 | PR #9 머지 · Vercel 운영 배포 | ✅ `4b62681` |
 | Migration `026` | ✅ 운영 적용 (`ai_edit` 확인) |
 | `edit-chapter` Function | ✅ 배포 |
+| `generate-pdf` Function | ✅ 재배포 (이전 운영본은 10-16 버전 — 한글 폰트 등록·Pro 표지 검사 누락이었음) |
+| 화면 준비 완료 표시 UTC 정렬 · 목업 Free 모드(`VITE_MOCK_PLAN=free`) | ✅ 코드 (운영 웹 배포는 Vercel 배포 한도 해제 후) |
 | 준비 완료 날짜 UTC 정렬 ([PR #10](https://github.com/happysuyeun-rgb/MyChapter/pull/10)) | ✅ `ae6a679` 운영 배포 — 025 트리거와 날짜 기준 일치 |
 | Migration `025` | ✅ 운영 적용 (PR #10 배포 후) |
 | Secret `GOOGLE_AI_API_KEY` | ❌ **미등록** → AI 편집·AI 질문·챕터 생성이 실패/대체 동작. 등록 전에는 `VITE_AI_EDIT_ENABLED`를 켜지 말 것 |

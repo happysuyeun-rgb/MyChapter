@@ -39,12 +39,13 @@ export const BOOK_READINESS_RULES: Partial<Record<ProjectType, BookReadinessRule
   yearly: { minDays: 60, minRecords: 30, targetDays: 100, targetRecords: 40 },
 }
 
+/** UTC days, matching the DB readiness trigger and the chapter generation gate. */
 function daysSince(dateString: string): number {
   const start = new Date(dateString)
   const now = new Date()
-  start.setHours(0, 0, 0, 0)
-  now.setHours(0, 0, 0, 0)
-  return Math.max(1, Math.floor((now.getTime() - start.getTime()) / 86_400_000) + 1)
+  const startDay = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  return Math.max(1, Math.floor((today - startDay) / 86_400_000) + 1)
 }
 
 export function getBookReadiness(project: Project, recordCount: number): BookReadiness {

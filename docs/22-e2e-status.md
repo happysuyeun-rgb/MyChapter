@@ -101,11 +101,15 @@ Work를 통한 운영 검증. Supabase 요청 29건에서 4xx·5xx 없음.
 | 영역 | 상태 |
 |------|------|
 | 실계정 책 생성·기록 저장 (위 §4) | **PASS — LIVE (17항목 범위)** |
-| AI 챕터 생성 | PENDING |
-| PDF 발행 | PENDING |
+| AI 챕터 생성 | PENDING — **`GOOGLE_AI_API_KEY` 미등록 (2026-11-04 Secret 이름 확인)** |
+| PDF 발행 | PENDING — `generate-pdf` 2026-11-04 재배포 (한글 폰트 `registerFontkit` · Pro 표지 검사 포함, 이전 운영본은 10-16 버전) |
+| AI 편집 (챕터) | PENDING — `026` 적용 · `edit-chapter` 배포 완료, `GOOGLE_AI_API_KEY` 등록 + `VITE_AI_EDIT_ENABLED` 대기 |
+| Pro 표지 서버 강제 | PENDING — `025` 적용 완료 (2026-11-04), 운영 계정 확인 대기 |
 | Google / Kakao 로그인 | 미완료 설정 + PENDING |
 | 계정 삭제·Storage 정리 | PENDING |
-| Play Billing 실결제 | 코드 갭 + PENDING |
+| Play Billing 실결제 | 코드 완료 (네이티브 플러그인) · Play 상품/실기기 + `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` 대기 |
+
+**운영 Edge Function이 저장소보다 오래된 것 (2026-11-04 배포일 대조, 미배포):** `generate-question`, `generate-freewriting-hint`, `analyze-record` (10-24 공통 `_shared` 변경 미반영). `generate-chapter`, `send-daily-reminder`는 같은 날 몇 분 차이로 실제 차이 확인 필요.
 
 ---
 
@@ -115,7 +119,7 @@ Work를 통한 운영 검증. Supabase 요청 29건에서 4xx·5xx 없음.
 
 1. **책 생성 → 3모드 기록 저장 → 새로고침 유지 → PAGE 정합** (§4) — **LIVE PASS, 기본 사용자 여정 차단 해소**
 2. **AI 챕터·PDF 발행 LIVE** (필수 Secret 이름: `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`) — 서버 리스크·설계: `23-ai-pdf-safety.md`
-3. **운영에서 결제 우회 OFF** — `BILLING_DEV_BYPASS`≠true, `VITE_BILLING_DEV_MODE=false` (**실값 미확인**, 읽기 확인만·변경 승인 필요)
+3. **운영에서 결제 우회 OFF** — `BILLING_DEV_BYPASS`≠true, `VITE_BILLING_DEV_MODE=false` (**2026-11-04: `BILLING_DEV_BYPASS` Secret 존재 확인, 값 미확인 — 삭제 권장**)
 
 ### 채널·플랫폼 선택 (이메일 웹만이면 당장 비차단)
 
@@ -139,3 +143,4 @@ Work를 통한 운영 검증. Supabase 요청 29건에서 4xx·5xx 없음.
 | 2026-10-24 | AI·PDF 안전성 → `23-ai-pdf-safety.md` 링크 |
 
 | 2026-10-24 | Work 첫 책·3모드·PAGE·초안 운영 17 PASS / 3 미검증 반영; AI/PDF/결제/외부 SMTP는 계속 출시 게이트 |
+| 2026-11-04 | `025`·`026` 운영 적용, `edit-chapter` 배포, `generate-pdf` 재배포, Secret 이름 점검 결과·오래된 Function 목록 반영 |
