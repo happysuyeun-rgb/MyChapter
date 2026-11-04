@@ -26,6 +26,26 @@ export function mockArchiveProject(projectId: string, userId: string): Project {
   return updated
 }
 
+export function mockGetArchivedProjects(userId: string): Project[] {
+  return mockStore.projects
+    .filter((p) => p.user_id === userId && p.archived_at)
+    .sort((a, b) => (b.archived_at ?? '').localeCompare(a.archived_at ?? ''))
+}
+
+export function mockRestoreProject(projectId: string, userId: string): Project {
+  const index = mockStore.projects.findIndex((p) => p.id === projectId && p.user_id === userId)
+  if (index < 0) throw new Error('책을 찾을 수 없어요.')
+  if (!mockStore.projects[index].archived_at) throw new Error('보관 중인 책이 아니에요.')
+
+  const updated: Project = {
+    ...mockStore.projects[index],
+    archived_at: null,
+    updated_at: mockNowIso(),
+  }
+  mockStore.projects[index] = updated
+  return updated
+}
+
 export function mockDeleteProject(projectId: string, userId: string): void {
   const index = mockStore.projects.findIndex((p) => p.id === projectId && p.user_id === userId)
   if (index < 0) throw new Error('책을 찾을 수 없어요.')
