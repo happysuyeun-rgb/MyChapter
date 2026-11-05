@@ -7,6 +7,7 @@ import { deleteRecord, getPhotoSignedUrl, getRecord } from '@/lib/api/records'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/authStore'
 import { useRecordStore } from '@/stores/recordStore'
+import { useToastStore } from '@/stores/toastStore'
 import type { Chapter, JournalRecord } from '@/types/database'
 
 const MODE_LABEL: Record<string, string> = {
@@ -20,6 +21,7 @@ export function RecordDetailPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const { setEditingRecord } = useRecordStore()
+  const { showToast } = useToastStore()
 
   const [record, setRecord] = useState<JournalRecord | null>(null)
   const [chapter, setChapter] = useState<Chapter | null>(null)
@@ -72,11 +74,12 @@ export function RecordDetailPage() {
   }, [id, user, navigate, retryKey])
 
   const handleDelete = async () => {
-    if (!record || !user) return
+    if (!record || !user || deleting) return
     setDeleting(true)
     setDeleteError('')
     try {
       await deleteRecord(record.id, user.id)
+      showToast('기록을 삭제했어요.')
       navigate('/records', { replace: true })
     } catch {
       setDeleteError('기록을 삭제하지 못했어요. 잠시 후 다시 시도해주세요.')

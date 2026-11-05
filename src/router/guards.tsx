@@ -55,10 +55,14 @@ export function GuestGuard() {
 }
 
 export function OnboardingGuard() {
-  const { profile } = useAuthStore()
+  const { profile, profileError } = useAuthStore()
 
   if (isDevBypass()) {
     return <Outlet />
+  }
+
+  if (!profile && profileError) {
+    return <Navigate to="/splash" replace />
   }
 
   if (!profile?.onboarding_completed) {

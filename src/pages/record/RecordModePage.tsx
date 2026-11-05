@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FlatIcon, LoadingBlock } from '@/components/common'
+import { ErrorState, FlatIcon, LoadingBlock } from '@/components/common'
+import { NavBar } from '@/components/layout/NavBar'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { getRecordCount } from '@/lib/api/records'
 import type { RecordModeInstance } from '@/types/database'
@@ -43,12 +44,30 @@ const ROUTES: Record<RecordModeInstance, string> = {
 
 export function RecordModePage() {
   const navigate = useNavigate()
-  const { project, loading } = useActiveProject()
-  const [recordNumber, setRecordNumber] = useState(1)
+  const { project, loading, error, retry } = useActiveProject()
+  const [recordNumber, setRecordNumber] = useState<number | null>(null)
 
   useEffect(() => {
-    if (project) void getRecordCount(project.id).then((count) => setRecordNumber(count + 1))
+    if (!project) return
+    let cancelled = false
+    getRecordCount(project.id)
+      .then((count) => {
+        if (!cancelled) setRecordNumber(count + 1)
+      })
+      .catch(() => {
+        if (!cancelled) setRecordNumber(null)
+      })
+    return () => { cancelled = true }
   }, [project])
+
+  if (error) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <NavBar title="기록 방식" leftLabel="←" />
+        <ErrorState title="책 정보를 불러오지 못했어요" onRetry={retry} />
+      </div>
+    )
+  }
 
   if (loading || !project) {
     return (
@@ -68,7 +87,7 @@ export function RecordModePage() {
         <div className="desk-rule mt-7 flex items-end justify-between pb-6">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.22em] text-sage">
-              PAGE {String(recordNumber).padStart(2, '0')}
+              {recordNumber ? `PAGE ${String(recordNumber).padStart(2, '0')}` : 'NEW PAGE'}
             </p>
             <h1 className="mt-3 font-serif text-[29px] font-bold leading-[1.32] tracking-[-0.03em]">
               오늘의 페이지를

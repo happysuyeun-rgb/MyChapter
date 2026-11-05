@@ -18,13 +18,19 @@ interface AuthState {
   session: Session | null
   user: User | null
   profile: UserProfile | null
+  profileError: boolean
   initialized: boolean
   initialize: () => Promise<void>
+  reloadProfile: () => Promise<void>
   setProfile: (profile: UserProfile | null) => void
   signOut: () => Promise<void>
 }
 
 let initPromise: Promise<void> | null = null
+
+async function fetchProfile(userId: string) {
+  return supabase.from('users').select('*').eq('id', userId).maybeSingle()
+}
 
 function applyMockAuth(set: (partial: Partial<AuthState>) => void) {
   set({
@@ -41,6 +47,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   session: null,
   user: null,
   profile: null,
+  profileError: false,
   initialized: false,
 
   initialize: async () => {
@@ -62,13 +69,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ session, user: session?.user ?? null })
 
         if (session?.user) {
-          const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle()
-          // Keep session even if profile fetch fails; Splash/guards handle null nickname.
-          if (!error) set({ profile: data })
+          const { data, error } = await fetchProfile(session.user.id)
+          // Keep session even if profile fetch fails; Splash shows a retry instead of nickname onboarding.
+          if (error) set({ profileError: true })
+          else set({ profile: data, profileError: false })
         }
 
         supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -76,14 +80,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
           set({ session, user: session?.user ?? null })
           if (session?.user) {
-            const { data, error } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', session.user.id)
-              .maybeSingle()
-            if (!error) set({ profile: data })
+            const { data, error } = await fetchProfile(session.user.id)
+            if (error) set({ profileError: true })
+            else set({ profile: data, profileError: false })
           } else {
-            set({ profile: null })
+            set({ profile: null, profileError: false })
           }
         })
       } finally {
@@ -98,7 +99,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  setProfile: (profile) => set({ profile }),
+  reloadProfile: async () => {
+    const userId = get().user?.id
+    if (!userId || isDevBypass()) return
+    const { data, error } = await fetchProfile(userId)
+    if (error) set({ profileError: true })
+    else set({ profile: data, profileError: false })
+  },
+
+  setProfile: (profile) => set({ profile, profileError: false }),
 
   signOut: async () => {
     if (isDevBypass()) {
@@ -119,6 +128,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     await supabase.auth.signOut()
     useSubscriptionStore.getState().reset()
     useProjectStore.getState().setActiveProject(null)
-    set({ session: null, user: null, profile: null })
+    set({ session: null, user: null, profile: null, profileError: false })
   },
 }))

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Button } from '@/components/common'
+import { Button, ErrorState, LoadingBlock } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { COVER_TEMPLATES } from '@/constants/coverTemplates'
 import {
@@ -18,21 +18,32 @@ export function PublishedBookPage() {
   const [loading, setLoading] = useState(true)
   const [opening, setOpening] = useState(false)
   const [error, setError] = useState('')
+  const [loadError, setLoadError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
     if (!user || !id) return
+    let cancelled = false
+    setLoading(true)
+    setLoadError(false)
 
-    void getPublishedBookById(user.id, id)
+    getPublishedBookById(user.id, id)
       .then((data) => {
+        if (cancelled) return
         if (!data) {
           navigate('/mypage/completed-books', { replace: true })
           return
         }
         setBook(data)
       })
-      .catch(() => setError('발행한 책 정보를 불러오지 못했어요.'))
-      .finally(() => setLoading(false))
-  }, [user, id, navigate])
+      .catch(() => {
+        if (!cancelled) setLoadError(true)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [user, id, navigate, retryKey])
 
   const handleOpenPdf = async () => {
     if (!book) return
@@ -52,8 +63,21 @@ export function PublishedBookPage() {
     }
   }
 
+  if (loadError) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <NavBar title="완성한 책" leftLabel="‹ 뒤로" />
+        <ErrorState title="발행한 책 정보를 불러오지 못했어요" onRetry={() => setRetryKey((k) => k + 1)} />
+      </div>
+    )
+  }
+
   if (loading) {
-    return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <LoadingBlock />
+      </div>
+    )
   }
 
   if (!book) {

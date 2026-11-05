@@ -3,15 +3,21 @@ import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { useProjectLimit } from '@/hooks/useProjectLimit'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { useProjectStore } from '@/stores/projectStore'
+import { useToastStore } from '@/stores/toastStore'
 import type { ProjectTypeMeta } from '@/constants/projectTypes'
 
 export function ProjectTypePage() {
   const navigate = useNavigate()
   const { setDraft } = useProjectStore()
-  const { loading, canCreate } = useProjectLimit()
+  const { loading, canCreate, error } = useProjectLimit()
   const { showPaywall } = usePaywallStore()
+  const { showToast } = useToastStore()
 
   const handleSelect = (meta: ProjectTypeMeta) => {
+    if (error) {
+      showToast('만들 수 있는 책 수를 확인하지 못했어요. 잠시 후 다시 시도해주세요.')
+      return
+    }
     if (!canCreate) {
       showPaywall()
       return

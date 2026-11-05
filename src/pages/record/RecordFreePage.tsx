@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Textarea } from '@/components/common'
+import { ErrorState, LoadingBlock, Textarea } from '@/components/common'
 import { EmotionTagPicker } from '@/components/features/record/EmotionTagPicker'
 import { ExitConfirmModal } from '@/components/features/record/ExitConfirmModal'
 import { SaveConflictModal } from '@/components/features/record/SaveConflictModal'
@@ -15,12 +15,14 @@ import { getRecordCount, updateRecord } from '@/lib/api/records'
 import { useAuthStore } from '@/stores/authStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { useRecordStore } from '@/stores/recordStore'
+import { useToastStore } from '@/stores/toastStore'
 
 export function RecordFreePage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const { showPaywall } = usePaywallStore()
-  const { project, loading } = useActiveProject()
+  const { showToast } = useToastStore()
+  const { project, loading, error: projectError, retry } = useActiveProject()
   const { editingRecord, setEditingRecord, setLastSave } = useRecordStore()
   const {
     conflictOpen,
@@ -40,6 +42,7 @@ export function RecordFreePage() {
   const [recordNumber, setRecordNumber] = useState(editingRecord?.record_number ?? 1)
   const [saving, setSaving] = useState(false)
   const [showExit, setShowExit] = useState(false)
+  const [draftSaving, setDraftSaving] = useState(false)
   const [pageNumberHint, setPageNumberHint] = useState(true)
 
   const touched = useRef(false)
@@ -173,10 +176,19 @@ export function RecordFreePage() {
     }
   }
 
+  if (projectError) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <NavBar title="자유 기록" leftLabel="←" />
+        <ErrorState title="책 정보를 불러오지 못했어요" onRetry={retry} />
+      </div>
+    )
+  }
+
   if (loading || !project) {
     return (
-      <div className="flex min-h-dvh items-center justify-center text-sm text-ink-muted">
-        로딩 중...
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <LoadingBlock />
       </div>
     )
   }
@@ -255,29 +267,40 @@ export function RecordFreePage() {
 
       <ExitConfirmModal
         open={showExit}
+        busy={draftSaving}
         onContinue={() => setShowExit(false)}
         onDiscard={() => {
-          if (user && project) clearRecordRequestId(user.id, project.id, 'free')
+          if (user && project) {
+            clearRecordRequestId(user.id, project.id, 'free')
+            if (!editingRecord) void deleteDraft(user.id, project.id, 'free').catch(() => {})
+          }
           setEditingRecord(null)
           navigate(-1)
         }}
         onSaveDraft={() => {
-          if (!user || !project) return
+          if (!user || !project || draftSaving) return
+          setDraftSaving(true)
           void saveDraft(user.id, project.id, 'free', {
             content,
             title,
             emotionTags: emotions,
           })
-            .then(() => navigate(-1))
+            .then(() => {
+              showToast('임시저장했어요. 다음에 이어서 쓸 수 있어요.')
+              navigate(-1)
+            })
             .catch(() => {
               setShowExit(false)
               setError('임시저장에 실패했어요. 작성한 내용은 유지됩니다.')
             })
+            .finally(() => setDraftSaving(false))
         }}
       />
 
       <SaveConflictModal
         open={conflictOpen}
+        busy={saving}
+        error={error}
         onContinue={clearConflict}
         onOpenExisting={openExisting}
         onSaveAsNew={() => void handleSaveAsNew()}

@@ -2,6 +2,7 @@ import { Button, Modal } from '@/components/common'
 
 interface ExitConfirmModalProps {
   open: boolean
+  busy?: boolean
   onSaveDraft: () => void
   onDiscard: () => void
   onContinue: () => void
@@ -9,6 +10,7 @@ interface ExitConfirmModalProps {
 
 export function ExitConfirmModal({
   open,
+  busy = false,
   onSaveDraft,
   onDiscard,
   onContinue,
@@ -18,8 +20,10 @@ export function ExitConfirmModal({
       <p className="mb-5 text-center text-sm text-ink-muted">
         나가기 전에 어떻게 할까요?
       </p>
-      <Button onClick={onSaveDraft}>임시저장 후 나가기</Button>
-      <Button variant="secondary" className="mt-2" onClick={onDiscard}>
+      <Button disabled={busy} onClick={onSaveDraft}>
+        {busy ? '임시저장 중...' : '임시저장 후 나가기'}
+      </Button>
+      <Button variant="secondary" className="mt-2" disabled={busy} onClick={onDiscard}>
         삭제 후 나가기
       </Button>
       <Button variant="ghost" className="mt-2" onClick={onContinue}>

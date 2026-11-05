@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Button } from '@/components/common'
+import { Button, ErrorState, LoadingBlock } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { getChapter } from '@/lib/api/chapters'
 import { useAuthStore } from '@/stores/authStore'
@@ -12,21 +12,44 @@ export function ChapterPreviewPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const [chapter, setChapter] = useState<Chapter | null>(null)
+  const [loadError, setLoadError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
     if (!id || !user) return
+    let cancelled = false
+    setLoadError(false)
 
-    void getChapter(id, user.id).then((data) => {
-      if (!data) {
-        navigate('/book', { replace: true })
-        return
-      }
-      setChapter(data)
-    })
-  }, [id, user, navigate])
+    getChapter(id, user.id)
+      .then((data) => {
+        if (cancelled) return
+        if (!data) {
+          navigate('/book', { replace: true })
+          return
+        }
+        setChapter(data)
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true)
+      })
+    return () => { cancelled = true }
+  }, [id, user, navigate, retryKey])
+
+  if (loadError) {
+    return (
+      <div className="flex min-h-dvh flex-col bg-surface">
+        <NavBar title="원고" leftLabel="←" />
+        <ErrorState title="원고를 불러오지 못했어요" onRetry={() => setRetryKey((k) => k + 1)} />
+      </div>
+    )
+  }
 
   if (!chapter) {
-    return <div className="flex flex-1 items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
+    return (
+      <div className="flex min-h-dvh flex-col bg-surface">
+        <LoadingBlock label="원고를 불러오는 중..." />
+      </div>
+    )
   }
 
   const content = getChapterDisplayContent(chapter)

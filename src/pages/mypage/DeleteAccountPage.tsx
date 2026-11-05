@@ -22,13 +22,18 @@ export function DeleteAccountPage() {
     setError('')
     try {
       await deleteAccount()
-      resetSubscription()
-      await signOut()
-      navigate('/login', { replace: true })
     } catch {
       setError('계정 삭제에 실패했어요. 다시 시도해주세요.')
       setDeleting(false)
+      return
     }
+    resetSubscription()
+    try {
+      await signOut()
+    } catch {
+      /* account is already gone; local session cleanup is best-effort */
+    }
+    navigate('/login', { replace: true })
   }
 
   return (

@@ -33,7 +33,7 @@ function groupByMonth(records: JournalRecord[]) {
 export function RecordsListPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const { projects, loading: projectsLoading } = useProjectList()
+  const { projects, loading: projectsLoading, error: projectsError, retry: retryProjects } = useProjectList()
   const [records, setRecords] = useState<JournalRecord[]>([])
   const [filterProjectId, setFilterProjectId] = useState<string | 'all'>('all')
   const [loading, setLoading] = useState(true)
@@ -68,12 +68,15 @@ export function RecordsListPage() {
     return <LoadingBlock label="기록을 불러오는 중..." className="bg-surface" />
   }
 
-  if (error) {
+  if (error || projectsError) {
     return (
       <ErrorState
         title="기록을 불러오지 못했어요"
         className="bg-surface"
-        onRetry={() => setReloadKey((k) => k + 1)}
+        onRetry={() => {
+          if (projectsError) retryProjects()
+          setReloadKey((k) => k + 1)
+        }}
       />
     )
   }
