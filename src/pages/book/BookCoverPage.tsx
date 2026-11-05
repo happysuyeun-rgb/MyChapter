@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { Button, ErrorState, LoadingBlock } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { COVER_TEMPLATES } from '@/constants/coverTemplates'
-import { getSubscriptionPlan } from '@/lib/api/subscriptions'
 import { updateProjectCoverSelection } from '@/lib/api/projects'
 import { useActiveProject } from '@/hooks/useActiveProject'
+import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthStore } from '@/stores/authStore'
 import { useBookStore } from '@/stores/bookStore'
 import { useProjectStore } from '@/stores/projectStore'
@@ -22,7 +22,8 @@ export function BookCoverPage() {
   const { setActiveProject } = useProjectStore()
   const { showPaywall } = usePaywallStore()
   const { showToast } = useToastStore()
-  const [isPro, setIsPro] = useState(false)
+  const { isPro, refreshPlan } = useSubscription()
+  const [saving, setSaving] = useState(false)
   const [coverConfirmed, setCoverConfirmed] = useState(false)
   const [readinessChecked, setReadinessChecked] = useState(false)
   const [loadError, setLoadError] = useState(false)
@@ -32,10 +33,9 @@ export function BookCoverPage() {
     if (!user || !project) return
     let cancelled = false
     setLoadError(false)
-    Promise.all([getSubscriptionPlan(user.id), listRecords(user.id, { projectId: project.id })])
-      .then(([plan, records]) => {
+    listRecords(user.id, { projectId: project.id })
+      .then((records) => {
         if (cancelled) return
-        setIsPro(plan === 'pro')
         if (!getBookReadiness(project, records.length).isReady) navigate('/project/workspace', { replace: true })
         const persistedCover = project.selected_cover_id ?? project.cover_template_id
         if (persistedCover) {
@@ -51,11 +51,12 @@ export function BookCoverPage() {
   }, [user, project, navigate, retryKey, setSelectedCoverId])
 
   const handleSelect = async (id: string, proOnly: boolean) => {
-    if (!user || !project) return
+    if (!user || !project || saving) return
     if (proOnly && !isPro) return showPaywall()
 
     const persistedCover = project.selected_cover_id ?? project.cover_template_id
     setSelectedCoverId(id)
+    setSaving(true)
 
     try {
       const updated = await updateProjectCoverSelection(project.id, user.id, id)
@@ -66,11 +67,13 @@ export function BookCoverPage() {
       if (persistedCover) setSelectedCoverId(persistedCover)
       const message = String((error as { message?: unknown } | null)?.message ?? '')
       if (message.includes('COVER_PRO_ONLY') || message.includes('Pro에서')) {
-        setIsPro(false)
+        void refreshPlan()
         showPaywall()
         return
       }
       showToast('표지를 저장하지 못했어요. 다시 선택해주세요.')
+    } finally {
+      setSaving(false)
     }
   }
 

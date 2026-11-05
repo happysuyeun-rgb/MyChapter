@@ -1,26 +1,29 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Input, Modal } from '@/components/common'
+import { Button, ErrorState, Input, LoadingBlock, Modal } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
 import { useActiveProject } from '@/hooks/useActiveProject'
 import { archiveProject, deleteProject, updateProjectSettings } from '@/lib/api/projects'
 import { useAuthStore } from '@/stores/authStore'
 import { useProjectStore } from '@/stores/projectStore'
+import { useToastStore } from '@/stores/toastStore'
 import type { ProjectType } from '@/types/database'
 import { BOOK_READINESS_RULES } from '@/utils/bookReadiness'
 
 export function ProjectSettingsPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const { project, loading } = useActiveProject()
+  const { project, loading, error: projectError, retry } = useActiveProject()
   const { setActiveProject } = useProjectStore()
+  const { showToast } = useToastStore()
 
   const [title, setTitle] = useState('')
   const [type, setType] = useState<ProjectType>('custom')
   const [saving, setSaving] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [modalError, setModalError] = useState('')
   const [archiveOpen, setArchiveOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [confirmText, setConfirmText] = useState('')
@@ -48,6 +51,7 @@ export function ProjectSettingsPage() {
         type,
       })
       setActiveProject(updated)
+      showToast('책 설정을 저장했어요.')
       navigate('/project/workspace', { replace: true })
     } catch {
       setError('책 설정을 저장하지 못했어요. 다시 시도해주세요.')
@@ -57,39 +61,64 @@ export function ProjectSettingsPage() {
   }
 
   const handleArchive = async () => {
-    if (!user || !project) return
+    if (!user || !project || busy) return
     setBusy(true)
-    setError('')
+    setModalError('')
     try {
       await archiveProject(project.id, user.id)
       setActiveProject(null)
       setArchiveOpen(false)
+      showToast('책을 보관했어요.')
       navigate('/library', { replace: true })
     } catch {
-      setError('책을 보관하지 못했어요. 다시 시도해주세요.')
+      setModalError('책을 보관하지 못했어요. 다시 시도해주세요.')
     } finally {
       setBusy(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!user || !project || !canDelete) return
+    if (!user || !project || !canDelete || busy) return
     setBusy(true)
-    setError('')
+    setModalError('')
     try {
       await deleteProject(project.id, user.id)
       setActiveProject(null)
       setDeleteOpen(false)
+      showToast('책을 삭제했어요.')
       navigate('/library', { replace: true })
     } catch {
-      setError('책을 삭제하지 못했어요. 다시 시도해주세요.')
+      setModalError('책을 삭제하지 못했어요. 다시 시도해주세요.')
     } finally {
       setBusy(false)
     }
   }
 
+  const closeArchive = () => {
+    setArchiveOpen(false)
+    setModalError('')
+  }
+
+  const closeDelete = () => {
+    setDeleteOpen(false)
+    setModalError('')
+  }
+
+  if (projectError) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <NavBar title="책 설정" leftLabel="←" />
+        <ErrorState title="책 정보를 불러오지 못했어요" onRetry={retry} />
+      </div>
+    )
+  }
+
   if (loading || !project) {
-    return <div className="flex min-h-dvh items-center justify-center bg-surface text-sm text-ink-muted">로딩 중...</div>
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <LoadingBlock />
+      </div>
+    )
   }
 
   return (
@@ -203,19 +232,20 @@ export function ProjectSettingsPage() {
         </Button>
       </div>
 
-      <Modal open={archiveOpen} onClose={() => setArchiveOpen(false)} title="책을 보관할까요?">
+      <Modal open={archiveOpen} onClose={closeArchive} title="책을 보관할까요?">
         <p className="mb-5 text-sm leading-6 text-ink-muted">
           <strong className="text-ink">{project.title}</strong>을(를) 서재 선반에서 내려요. 기록은 유지되지만 목록에는 보이지 않아요.
         </p>
+        {modalError && <p className="mb-3 text-sm text-danger">{modalError}</p>}
         <Button disabled={busy} onClick={() => void handleArchive()}>
           {busy ? '보관 중...' : '서재에서 보관'}
         </Button>
-        <Button variant="ghost" className="mt-2" onClick={() => setArchiveOpen(false)}>
+        <Button variant="ghost" className="mt-2" onClick={closeArchive}>
           취소
         </Button>
       </Modal>
 
-      <Modal open={deleteOpen} onClose={() => setDeleteOpen(false)} title="책 삭제 확인">
+      <Modal open={deleteOpen} onClose={closeDelete} title="책 삭제 확인">
         <p className="mb-5 text-sm leading-6 text-ink-muted">
           정말 삭제하려면 아래에 <strong className="text-ink">책 삭제</strong>를 입력해주세요. 원본 기록과 원고도 함께 사라질 수 있어요.
         </p>
@@ -225,6 +255,7 @@ export function ProjectSettingsPage() {
           onChange={(e) => setConfirmText(e.target.value)}
           placeholder="책 삭제"
         />
+        {modalError && <p className="mt-3 text-sm text-danger">{modalError}</p>}
         <Button
           variant="danger"
           className="mt-5"
@@ -233,7 +264,7 @@ export function ProjectSettingsPage() {
         >
           {busy ? '삭제 중...' : '영구 삭제'}
         </Button>
-        <Button variant="ghost" className="mt-2" onClick={() => setDeleteOpen(false)}>
+        <Button variant="ghost" className="mt-2" onClick={closeDelete}>
           취소
         </Button>
       </Modal>

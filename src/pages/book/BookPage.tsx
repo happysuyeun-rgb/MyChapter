@@ -28,6 +28,7 @@ import {
   reorderChapters,
 } from '@/lib/api/chapters'
 import { useAuthStore } from '@/stores/authStore'
+import { useToastStore } from '@/stores/toastStore'
 import type { Chapter } from '@/types/database'
 import { estimateChapterPages } from '@/utils/chapterContent'
 import { getBookReadiness } from '@/utils/bookReadiness'
@@ -98,7 +99,8 @@ function SortableChapterRow({
 export function BookPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const { project, loading: projectLoading } = useActiveProject()
+  const { project, loading: projectLoading, error: projectError, retry: retryProject } = useActiveProject()
+  const { showToast } = useToastStore()
 
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [unassignedCount, setUnassignedCount] = useState(0)
@@ -154,8 +156,11 @@ export function BookPage() {
 
     try {
       const chapter = await generateChapter(project.id)
+      await load()
       if (chapter) {
-        await load()
+        showToast(`CHAPTER ${String(chapter.chapter_number).padStart(2, '0')} 원고를 만들었어요.`)
+      } else {
+        setGenerationError('새 챕터가 만들어졌는지 확인하지 못했어요. 목록을 확인한 뒤 다시 시도해주세요.')
       }
     } catch (error) {
       if (error instanceof ChapterApiError) {
@@ -190,10 +195,15 @@ export function BookPage() {
         reordered.map((ch) => ch.id),
       )
     } catch {
+      showToast('순서를 저장하지 못했어요. 원래 순서로 되돌렸어요.')
       await load()
     } finally {
       setReordering(false)
     }
+  }
+
+  if (projectError) {
+    return <ErrorState title="책 정보를 불러오지 못했어요" onRetry={retryProject} />
   }
 
   if (projectLoading || loading) {

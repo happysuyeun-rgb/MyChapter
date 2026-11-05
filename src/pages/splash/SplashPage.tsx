@@ -6,8 +6,10 @@ import { useAuthStore } from '@/stores/authStore'
 
 export function SplashPage() {
   const navigate = useNavigate()
-  const { session, profile, initialized } = useAuthStore()
+  const { session, profile, profileError, initialized, reloadProfile } = useAuthStore()
   const [fadeIn, setFadeIn] = useState(false)
+  const [retrying, setRetrying] = useState(false)
+  const blocked = Boolean(session) && profileError
 
   useEffect(() => {
     const timer = setTimeout(() => setFadeIn(true), 50)
@@ -38,6 +40,8 @@ export function SplashPage() {
       return
     }
 
+    if (blocked) return
+
     const timer = setTimeout(async () => {
       if (!session) {
         navigate('/login', { replace: true })
@@ -58,7 +62,7 @@ export function SplashPage() {
     }, 1200)
 
     return () => clearTimeout(timer)
-  }, [initialized, session, profile, navigate])
+  }, [initialized, session, profile, blocked, navigate])
 
   return (
     <div className="flex min-h-dvh flex-col bg-ink px-7 py-10 text-surface">
@@ -87,12 +91,31 @@ export function SplashPage() {
           </p>
         </div>
 
-        <div className="border-t border-surface/20 pt-5">
-          <div className="flex items-center justify-between text-[10px] tracking-[0.15em] text-surface/40">
-            <span>RECORD · EDIT · PUBLISH</span>
-            <span>PAGE 01</span>
+        {blocked ? (
+          <div className="border-t border-surface/20 pt-5" role="alert">
+            <p className="text-sm leading-6 text-surface/80">
+              내 정보를 불러오지 못했어요. 네트워크 상태를 확인한 뒤 다시 시도해주세요.
+            </p>
+            <button
+              type="button"
+              disabled={retrying}
+              className="mt-4 min-h-11 w-full rounded-xl bg-surface text-sm font-semibold text-ink disabled:opacity-60"
+              onClick={() => {
+                setRetrying(true)
+                void reloadProfile().finally(() => setRetrying(false))
+              }}
+            >
+              {retrying ? '다시 불러오는 중...' : '다시 시도'}
+            </button>
           </div>
-        </div>
+        ) : (
+          <div className="border-t border-surface/20 pt-5">
+            <div className="flex items-center justify-between text-[10px] tracking-[0.15em] text-surface/40">
+              <span>RECORD · EDIT · PUBLISH</span>
+              <span>PAGE 01</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

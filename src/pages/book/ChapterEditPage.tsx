@@ -31,6 +31,7 @@ export function ChapterEditPage() {
   const [saving, setSaving] = useState(false)
   const [regenerating, setRegenerating] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false)
   const [loadError, setLoadError] = useState(false)
   const [retryKey, setRetryKey] = useState(0)
   const { isPro } = useSubscription()
@@ -109,6 +110,7 @@ export function ChapterEditPage() {
       setChapter(updated)
       setTitle(updated.title)
       setContent(getChapterDisplayContent(updated))
+      showToast('원본 기록으로 원고를 다시 구성했어요.')
     } catch (err) {
       const message =
         err instanceof ChapterApiError
@@ -187,6 +189,9 @@ export function ChapterEditPage() {
     )
   }
 
+  const dirty = title !== chapter.title || content !== getChapterDisplayContent(chapter)
+  const leave = () => navigate(`/book/chapter/${chapter.id}`)
+
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
       <NavBar
@@ -194,7 +199,7 @@ export function ChapterEditPage() {
         leftLabel="취소"
         rightLabel="저장"
         rightAccent
-        onLeftClick={() => navigate(`/book/chapter/${chapter.id}`)}
+        onLeftClick={() => (dirty ? setLeaveConfirmOpen(true) : leave())}
         onRightClick={() => void handleSave()}
       />
 
@@ -278,6 +283,20 @@ export function ChapterEditPage() {
         </p>
         <Button onClick={() => void handleRegenerate()}>다시 구성하기</Button>
         <Button variant="ghost" className="mt-2" onClick={() => setConfirmOpen(false)}>취소</Button>
+      </Modal>
+
+      <Modal open={leaveConfirmOpen} onClose={() => setLeaveConfirmOpen(false)} title="저장하지 않고 나갈까요?">
+        <p className="mb-5 text-sm leading-6 text-ink-muted">고친 제목과 원고가 사라져요.</p>
+        <Button
+          onClick={() => {
+            setLeaveConfirmOpen(false)
+            void handleSave()
+          }}
+        >
+          저장하고 나가기
+        </Button>
+        <Button variant="secondary" className="mt-2" onClick={leave}>저장하지 않고 나가기</Button>
+        <Button variant="ghost" className="mt-2" onClick={() => setLeaveConfirmOpen(false)}>계속 편집</Button>
       </Modal>
 
       <Modal open={Boolean(aiResult)} onClose={() => setAiResult(null)} title="PAGE가 다듬은 원고">

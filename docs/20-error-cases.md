@@ -1,7 +1,7 @@
 # MyChapter — 기능별 에러 케이스 (코드 점검)
 
 > **Status:** CURRENT (code-audited)  
-> **최종 갱신:** 2026-10-23  
+> **최종 갱신:** 2026-11-04 (피드백 방식·문구는 `32-feedback-messages.md`)  
 > **기준:** `src/` + `supabase/functions/*` 실코드  
 > **관련:** `14_API_SPEC.md`, `16_QA_E2E.md`, `17-test-report.md`, `19-gap-and-ux-plan.md`  
 > **참고:** 화면 스펙(`10`~`14-screen-spec-*`)의「에러 케이스」는 구버전이며, **이 문서가 우선**한다.
@@ -55,7 +55,7 @@
 | 이메일 링크 발송 실패 | `sent=false`, 오류 문구 (401 구분) | inline | handled |
 | 발송 rate-limit 등 | 서버 영문 message 그대로 | inline | partial |
 | Splash `getSession` throw | 앱 전체 「로딩 중…」 고정 | silent | **gap** |
-| 프로필 조회 실패 (`profile=null`) | 온보딩 닉네임으로 오분기 | redirect | **gap** |
+| 프로필 조회 실패 (`profileError`) | Splash에 안내 + 다시 시도 (온보딩 오분기 제거, OnboardingGuard도 Splash로) | inline | handled |
 | Guard: 세션 만료 | `/login` (복귀·안내 없음) | redirect | partial |
 | `VITE_SUPABASE_*` 미설정 | placeholder 클라이언트 → 이후 전부 실패 | silent | **gap** |
 | 전역 렌더 예외 | ErrorBoundary/`errorElement` 없음 | 기본 화면 | **gap** |
@@ -76,9 +76,11 @@
 | Free 한도에서 타입 선택 / 서재 「새 책」 | Paywall | Paywall | handled |
 | Free INSERT (`FREE_PROJECT_LIMIT`) | Free 한도 문구 (Paywall 미연결) | inline | partial |
 | 그 외 생성 실패 | 「책을 시작하지 못했어요…」 | inline | handled |
-| `useProjectLimit` / 서재 로드 실패 | 무한 로딩 | silent | **gap** |
+| `useProjectLimit` 조회 실패 | 주제 선택 시 Toast (Paywall 오표시 제거) | Toast | handled |
 | `getSubscriptionPlan` 네트워크 오류 | `'free'`로 위장 → Pro 오탐 Paywall 가능 | silent | **gap** |
 | 책 설정 저장 실패 | 「책 설정을 저장하지 못했어요…」 | inline | handled |
+| 책 설정 로드 실패 | ErrorState + 다시 시도 | ErrorState | handled |
+| 책 보관/삭제 실패 | 모달 안 Inline (이전: 모달 뒤에 가려짐) | inline | handled |
 
 ### 2.4 홈
 
@@ -98,10 +100,12 @@
 | 사진 없음 | 「사진을 추가해주세요.」 | inline | handled |
 | 사진 형식·용량 | 검증 없음 (`accept=image/*`만) | — | **gap** |
 | 자유일기 초안 로드/임시저장 실패 | 전용 안내 문구 | inline | handled |
-| 질문·사진 임시저장 실패 | catch 없음 → unhandled | silent | **gap** |
+| 질문·사진 임시저장 실패 | 「임시저장에 실패했어요…」 | inline | handled |
+| 「새 기록으로 저장」(중복 세션) 실패 | 모달 안 Inline + 연타 방지 | inline | handled |
+| 저장 성공 후 통계 조회 실패 | 저장 성공으로 처리 (이전: 「저장에 실패했어요」 오표시) | — | handled |
 | AI 질문/힌트 일반 실패 | 타입별 폴백 (조용히) | silent | handled(의도) |
 | `AI_LIMIT` | Paywall+폴백 코드 있음 **[도달 의심]** → 폴백만 될 수 있음 | Paywall / silent | partial |
-| `useActiveProject` 실패 | 무한 로딩 | silent | **gap** |
+| `useActiveProject` 실패 | ErrorState + 다시 시도 (기록 3종·방식 선택·책·책 설정) | ErrorState | handled |
 | 저장 완료 화면 직접 URL | `/home` redirect | redirect | handled |
 
 ### 2.6 기록 목록 · 상세 · 삭제
@@ -109,10 +113,10 @@
 | 케이스 | 현재 동작 | 패턴 | 상태 |
 |--------|-----------|------|------|
 | `listRecords` 실패 | 「기록을 불러오지 못했어요」+ 재시도 | ErrorState | handled |
-| `useProjectList` 실패 | LoadingBlock만 지속 (ErrorState 가림) | silent | **gap** |
+| `useProjectList` 실패 | ErrorState + 다시 시도 (이전: 빈 상태 오표시) | ErrorState | handled |
 | 상세 없음 | `/records` redirect (안내 없음) | redirect | handled |
-| 상세 네트워크 throw | 무한 로딩 | silent | **gap** |
-| 삭제 실패 | `deleting` 고정 + unhandled | silent | **gap** |
+| 상세 네트워크 throw | ErrorState + 다시 시도 | ErrorState | handled |
+| 삭제 실패 | 모달 안 Inline / 성공 시 Toast | inline | handled |
 | 사진 서명 URL 실패 | 이미지만 생략 | silent | partial |
 | 목록 50개 초과 | 페이지네이션 없음 → 미표시 | silent | **gap** |
 
@@ -125,11 +129,13 @@
 | `NOT_ENOUGH_MATERIAL` | 전용 메시지 코드 있음 **[도달 의심]** | inline | partial |
 | 생성 일반 실패 | 「챕터를 만들지 못했어요…」 | inline | handled |
 | `CHAPTER_LIMIT` | **코드·Edge 모두 없음** (구문서 잔재) | — | 문서 불일치 |
-| 순서 변경 실패 | 목록 롤백, 안내 없음 | silent | partial |
+| 순서 변경 실패 | 목록 롤백 + Toast | Toast | handled |
+| 생성 응답에 챕터 없음 | 목록 새로고침 + Inline 안내 | inline | handled |
 | 편집 저장 실패 | Toast 「저장에 실패했어요…」 | Toast | handled |
-| NavBar 저장 | 빈 값 검증 없이 호출 가능 | — | **gap** |
-| AI 재생성 실패 | catch 없음 | silent | **gap** |
-| 프리뷰/편집 로드 throw | 무한 로딩 | silent | **gap** |
+| NavBar 저장 | 빈 값이면 Toast | Toast | handled |
+| 편집 중 「취소」(미저장) | 확인 창 (기기 뒤로가기는 미적용) | Modal | partial |
+| AI 재생성 실패 | Toast (서버 사유) | Toast | handled |
+| 프리뷰/편집 로드 throw | ErrorState + 다시 시도 | ErrorState | handled |
 
 ### 2.8 표지 · 원고 · PDF 발행
 
@@ -137,10 +143,12 @@
 |--------|-----------|------|------|
 | BookStageGuard 권한 조회 실패 | 인라인 + 다시 시도 | inline | handled |
 | 단계 미충족 | 이전 단계로 redirect | redirect | handled |
-| 원고/표지/최종검수 로드 실패 | 다수 무한 로딩 | silent | **gap** |
+| 원고/표지/최종검수 로드 실패 | ErrorState + 다시 시도 | ErrorState | handled |
 | 원고 확인 저장 실패 | 인라인 안내 | inline | handled |
-| Pro 표지 + Free | Paywall | Paywall | handled |
-| 표지 저장 실패 | Toast (로컬 선택은 이미 바뀜) | Toast | partial |
+| Pro 표지 + Free | Paywall (결제 후 전역 구독 상태로 즉시 반영) | Paywall | handled |
+| 표지 저장 실패 | Toast + 미리보기 원복 | Toast | handled |
+| 발행 직전 | 확인 창 (Free 1회 소모 안내) | Modal | handled |
+| 발행한 책 로드 실패 | ErrorState + 다시 시도 | ErrorState | handled |
 | Free 첫 발행 소진 (`canPublishBook`) | Paywall (실질 방어선) | Paywall | handled |
 | 서버 `PUBLICATION_LIMIT` 등 | **[도달 의심]** → 일반 실패 문구 | inline / Paywall | partial |
 | `PUBLICATION_IN_PROGRESS` | 코드는 있으나 UI 미분기 | inline | **gap** |
@@ -161,14 +169,15 @@
 
 | 케이스 | 현재 동작 | 패턴 | 상태 |
 |--------|-----------|------|------|
-| 통계 로드 실패 | 0처럼 보임 | silent | **gap** |
+| 통계 로드 실패 | 「—」 + 안내 + 다시 불러오기 | inline | handled |
 | 플랜 조회 실패 | `'free'` 위장 | silent | **gap** |
 | 설정(알림·시간·닉네임·이모지) 저장 실패 | 피드백 없음 | silent | **gap** |
 | 닉네임 규칙 위반(설정) | 버튼 눌러도 무반응 | silent | **gap** |
 | 구독 「구매 복원하기」 | 웹: 「모바일 앱에서…」 Toast · 앱: Play 복원 → 서버 검증, 없음/실패 시 Toast | Toast | handled (실기기 확인 대기) |
 | 계정 삭제 확인문구 불일치 | 버튼 비활성 | silent | handled |
 | 계정 삭제 Edge 실패 | 「계정 삭제에 실패했어요…」 | inline | handled |
-| 완성한 책 목록 실패 | 빈 상태로 오표시 | Empty(오표시) | **gap** |
+| 계정 삭제 성공 후 로그아웃 정리 실패 | 로그인 화면으로 이동 (실패 문구 오표시 제거) | redirect | handled |
+| 완성한 책 목록 실패 | ErrorState + 다시 시도 | ErrorState | handled |
 
 ### 2.11 Paywall · 결제
 
@@ -179,7 +188,8 @@
 | 사용자 취소 | 실패와 구분 없음 | inline | partial |
 | 영수증 검증 실패 | 「결제 검증에 실패했어요.」 / 복구 경로 없음 | inline | **gap** |
 | `INVALID_PURCHASE` | **[도달 의심]** | inline | partial |
-| 모달 재오픈 | 이전 `error` 잔존 가능 | inline | partial |
+| 모달 재오픈 | 닫을 때 `error` 초기화 | inline | handled |
+| 구매 성공 | Toast (Pro 확인 / 확인 지연 구분) | Toast | handled |
 
 ### 2.12 푸시
 
@@ -227,11 +237,7 @@
 
 ## 4. Toast / ErrorState 사용 현황
 
-| 패턴 | 사용처 (현재) |
-|------|----------------|
-| **ErrorState** | Home, RecordsList, BookPage, Notifications |
-| **Toast** | ChapterEdit 저장 실패, BookCover 표지 저장 실패, Subscription 복원 스텁 |
-| **Paywall** | Free 한도·발행 한도·Pro 표지·(의도) AI_LIMIT |
+화면별 Toast · 확인 창 · ErrorState · Inline · Paywall 전체 목록과 문구 규칙은 **[32-feedback-messages.md](./32-feedback-messages.md)** 로 옮겼다.
 
 ---
 
@@ -277,3 +283,4 @@
 |------|------|
 | 2026-10-23 | 코드 전수 점검 후 초안 작성. Edge code 전달·무한 로딩·구독 free 위장을 최우선으로 표기 |
 | 2026-10-23 | **코드 반영:** `functionInvoke`로 Edge 4xx body 파싱 · ErrorState 확대 · Settings/삭제/재생성 catch · 구독 조회 실패 시 Free 위장 제거 · 로그아웃 시 device token 삭제 · 사진 10MB 가드 |
+| 2026-11-04 | **코드 반영 (`feat/feedback-messages`):** 남은 무한 로딩(기록 작성·방식 선택·책 설정·원고 미리보기·발행한 책) ErrorState · 모달 안 오류 표시 · Splash 프로필 실패 재시도 · 책 수 조회 실패 Paywall 오표시 제거 · 저장 후 통계 실패를 저장 실패로 보이지 않게 · 발행/원고 이탈 확인 창. 피드백 인벤토리는 `32` |

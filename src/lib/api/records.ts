@@ -280,7 +280,13 @@ async function finalizeSave(
   projectId: string,
   record: JournalRecord,
 ): Promise<SaveRecordResult> {
-  const allRecords = await listRecords(userId, { projectId })
+  let allRecords: JournalRecord[]
+  try {
+    allRecords = await listRecords(userId, { projectId })
+  } catch {
+    // The record is already saved; stats are best-effort and must not surface as a save failure.
+    return { record, recordCount: record.record_number, streak: 0, badgeTitles: [] }
+  }
   const recordCount = allRecords.length
   const streak = calculateStreak(allRecords)
 

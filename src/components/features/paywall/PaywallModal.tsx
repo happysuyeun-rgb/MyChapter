@@ -6,6 +6,7 @@ import { verifyPurchase } from '@/lib/api/subscriptions'
 import { useAuthStore } from '@/stores/authStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
+import { useToastStore } from '@/stores/toastStore'
 
 const features = [
   { index: '01', icon: 'projects' as const, label: '여러 권의 책 만들기' },
@@ -17,10 +18,16 @@ export function PaywallModal() {
   const { user } = useAuthStore()
   const { isOpen, closePaywall, completePurchase } = usePaywallStore()
   const { setPlan } = useSubscriptionStore()
+  const { showToast } = useToastStore()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   if (!isOpen) return null
+
+  const close = () => {
+    setError('')
+    closePaywall()
+  }
 
   const handlePurchase = async () => {
     if (!user) return
@@ -37,7 +44,9 @@ export function PaywallModal() {
       const purchase = await purchasePro(user.id)
       const plan = await verifyPurchase(purchase.purchaseToken, purchase.productId, purchase.orderId)
       setPlan(plan)
+      setError('')
       completePurchase()
+      showToast(plan === 'pro' ? 'Pro가 시작됐어요. 이제 모든 기능을 쓸 수 있어요.' : '결제는 완료됐지만 Pro 확인이 늦어지고 있어요. 잠시 후 구독 관리에서 확인해주세요.')
     } catch (err) {
       if (err instanceof BillingError && err.code === 'USER_CANCELED') setError('')
       else if (err instanceof BillingError) setError(err.message)
@@ -50,7 +59,7 @@ export function PaywallModal() {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center">
-      <button type="button" className="absolute inset-0 bg-ink/55" aria-label="닫기" onClick={closePaywall} />
+      <button type="button" className="absolute inset-0 bg-ink/55" aria-label="닫기" onClick={close} />
       <div className="relative z-10 w-full max-w-phone border-t border-ink bg-surface px-6 pb-6 pt-7 shadow-[0_-12px_40px_rgba(0,0,0,0.12)]">
         <header className="border-b border-ink pb-6">
           <div className="flex items-center justify-between">
@@ -85,7 +94,7 @@ export function PaywallModal() {
         <Button className="mt-6" disabled={loading} onClick={() => void handlePurchase()}>
           {loading ? '결제 처리 중...' : 'Pro 시작하기'}
         </Button>
-        <Button variant="ghost" className="mt-2" onClick={closePaywall}>나중에 하기</Button>
+        <Button variant="ghost" className="mt-2" onClick={close}>나중에 하기</Button>
       </div>
     </div>
   )

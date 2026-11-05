@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { listChapters } from '@/lib/api/chapters'
 import { getPublishedBook } from '@/lib/api/books'
 import { getProjects } from '@/lib/api/projects'
@@ -22,9 +22,12 @@ export function useUserStats() {
     streak: 0,
   })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
     if (!user) return
+    let cancelled = false
 
     const load = async () => {
       try {
@@ -43,20 +46,27 @@ export function useUserStats() {
         )
         const bookCount = bookResults.filter(Boolean).length
 
+        if (cancelled) return
         setStats({
           recordCount: records.length,
           chapterCount,
           bookCount,
           streak: calculateStreak(records),
         })
+      } catch {
+        if (!cancelled) setError(true)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
     setLoading(true)
+    setError(false)
     void load()
-  }, [user])
+    return () => { cancelled = true }
+  }, [user, retryKey])
 
-  return { stats, loading }
+  const retry = useCallback(() => setRetryKey((key) => key + 1), [])
+
+  return { stats, loading, error, retry }
 }

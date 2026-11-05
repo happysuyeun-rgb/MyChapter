@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, ErrorState, LoadingBlock, StudioSection } from '@/components/common'
+import { Button, ErrorState, LoadingBlock, Modal, StudioSection } from '@/components/common'
 import { BrandMasthead } from '@/components/layout/BrandMasthead'
 import { COVER_TEMPLATES } from '@/constants/coverTemplates'
 import { useActiveProject } from '@/hooks/useActiveProject'
@@ -8,7 +8,7 @@ import { canPublishBook, downloadPdfFromUrl, generateBookPdf, BookApiError } fro
 import { getChapterRecordCountMap, listChapters } from '@/lib/api/chapters'
 import { listRecords } from '@/lib/api/records'
 import { completeFinalReview, reopenFinalReview } from '@/lib/api/projects'
-import { getSubscriptionPlan } from '@/lib/api/subscriptions'
+import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthStore } from '@/stores/authStore'
 import { useBookStore } from '@/stores/bookStore'
 import { usePaywallStore } from '@/stores/paywallStore'
@@ -48,8 +48,10 @@ export function FinalReviewPage() {
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [chapterRecordCounts, setChapterRecordCounts] = useState<Record<string, number>>({})
   const [recordCount, setRecordCount] = useState(0)
-  const [isPro, setIsPro] = useState(false)
-  const [allowed, setAllowed] = useState(false)
+  const { isPro } = useSubscription()
+  const [freeAllowed, setFreeAllowed] = useState(false)
+  const allowed = isPro || freeAllowed
+  const [publishConfirmOpen, setPublishConfirmOpen] = useState(false)
   const [checks, setChecks] = useState({ cover: false, toc: false, manuscript: false })
   const [publishing, setPublishing] = useState(false)
   const [reviewSaved, setReviewSaved] = useState(false)
@@ -70,19 +72,17 @@ export function FinalReviewPage() {
     Promise.all([
       listChapters(project.id),
       listRecords(user.id, { projectId: project.id }),
-      getSubscriptionPlan(user.id),
       canPublishBook(user.id),
       getChapterRecordCountMap(project.id),
     ])
-      .then(([chapterData, records, plan, canPublish, recordCounts]) => {
+      .then(([chapterData, records, canPublish, recordCounts]) => {
         if (cancelled) return
         setChapters(chapterData)
         setChapterRecordCounts(recordCounts)
         setReviewSaved(Boolean(project.final_review_completed_at))
         if (project.final_review_completed_at) setChecks({ cover: true, toc: true, manuscript: true })
         setRecordCount(records.length)
-        setIsPro(plan === 'pro')
-        setAllowed(canPublish)
+        setFreeAllowed(canPublish)
         if (!getBookReadiness(project, records.length).isReady) {
           navigate('/project/workspace', { replace: true })
           return
@@ -158,9 +158,16 @@ export function FinalReviewPage() {
     }
   }
 
+  const requestPublish = () => {
+    if (!user || !ready || !reviewSaved || publishing) return
+    if (!allowed) { showPaywall(); return }
+    setPublishConfirmOpen(true)
+  }
+
   const publish = async () => {
     if (!user || !ready || !reviewSaved) return
     if (!allowed) { showPaywall(); return }
+    setPublishConfirmOpen(false)
     setPublishing(true)
     setPublishStage('cover')
     try {
@@ -333,7 +340,7 @@ export function FinalReviewPage() {
 
         {reviewSaved ? (
           <>
-            <Button className="mt-8" disabled={!ready || publishing} onClick={() => void publish()}>
+            <Button className="mt-8" disabled={!ready || publishing} onClick={requestPublish}>
               {publishing ? '책을 만들고 있어요...' : allowed ? '이 책 발행하기' : 'Pro로 계속 발행하기'}
             </Button>
             <button
@@ -351,6 +358,16 @@ export function FinalReviewPage() {
           </Button>
         )}
       </main>
+
+      <Modal open={publishConfirmOpen} onClose={() => setPublishConfirmOpen(false)} title="이 책을 발행할까요?">
+        <p className="mb-5 text-sm leading-6 text-ink-muted">
+          {isPro
+            ? '지금 원고와 표지로 PDF를 만들어요. 발행본은 버전으로 남고, 나중에 고쳐서 다시 발행할 수 있어요.'
+            : 'Free의 첫 책 발행 1회를 사용해요. 발행 후 원고를 고쳐 다시 발행하려면 Pro가 필요해요.'}
+        </p>
+        <Button onClick={() => void publish()}>발행하기</Button>
+        <Button variant="ghost" className="mt-2" onClick={() => setPublishConfirmOpen(false)}>조금 더 볼게요</Button>
+      </Modal>
     </div>
   )
 }

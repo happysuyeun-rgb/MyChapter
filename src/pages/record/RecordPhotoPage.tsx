@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FlatIcon, Input } from '@/components/common'
+import { ErrorState, FlatIcon, Input, LoadingBlock } from '@/components/common'
 import { EmotionTagPicker } from '@/components/features/record/EmotionTagPicker'
 import { ExitConfirmModal } from '@/components/features/record/ExitConfirmModal'
 import { SaveConflictModal } from '@/components/features/record/SaveConflictModal'
@@ -19,6 +19,7 @@ import {
 } from '@/lib/api/records'
 import { useAuthStore } from '@/stores/authStore'
 import { useRecordStore } from '@/stores/recordStore'
+import { useToastStore } from '@/stores/toastStore'
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
 
@@ -27,7 +28,8 @@ export function RecordPhotoPage() {
   const uploadedPhotoPath = useRef<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const { user } = useAuthStore()
-  const { project, loading } = useActiveProject()
+  const { showToast } = useToastStore()
+  const { project, loading, error: projectError, retry } = useActiveProject()
   const { editingRecord, setEditingRecord, setLastSave } = useRecordStore()
   const {
     conflictOpen,
@@ -48,6 +50,7 @@ export function RecordPhotoPage() {
   const [recordNumber, setRecordNumber] = useState(editingRecord?.record_number ?? 1)
   const [saving, setSaving] = useState(false)
   const [showExit, setShowExit] = useState(false)
+  const [draftSaving, setDraftSaving] = useState(false)
   const [pageNumberHint, setPageNumberHint] = useState(!editingRecord)
 
   const touched = useRef(Boolean(editingRecord))
@@ -245,10 +248,19 @@ export function RecordPhotoPage() {
     uploadedPhotoPath.current = null
   }
 
+  if (projectError) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <NavBar title="사진 기록" leftLabel="←" />
+        <ErrorState title="책 정보를 불러오지 못했어요" onRetry={retry} />
+      </div>
+    )
+  }
+
   if (loading || !project) {
     return (
-      <div className="flex min-h-dvh items-center justify-center text-sm text-ink-muted">
-        로딩 중...
+      <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+        <LoadingBlock />
       </div>
     )
   }
@@ -329,31 +341,47 @@ export function RecordPhotoPage() {
 
       <ExitConfirmModal
         open={showExit}
+        busy={draftSaving}
         onContinue={() => setShowExit(false)}
         onDiscard={() => {
           discardTempUpload()
+          if (user && project && !editingRecord) {
+            void deleteDraft(user.id, project.id, 'photo').catch(() => {})
+          }
           setEditingRecord(null)
           navigate(-1)
         }}
         onSaveDraft={() => {
-          if (!user || !project) return
+          if (!user || !project || draftSaving) return
+          setDraftSaving(true)
           void saveDraft(user.id, project.id, 'photo', {
             content: caption,
             emotionTags: emotions,
           })
-            .then(() => navigate(-1))
+            .then(() => {
+              showToast(
+                photoFile
+                  ? '캡션을 임시저장했어요. 사진은 다음에 다시 골라주세요.'
+                  : '임시저장했어요. 다음에 이어서 쓸 수 있어요.',
+              )
+              navigate(-1)
+            })
             .catch(() => {
               setShowExit(false)
               setError('임시저장에 실패했어요. 작성한 내용은 유지됩니다.')
             })
+            .finally(() => setDraftSaving(false))
         }}
       />
 
       <SaveConflictModal
         open={conflictOpen}
+        busy={saving}
+        error={error}
         onContinue={clearConflict}
         onOpenExisting={openExisting}
         onSaveAsNew={() => {
+          if (saving) return
           void (async () => {
             setSaving(true)
             try {

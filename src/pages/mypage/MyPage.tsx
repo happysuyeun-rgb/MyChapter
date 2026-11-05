@@ -19,7 +19,8 @@ export function MyPage() {
   const navigate = useNavigate()
   const { profile, user, signOut } = useAuthStore()
   const { isPro } = useSubscription()
-  const { stats, loading } = useUserStats()
+  const { stats, loading, error: statsError, retry: retryStats } = useUserStats()
+  const statsPending = loading || statsError
   const { showPaywall } = usePaywallStore()
 
   return (
@@ -53,9 +54,9 @@ export function MyPage() {
           <p className="mb-3 font-serif text-base font-bold">나의 기록</p>
           <div className="grid grid-cols-3 border-y border-border">
             {[
-              { label: '기록', value: loading ? '—' : stats.recordCount },
-              { label: '챕터', value: loading ? '—' : stats.chapterCount },
-              { label: '완성 책', value: loading ? '—' : stats.bookCount },
+              { label: '기록', value: statsPending ? '—' : stats.recordCount },
+              { label: '챕터', value: statsPending ? '—' : stats.chapterCount },
+              { label: '완성 책', value: statsPending ? '—' : stats.bookCount },
             ].map((item, index) => (
               <div key={item.label} className={['py-5 text-center', index > 0 ? 'border-l border-border' : ''].join(' ')}>
                 <p className="font-serif text-2xl font-bold">{item.value}</p>
@@ -63,7 +64,15 @@ export function MyPage() {
               </div>
             ))}
           </div>
-          {!loading && stats.streak > 0 && (
+          {statsError && (
+            <p className="mt-3 text-xs text-ink-muted">
+              기록 통계를 불러오지 못했어요.{' '}
+              <button type="button" className="font-semibold text-ink underline" onClick={retryStats}>
+                다시 불러오기
+              </button>
+            </p>
+          )}
+          {!statsPending && stats.streak > 0 && (
             <p className="mt-3 text-xs text-ink-muted">최근 {stats.streak}일 동안 기록을 이어가고 있어요.</p>
           )}
         </section>
