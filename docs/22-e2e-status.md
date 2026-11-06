@@ -101,15 +101,15 @@ Work를 통한 운영 검증. Supabase 요청 29건에서 4xx·5xx 없음.
 | 영역 | 상태 |
 |------|------|
 | 실계정 책 생성·기록 저장 (위 §4) | **PASS — LIVE (17항목 범위)** |
-| AI 챕터 생성 | PENDING — **`GOOGLE_AI_API_KEY` 미등록 (2026-11-04 Secret 이름 확인)** |
-| PDF 발행 | PENDING — `generate-pdf` 2026-11-04 재배포 (한글 폰트 `registerFontkit` · Pro 표지 검사 포함, 이전 운영본은 10-16 버전) |
-| AI 편집 (챕터) | PENDING — `026` 적용 · `edit-chapter` 배포 완료, `GOOGLE_AI_API_KEY` 등록 + `VITE_AI_EDIT_ENABLED` 대기 |
+| AI 챕터 생성 | PENDING — `GOOGLE_AI_API_KEY` 등록 + `generate-chapter` 재배포 (2026-11-06). 실계정 E2E 대기 |
+| PDF 발행 | PENDING — `generate-pdf` 2026-11-06 재배포. 실계정 E2E 대기 |
+| AI 편집 (챕터) | PENDING — `026`·`edit-chapter`·키 등록·`VITE_AI_EDIT_ENABLED=true` 운영 반영 (2026-11-06). 실계정 §2.6 확인 대기 |
 | Pro 표지 서버 강제 | PENDING — `025` 적용 완료 (2026-11-04), 운영 계정 확인 대기 |
 | Google / Kakao 로그인 | 미완료 설정 + PENDING |
 | 계정 삭제·Storage 정리 | PENDING |
 | Play Billing 실결제 | 코드 완료 (네이티브 플러그인) · Play 상품/실기기 + `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` 대기 |
 
-**운영 Edge Function이 저장소보다 오래된 것 (2026-11-04 배포일 대조, 미배포):** `generate-question`, `generate-freewriting-hint`, `analyze-record` (10-24 공통 `_shared` 변경 미반영). `generate-chapter`, `send-daily-reminder`는 같은 날 몇 분 차이로 실제 차이 확인 필요.
+**운영 Edge Function (2026-11-06 재배포):** `generate-question` · `generate-freewriting-hint` · `analyze-record` · `generate-chapter` · `regenerate-chapter` · `edit-chapter` · `generate-pdf`. `send-daily-reminder`는 이번 재배포에 포함하지 않음.
 
 ---
 

@@ -6,19 +6,22 @@
 
 ---
 
-## 운영 반영 현황 (2026-11-04 Cursor 실행)
+## 운영 반영 현황 (2026-11-06 Cursor 실행)
 
 | 항목 | 상태 |
 |---|---|
 | PR #9 머지 · Vercel 운영 배포 | ✅ `4b62681` |
 | Migration `026` | ✅ 운영 적용 (`ai_edit` 확인) |
-| `edit-chapter` Function | ✅ 배포 |
-| `generate-pdf` Function | ✅ 재배포 (이전 운영본은 10-16 버전 — 한글 폰트 등록·Pro 표지 검사 누락이었음) |
+| `edit-chapter` Function | ✅ 배포 (2026-11-06 AI Function 재배포에 포함) |
+| `generate-pdf` Function | ✅ 재배포 (2026-11-06) |
+| AI Function 재배포 | ✅ 2026-11-06 `generate-question` · `generate-freewriting-hint` · `analyze-record` · `generate-chapter` · `regenerate-chapter` · `edit-chapter` · `generate-pdf` |
 | 화면 준비 완료 표시 UTC 정렬 · 목업 Free 모드(`VITE_MOCK_PLAN=free`) | ✅ 코드 (운영 웹 배포는 Vercel 배포 한도 해제 후) |
 | 준비 완료 날짜 UTC 정렬 ([PR #10](https://github.com/happysuyeun-rgb/MyChapter/pull/10)) | ✅ `ae6a679` 운영 배포 — 025 트리거와 날짜 기준 일치 |
 | Migration `025` | ✅ 운영 적용 (PR #10 배포 후) |
-| Secret `GOOGLE_AI_API_KEY` | ❌ **미등록** → AI 편집·AI 질문·챕터 생성이 실패/대체 동작. 등록 전에는 `VITE_AI_EDIT_ENABLED`를 켜지 말 것 |
+| Secret `GOOGLE_AI_API_KEY` | ✅ 2026-11-06 등록 (값은 문서·채팅에 적지 않음) |
+| Vercel Production `VITE_AI_EDIT_ENABLED` | ✅ `true` · 2026-11-06 운영 재배포 (`https://my-chapter.vercel.app`) |
 | Secret `BILLING_DEV_BYPASS` | ✅ 2026-11-04 삭제 (승인 후 Cursor 실행). 삭제 전에도 운영 `verify-subscription`의 운영 프로젝트 차단(SEC-01)으로 개발용 결제는 거부되고 있었음 |
+| Vercel Production `VITE_BILLING_DEV_MODE` | ✅ 없음 (2026-11-06 이름 목록 확인) |
 | Secret `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | ❌ 미등록 → 실결제 서버 검증 불가 (Play 출시 전 등록) |
 
 ---
@@ -28,10 +31,10 @@
 | 순서 | 할 일 | 막히는 것 |
 |---|---|---|
 | 1 | 운영 사이트에서 웹 화면 확인 (§1 항목을 운영 URL에서) | — |
-| 2 | ~~PR #9 머지 → 운영 웹 반영~~ ✅ 완료 (AI 편집 버튼은 숨김 상태) | — |
+| 2 | ~~PR #9 머지 → 운영 웹 반영~~ ✅ 완료 | — |
 | 3 | ~~운영 DB `025`, `026` · `edit-chapter` 배포~~ ✅ Cursor 완료 | — |
-| 4 | Secret `GOOGLE_AI_API_KEY` 등록 (§2.3) · ~~`BILLING_DEV_BYPASS` 삭제~~ ✅ | AI 전체 |
-| 5 | Vercel `VITE_AI_EDIT_ENABLED=true` + 재배포 (§2.4) | AI 편집 버튼 노출 |
+| 4 | ~~Secret `GOOGLE_AI_API_KEY` 등록 (§2.3)~~ ✅ 2026-11-06 · ~~`BILLING_DEV_BYPASS` 삭제~~ ✅ | — |
+| 5 | ~~Vercel `VITE_AI_EDIT_ENABLED=true` + 재배포 (§2.4)~~ ✅ 2026-11-06 | 운영에서 §2.6 확인 |
 | 6 | Play Console 구독 상품 + 내부 테스트 (§3) | 실결제 |
 | 7 | Android 실기기 테스트 (§4) | 출시 |
 | 8 | 남은 제품 결정 회신 (§5) | AI 편집 한도 확정 |
@@ -49,7 +52,7 @@ Preview URL은 PR #9의 Vercel 봇 댓글에 있다. 실계정(Free 계정 권�
 | 1.3 | Free 계정으로 책 표지에서 Pro 표지(잠금 표시) 선택 | 바로 Paywall, 표지는 바뀌지 않음. (서버 거부 시 미리보기 원복은 `025` 적용 후 §2.1에서 확인) | ☐ |
 | 1.4 | 마이 → 구독 → "구매 복원하기" (웹) | "모바일 앱에서…" 안내 Toast | ☐ |
 | 1.5 | 마이 → AI 사용량 | 화면 정상. `AI 편집` 행은 `0 / 3` (Free) | ☐ |
-| 1.6 | 챕터 편집 화면 | **PAGE EDIT 섹션이 보이지 않아야 함** (운영 플래그 OFF 상태) | ☐ |
+| 1.6 | 챕터 편집 화면 | 2026-11-06부터 운영 플래그 ON → **PAGE EDIT**가 보여야 함. 확인은 §2.6 | ☐ |
 
 > 1.5에서 오류가 나면 알려주세요. `026` 적용 전에도 깨지지 않도록 만들어 두었습니다.
 
@@ -73,24 +76,22 @@ Preview URL은 PR #9의 Vercel 봇 댓글에 있다. 실계정(Free 계정 권�
 
 ### 2.3 `edit-chapter` Function 배포
 
-✅ 2026-11-04 Cursor가 배포. 단, Secret **`GOOGLE_AI_API_KEY`가 미등록**이라 지금 호출하면 "PAGE가 원고를 다듬지 못했어요"로 실패한다.
+✅ 2026-11-04 Cursor가 배포. ✅ 2026-11-06 `GOOGLE_AI_API_KEY` 등록 후 AI Function 재배포.
 
-- ☐ Supabase Dashboard → Edge Functions → Secrets에 `GOOGLE_AI_API_KEY` 등록 (값 공유 금지 · 등록 후 재배포 불필요)
+- ✅ Secret 이름 `GOOGLE_AI_API_KEY` 등록 확인 (값 공유 금지)
 
 > CLI 참고: 이 저장소는 Supabase CLI **v2**가 필요하다 (`npx supabase@2 ...`). v3는 `config.toml`의 `[inbucket]` 때문에 실패한다.
 
 ### 2.4 AI 편집 버튼 켜기 (`GOOGLE_AI_API_KEY` 등록 후)
 
-1. Vercel → Project → Settings → Environment Variables → Production에 `VITE_AI_EDIT_ENABLED` = `true`
-2. Redeploy (VITE_* 는 빌드 시점에 들어감)
-3. ☐ 완료
+✅ 2026-11-06 Cursor가 Production에 `VITE_AI_EDIT_ENABLED=true` 설정 후 운영 재배포. 챕터 편집에서 PAGE EDIT가 보이는지 §2.6에서 확인.
 
 ### 2.5 결제 우회 OFF 재확인
 
 | 위치 | 이름 | 운영 값 | ☐ |
 |---|---|---|---|
 | Supabase Secrets | `BILLING_DEV_BYPASS` | 없음 또는 `false` | ☐ |
-| Vercel Production | `VITE_BILLING_DEV_MODE` | 없음 또는 `false` | ☐ |
+| Vercel Production | `VITE_BILLING_DEV_MODE` | 없음 또는 `false` | ✅ 2026-11-06 없음 |
 | Supabase Secrets | `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | 등록됨 (값 공유 금지) | ☐ |
 | Supabase Secrets | `GOOGLE_PLAY_PACKAGE_NAME` | 없으면 기본 `com.mychapter.app` 사용 | ☐ |
 

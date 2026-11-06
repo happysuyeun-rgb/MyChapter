@@ -84,7 +84,7 @@ U-02 Preview, U-03 Confirm, U-04 Publishing, U-06 Failed, B-06 Manuscript Edit, 
 | `expand-caption` | Function 없음 |
 | Capacitor Camera | `<input type=file>` |
 | AI 표지 / iOS / POD | post-MVP |
-| R-06 / R-10 AI 편집 (챕터) | ✅ 코드 — `edit-chapter` · `026` · B-04 결과 Modal · M-03 `n / 3`. **운영: 026 적용 + Function 배포 + `VITE_AI_EDIT_ENABLED=true` 후 노출** |
+| R-06 / R-10 AI 편집 (챕터) | ✅ 코드 — `edit-chapter` · `026` · B-04 결과 Modal · M-03 `n / 3`. **운영: 026 적용 + Function 배포 + 키 등록 + `VITE_AI_EDIT_ENABLED=true` (2026-11-06). 실계정 확인 대기** |
 | 기록 단위 AI 편집본 | 보류 (DB 설계 필요) |
 
 ---
