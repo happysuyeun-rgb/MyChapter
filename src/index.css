@@ -7,7 +7,7 @@
     --mc-ink: #3b352d;
     --mc-ink-muted: #756d62;
     --mc-ink-faint: #a79d90;
-    --mc-surface: #f7f2e8;
+    --mc-surface: #fcf8ee;
     --mc-surface-card: #fffdf8;
     --mc-surface-alt: #eee5d7;
     --mc-sage: #7c8d78;
@@ -22,7 +22,8 @@
 
   html, body, #root { @apply h-full; }
   body {
-    @apply bg-surface font-sans text-ink antialiased;
+    @apply font-sans text-ink antialiased;
+    background-color: #fcf8ee;
     -webkit-tap-highlight-color: transparent;
     background-image: radial-gradient(rgba(59,53,45,.025) 0.7px, transparent 0.7px);
     background-size: 7px 7px;
@@ -63,4 +64,8 @@
     from { opacity: 0; }
     to { opacity: 1; }
   }
+}
+
+.bg-surface {
+  background-color: var(--mc-surface);
 }

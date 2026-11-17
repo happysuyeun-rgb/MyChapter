@@ -1,21 +1,24 @@
 # MyChapter — 본인이 지금 할 일 (상세 가이드)
 
-> **최종 갱신:** 2026-10-25  
+> **최종 갱신:** 2026-11-08  
 > **대상:** 서비스 담당자 (비개발자 포함)  
-> **전제:** 마이그레이션 001~006 ✅ · Edge 8개 ✅ · **로그인 7/7 LIVE** · **책·기록 17항목 LIVE** (`22-e2e-status.md`)  
+> **전제:** 마이그레이션 001~026 ✅ · AI 키·Function·`VITE_AI_EDIT_ENABLED` ✅ · **로그인 7/7 LIVE** · **책·기록 17항목 LIVE** (`22-e2e-status.md`)  
+> **현재 체크리스트:** **[31-user-checklist-pr9.md](./31-user-checklist-pr9.md)**  
 > **관련:** `06-user-tasks.md`, `15-launch-roadmap.md`, `22-e2e-status.md`, `26-ai-pdf-release-execution-runbook.md`
 
 ---
 
 ## 이 문서의 목표
 
-**로그인·책·기록 핵심 여정은 완료**됐습니다. 지금은 **보안 Secret 정리 → AI/PDF 스테이징**이 다음입니다.
+**로그인·책·기록 핵심 여정은 완료**됐습니다. Secret·025/026·AI 플래그도 운영 반영됐습니다.  
+**지금 남은 일(2026-11-08)** 은 실계정 확인과 Play 출시 준비입니다. 상세 표는 `31-user-checklist-pr9.md` 맨 위.
 
 ```
 ① (완료) 운영 Magic Link 로그인
 ② (완료) 첫 책 → 자유/질문/사진 → 새로고침·PAGE 정합 (17 PASS)
-③ (지금) 운영 BILLING_DEV_BYPASS OFF + GOOGLE_AI_API_KEY / SERVICE_ROLE_KEY
-④ (다음) 스테이징 025 · AI 챕터 · PDF E2E → (이후) OAuth · SMTP
+③ (완료) BILLING_DEV_BYPASS 삭제 · GOOGLE_AI_API_KEY · VITE_AI_EDIT_ENABLED=true · 025/026
+④ (지금) 운영 실계정: AI 다듬기 · 홈/서재 · Pro 표지 거부
+⑤ (다음) Play 상품 · 서비스 계정 JSON · 실기기 결제/푸시/PDF → (이후) OAuth · SMTP
 ```
 
 **이미 끝난 운영 검증 (2026-10-24, https://my-chapter.vercel.app)**
@@ -25,14 +28,15 @@
 | Production 배포 · anon 키 · Magic Link · 로그인 · 마이페이지 · 세션 · 로그아웃/가드 | **7/7 PASS — LIVE** |
 | 책 생성 · 3모드 기록 · PAGE·초안·정합 (§4) | **17 PASS — LIVE** (`22-e2e-status.md`) |
 
-**아직 미완료로 유지 (본인·운영)**
+**아직 미완료 (2026-11-08)**
 
 | 항목 | 상태 |
 |------|------|
-| 운영 `BILLING_DEV_BYPASS` OFF | **최우선** — Work 보고 당시 활성 |
-| `GOOGLE_AI_API_KEY` · `SERVICE_ROLE_KEY` 유효 등록 | 미확인/미등록 보고 |
-| DB 025 운영 적용 | 코드만 main · **운영 미적용** |
-| AI 챕터 · PDF E2E | 미실시 (준비도 20/30·스테이징 필요) |
+| 운영 실계정 AI 다듬기 · 홈/서재 · Pro 표지 | **지금** — `31` §2.6 |
+| Play 구독 `mychapter_pro_monthly` · AAB 내부 테스트 | 출시 전 · `31` §3 |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | 미등록 |
+| Android 실기기 결제·복원·푸시·PDF | 출시 전 · `31` §4 |
+| AI 챕터 · PDF LIVE E2E | 서버·키 반영됨 · **실계정 확인만** |
 | Google · Kakao OAuth | 미완료 설정 |
 | 일반 사용자 대상 SMTP | 미완료 |
 
@@ -48,10 +52,10 @@
 
 | 항목 | 이유 |
 |------|------|
-| Edge Function 8개 재배포 | 이미 원격에서 응답 확인됨 (`17-test-report.md`) |
-| 마이그레이션 SQL 재실행 | 001~006 적용 완료 |
+| Edge Function AI 재배포 | 2026-11-06 완료 (`generate-question` 등 7개). `send-daily-reminder`만 나중에 |
+| 마이그레이션 SQL 재실행 | 001~026 운영 적용 완료 |
 | 이메일 로그인 Provider 재설정 | 운영 E2E PASS |
-| Firebase / Play Console / Billing 네이티브 | 베타·출시 단계 (**본인+네이티브 작업**, 나중에) |
+| `GOOGLE_AI_API_KEY` · `VITE_AI_EDIT_ENABLED` | 2026-11-06 등록·반영 완료 |
 
 ---
 
@@ -71,6 +75,10 @@
 rdrafwfdwfzgcfiqkgug
 URL: https://rdrafwfdwfzgcfiqkgug.supabase.co
 ```
+
+---
+
+아래 STEP 1~3(키·025·결제 우회)은 **2026-11-06 기준 완료**입니다. 따라하기용으로 남겨 둡니다. **지금 할 일은 `31-user-checklist-pr9.md`.**
 
 ---
 

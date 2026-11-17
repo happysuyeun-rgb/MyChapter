@@ -22,7 +22,7 @@ Token/component deltas: `docs/redesign/07_TOKEN_CHANGE_PLAN.md`, `08_COMMON_COMP
 ## Core colors
 
 - Ink Brown: `#3B352D`
-- Warm Ivory: `#F7F2E8`
+- Warm Ivory: `#FCF8EE`
 - Sage: `#7C8D78`
 - Terracotta: `#C87959`
 

@@ -1,15 +1,15 @@
 # MY CHAPTER 문서 인덱스
 
 **Status:** CURRENT  
-**Updated:** 2026-11-04
+**Updated:** 2026-11-08
 
 이 문서는 MY CHAPTER 저장소의 문서 구조와 우선순위를 정의한다.
 
 > 원칙: 같은 정책을 여러 문서에서 다시 정의하지 않는다.  
 > 상세 문서는 한 곳만 Source of Truth로 두고, 다른 문서는 링크/참조만 한다.
 
-> **E2E 현황:** → **[22-e2e-status.md](./22-e2e-status.md)** (로그인 LIVE PASS · 책·기록 PENDING)  
-> **지금 본인이 할 일:** → **[18-user-next-steps.md](./18-user-next-steps.md)** STEP 4 (책·기록·PAGE)
+> **E2E 현황:** → **[22-e2e-status.md](./22-e2e-status.md)** (로그인·책·기록 LIVE PASS · AI/PDF/결제 실계정 확인 대기)  
+> **지금 본인이 할 일:** → **[31-user-checklist-pr9.md](./31-user-checklist-pr9.md)** (2026-11-08 남은 일)
 
 ---
 
@@ -85,16 +85,16 @@
 | **[15-launch-roadmap.md](./15-launch-roadmap.md)** | **출시 로드맵·우선순위·2주 일정** | **담당자 (시작점)** | 2026-10-24 |
 | **[16-dev-plan.md](./16-dev-plan.md)** | **잔여 점검·Wave 0~3 개발 계획** | **개발 진행 시 필독** | 2026-10-23 |
 | **[17-test-report.md](./17-test-report.md)** | **스모크·자동테스트·로그인 LIVE 요약** | 담당자 + Cursor | 2026-10-24 |
-| **[18-user-next-steps.md](./18-user-next-steps.md)** | **본인 할 일 상세 따라하기** | **서비스 담당자 (지금)** | 2026-10-24 |
+| **[18-user-next-steps.md](./18-user-next-steps.md)** | **본인 할 일 상세 따라하기** (현재 남은 일은 31) | 서비스 담당자 | 2026-11-08 |
 | **[19-gap-and-ux-plan.md](./19-gap-and-ux-plan.md)** | **기능 누락 재점검 + UX·디자인 개선 계획** | 제품·개발 | 2026-10-24 |
 | **[20-error-cases.md](./20-error-cases.md)** | **기능별 에러 케이스 (코드 점검)** | QA·개발 | 2026-11-04 |
 | **[21-screen-completeness.md](./21-screen-completeness.md)** | **화면 완성도·미개발 점검** | 제품·개발 | 2026-10-23 |
-| **[22-e2e-status.md](./22-e2e-status.md)** | **LIVE E2E PASS/PENDING·출시 차단** | **담당자 + Work + Cursor** | 2026-10-24 |
+| **[22-e2e-status.md](./22-e2e-status.md)** | **LIVE E2E PASS/PENDING·출시 차단** | **담당자 + Work + Cursor** | 2026-11-08 |
 | **[23-ai-pdf-safety.md](./23-ai-pdf-safety.md)** | **AI 챕터·PDF 서버 안전성·설계안** | 담당자 + Cursor (기능 수정 승인 전) | 2026-10-24 |
 | **[29-design-shelf-workspace-toc-ai-edit.md](./29-design-shelf-workspace-toc-ai-edit.md)** | **설계: 보관함 · 작업실 NEXT STEP · Final Review 목차 · AI 편집(설계만)** | 제품·개발 | 2026-11-04 |
 | **[30-dev-plan-shelf-workspace-toc.md](./30-dev-plan-shelf-workspace-toc.md)** | **개발 계획: 29 설계의 구현 순서·검증 기준** | 개발 | 2026-11-04 |
 | **[32-feedback-messages.md](./32-feedback-messages.md)** | **알럿·토스트·확인 창 인벤토리: 화면별 방식·문구 규칙·남은 항목** | 제품·개발·QA | 2026-11-04 |
-| **[31-user-checklist-pr9.md](./31-user-checklist-pr9.md)** | **본인 체크리스트: PR #9 확인 · 025/026 · edit-chapter 배포 · Play 상품 · 실기기 테스트** | **서비스 담당자 (지금)** | 2026-11-04 |
+| **[31-user-checklist-pr9.md](./31-user-checklist-pr9.md)** | **지금 남은 일: 실계정 확인 · Play 상품 · 실기기 테스트** | **서비스 담당자 (지금)** | 2026-11-08 |
 | **[06-play-store-listing-draft.md](./06-play-store-listing-draft.md)** | **Play 스토어 등록정보 초안** | 사용자 + Cursor | 2026-10-23 |
 | **[07-manual-setup-checklist.md](./07-manual-setup-checklist.md)** | **수동 설정 체크리스트** (Secrets, Vercel, Play 등) | 사용자 | 2026-10-23 |
 

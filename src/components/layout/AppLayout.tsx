@@ -6,7 +6,7 @@ const TAB_DOCK_SPACE = 'pb-[calc(5.5rem+20px+env(safe-area-inset-bottom,0px))]'
 
 export function AppLayout() {
   return (
-    <div className="relative mx-auto flex h-dvh min-h-dvh w-full max-w-phone flex-col overflow-hidden bg-surface">
+    <div className="relative mx-auto flex h-dvh min-h-dvh w-full max-w-phone flex-col overflow-hidden bg-[#FCF8EE]">
       <main className={`flex min-h-0 flex-1 flex-col overflow-hidden ${TAB_DOCK_SPACE}`}>
         <Outlet />
       </main>

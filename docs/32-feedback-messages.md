@@ -1,7 +1,7 @@
 # MyChapter — 피드백 메시지 인벤토리 (알럿 · 토스트 · 확인 창)
 
 > **Status:** CURRENT (code-audited)  
-> **최종 갱신:** 2026-11-04  
+> **최종 갱신:** 2026-11-08  
 > **기준:** `src/` 실코드 (`feat/feedback-messages` 브랜치 반영 후)  
 > **관련:** `20-error-cases.md`(에러 케이스 전수), `05_SCREEN_SPEC.md`(화면), `10_DESIGN_SYSTEM.md`(컴포넌트)
 
@@ -180,3 +180,4 @@
 | 날짜 | 내용 |
 |------|------|
 | 2026-11-04 | 최초 작성. 화면별 인벤토리 + 선택 기준·문구 규칙. `feat/feedback-messages`에서 확인 창 2종(발행·원고 미저장 이탈), 성공 Toast, 로드 실패 ErrorState, 모달 안 오류 표시, 오분기(Splash·책 수 조회) 수정 |
+| 2026-11-08 | §3 P2/P3는 출시 필수 아님. 현재 본인 할 일은 `31-user-checklist-pr9.md` |

@@ -24,8 +24,8 @@ export function MyPage() {
   const { showPaywall } = usePaywallStore()
 
   return (
-    <div className="flex flex-1 flex-col overflow-y-auto bg-surface">
-      <header className="px-5 pb-5 pt-4">
+    <div className="flex flex-1 flex-col overflow-y-auto bg-[#FCF8EE]">
+      <header className="px-5 pb-2 pt-4">
         <BrandMasthead
           right={
             <button
@@ -37,21 +37,25 @@ export function MyPage() {
             </button>
           }
         />
-        <p className="mt-5 text-[11px] font-semibold tracking-[0.22em] text-sage">AUTHOR PROFILE</p>
-        <div className="mt-3 flex items-end justify-between gap-4 border-b border-ink pb-6">
-          <div className="min-w-0">
-            <h1 className="truncate font-serif text-[28px] font-bold tracking-[-0.03em]">
+        <div className="mt-4 pb-3">
+          <div className="flex items-center gap-2.5">
+            <h1 className="min-w-0 truncate font-serif text-[28px] font-bold tracking-[-0.03em]">
               {profile?.nickname ?? '회원'}의 서재
             </h1>
-            <p className="mt-2 truncate text-xs text-ink-muted">{user?.email}</p>
+            <Badge
+              variant={isPro ? 'orange' : 'gray'}
+              className="shrink-0 px-3 py-1"
+              style={{ fontSize: '15px' }}
+            >
+              {isPro ? 'PRO' : 'FREE'}
+            </Badge>
           </div>
-          <Badge variant={isPro ? 'orange' : 'gray'}>{isPro ? 'PRO' : 'FREE'}</Badge>
+          <p className="mt-1.5 truncate text-xs text-ink-muted">{user?.email}</p>
         </div>
       </header>
 
       <main className="px-5 pb-10">
         <section>
-          <p className="mb-3 font-serif text-base font-bold">나의 기록</p>
           <div className="grid grid-cols-3 border-y border-border">
             {[
               { label: '기록', value: statsPending ? '—' : stats.recordCount },
@@ -94,28 +98,25 @@ export function MyPage() {
           </section>
         )}
 
-        <section className="mt-9">
-          <p className="mb-3 font-serif text-base font-bold">서재 관리</p>
-          <div className="border-t border-border">
-            {menuItems.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                className="group flex min-h-[76px] w-full items-center gap-4 border-b border-border py-4 text-left active:bg-accent-light/40"
-                onClick={() => navigate(item.to)}
-              >
-                <span className="w-7 shrink-0 font-serif text-xs text-ink-faint">{item.index}</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold">{item.label}</span>
-                  <span className="mt-1 block text-[11px] leading-5 text-ink-muted">{item.description}</span>
-                </span>
-                <span className="text-lg text-ink-faint transition-transform group-active:translate-x-1">→</span>
-              </button>
-            ))}
-          </div>
+        <section className="mt-6">
+          {menuItems.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              className="group flex min-h-[76px] w-full items-center gap-4 border-b border-border py-4 text-left last:border-b-0 active:bg-accent-light/40"
+              onClick={() => navigate(item.to)}
+            >
+              <span className="w-7 shrink-0 font-serif text-xs text-ink-faint">{item.index}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold">{item.label}</span>
+                <span className="mt-1 block text-[11px] leading-5 text-ink-muted">{item.description}</span>
+              </span>
+              <span className="text-lg text-ink-faint transition-transform group-active:translate-x-1">→</span>
+            </button>
+          ))}
         </section>
 
-        <section className="mt-8 border-t border-border pt-5">
+        <section className="mt-8 pt-1">
           <div className="flex items-center gap-3">
             <FlatIcon name="book" size={20} className="text-sage" />
             <p className="text-xs leading-5 text-ink-muted">
@@ -124,7 +125,7 @@ export function MyPage() {
           </div>
           <button
             type="button"
-            className="mt-6 min-h-11 text-sm text-danger"
+            className="mt-6 flex min-h-11 w-full items-center justify-center text-sm text-danger"
             onClick={() => void signOut()}
           >
             로그아웃

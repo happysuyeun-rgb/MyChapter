@@ -1,12 +1,32 @@
 # 31 · 본인 확인 체크리스트 — PR #9 (알림 권한 · Pro 표지 · 약관 · Play 결제 · AI 편집)
 
 > 대상: [PR #9](https://github.com/happysuyeun-rgb/MyChapter/pull/9) · 브랜치 `feat/push-permission-cover-legal`
-> 작성: 2026-11-04 · Cursor가 코드로 할 수 있는 작업은 끝났고, 아래는 **본인만 할 수 있는 확인·운영 작업**이다.
+> 작성: 2026-11-04 · **남은 일 갱신: 2026-11-08**
+> 코드·키·AI 플래그·운영 배포는 반영됨. 아래 **지금 남은 일**이 현재 할 일이다.
 > 비밀값(키·JSON·토큰)은 채팅·Git·이 문서에 적지 않는다. **완료 여부만** 알려주면 된다.
 
 ---
 
-## 운영 반영 현황 (2026-11-06 Cursor 실행)
+## 지금 남은 일 (2026-11-08)
+
+운영 URL: https://my-chapter.vercel.app  
+끝난 것: PR 머지 · `025`/`026` · `GOOGLE_AI_API_KEY` · AI Function 재배포 · `VITE_AI_EDIT_ENABLED=true` · 결제 우회 OFF.
+
+| 순서 | 누가 | 할 일 | 상태 |
+|---|---|---|---|
+| 1 | **본인 · 지금** | 운영 로그인 후 웹 확인 — AI 다듬기(§2.6), 홈·서재, Free Pro 표지 거부 | ☐ |
+| 2 | **본인 · 출시 전** | Play 구독 `mychapter_pro_monthly` · 라이선스 테스트 · AAB 내부 테스트(§3) | ☐ |
+| 3 | **본인 · 출시 전** | `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` 등록 (파일로 넣으면 Cursor가 CLI 등록 가능) | ☐ |
+| 4 | **본인 · 실기기** | 결제·복원·푸시·PDF(§4) | ☐ |
+| 5 | **본인 · 회신** | Pro AI 편집 월 100회 유지 / 「다시 다듬기」 차감 / 기록 단위 AI 편집 보류(§5) | ☐ |
+| 6 | 나중에 | Google·Kakao OAuth, 계정 삭제 E2E, `send-daily-reminder` 재배포 | — |
+| 7 | Cursor 선택 (필수 아님) | `32` P2/P3: 매직링크 실패 안내, 기기 뒤로가기 미저장 확인, PDF 열기 실패 토스트 | — |
+
+상세 체크는 아래 §2.6 · §3 · §4 · §5. E2E 판정은 `22-e2e-status.md`.
+
+---
+
+## 운영 반영 현황 (2026-11-06 Cursor 실행 · 2026-11-08 남은 일만 갱신)
 
 | 항목 | 상태 |
 |---|---|
@@ -30,7 +50,7 @@
 
 | 순서 | 할 일 | 막히는 것 |
 |---|---|---|
-| 1 | 운영 사이트에서 웹 화면 확인 (§1 항목을 운영 URL에서) | — |
+| 1 | 운영 사이트 실계정 웹 확인 (§2.6 · 홈·서재 · Pro 표지) | **지금** |
 | 2 | ~~PR #9 머지 → 운영 웹 반영~~ ✅ 완료 | — |
 | 3 | ~~운영 DB `025`, `026` · `edit-chapter` 배포~~ ✅ Cursor 완료 | — |
 | 4 | ~~Secret `GOOGLE_AI_API_KEY` 등록 (§2.3)~~ ✅ 2026-11-06 · ~~`BILLING_DEV_BYPASS` 삭제~~ ✅ | — |
@@ -148,8 +168,9 @@ Preview URL은 PR #9의 Vercel 봇 댓글에 있다. 실계정(Free 계정 권�
 
 ---
 
-## 6. 기존 미완료 (이번 PR과 별개, 계속 유효)
+## 6. 기존 미완료 (이번 PR과 별개, 계속 유효 · 2026-11-08)
 
-- AI 챕터 생성·PDF 발행 LIVE E2E — `22-e2e-status.md`, `27-functional-test-checklist.md`
+- AI 챕터 생성·PDF 발행 LIVE E2E — 서버·키는 반영됨. **실계정 확인만 남음** (`22-e2e-status.md`)
 - 보관함(보관 → 복원 → 삭제) 운영 계정 1회 확인
 - 위 결과를 `22-e2e-status.md`에 PASS로 옮기는 것은 회신 받으면 Cursor가 반영
+- 코드 백로그(필수 아님): `32-feedback-messages.md` §3 P2/P3

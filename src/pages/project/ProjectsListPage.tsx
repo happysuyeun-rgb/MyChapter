@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { EmptyState, ErrorState, LoadingBlock } from '@/components/common'
+import { EmptyState, ErrorState, LoadingBlock, ProgressBar } from '@/components/common'
 import { BrandMasthead } from '@/components/layout/BrandMasthead'
 import bookDefaultCover from '@/assets/images/home/Book_defualt.png'
 import { PROJECT_TYPES } from '@/constants/projectTypes'
@@ -115,7 +115,7 @@ export function ProjectsListPage() {
           right={
             <button
               type="button"
-              className="min-h-11 border border-ink bg-ink px-3 text-sm font-semibold text-surface"
+              className="min-h-11 border border-[#FFE5A3] bg-[#FFE5A3] px-3 text-sm font-semibold text-ink"
               onClick={handleCreate}
             >
               새 책 +
@@ -132,7 +132,6 @@ export function ProjectsListPage() {
         <EmptyState variant="library" archivedCount={archivedCount} />
       ) : (
         <>
-          <div className="shelf-rail h-2 w-full shrink-0" aria-hidden />
           <div className="flex w-full border-b border-border bg-transparent">
             {FILTERS.map((item) => (
               <button
@@ -167,14 +166,14 @@ export function ProjectsListPage() {
                     className="group w-full border-b border-border py-6 text-left active:bg-accent-light/30"
                     onClick={() => handleSelect(project)}
                   >
-                    <div className="flex gap-5">
+                    <div className="flex gap-3">
                       <div className="relative shrink-0">
-                        <div className="relative h-[126px] w-[84px]">
+                        <div className="relative h-[189px] w-[126px]">
                           <img
                             src={bookDefaultCover}
                             alt=""
-                            width={84}
-                            height={126}
+                            width={126}
+                            height={189}
                             className="h-full w-full object-contain drop-shadow-[5px_6px_0_rgba(59,53,45,.10)]"
                             decoding="async"
                           />
@@ -185,7 +184,7 @@ export function ProjectsListPage() {
                           </div>
                         </div>
                         {isActive && (
-                          <span className="absolute -right-2 top-2 bg-terracotta px-1.5 py-1 text-[8px] font-bold tracking-[0.08em] text-white">
+                          <span className="absolute -right-2 top-2 rounded-full bg-[#49D0BE] px-2 py-0.5 text-[8px] font-bold tracking-[0.08em] text-white">
                             NOW
                           </span>
                         )}
@@ -211,9 +210,10 @@ export function ProjectsListPage() {
                             <span className="text-[10px] text-ink-faint">STORY READINESS</span>
                             <span className="font-serif text-2xl font-bold">{project.progress}%</span>
                           </div>
-                          <div className="mt-2 h-px bg-border">
-                            <div className="h-px bg-ink" style={{ width: `${project.progress}%` }} />
-                          </div>
+                          <ProgressBar
+                            value={project.progress}
+                            className="mt-2 h-[3px] rounded-full bg-[#E8DFCC] [&>div]:rounded-full [&>div]:bg-[#E2C56A]"
+                          />
                           <p className="mt-2 text-[10px] text-ink-faint">{project.recordCount} pages collected</p>
                         </div>
                       </div>

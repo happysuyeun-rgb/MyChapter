@@ -7,7 +7,7 @@ export default {
         ink: '#3B352D',
         'ink-muted': '#756D62',
         'ink-faint': '#A79D90',
-        surface: '#F7F2E8',
+        surface: '#FCF8EE',
         'surface-card': '#FFFDF8',
         'surface-alt': '#EEE5D7',
         accent: {

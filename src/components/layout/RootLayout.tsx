@@ -15,7 +15,7 @@ export function RootLayout() {
   }, [initialized, initialize])
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-phone bg-surface">
+    <div className="mx-auto min-h-dvh w-full max-w-phone bg-[#FCF8EE]">
       <NativeBridge />
       <Outlet />
       <PaywallModal />

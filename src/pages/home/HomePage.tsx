@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Badge, DeskProgress, EmptyState, ErrorState, FlatIcon, LoadingBlock } from '@/components/common'
+import { EmptyState, ErrorState, FlatIcon, LoadingBlock, ProgressBar } from '@/components/common'
 import { BrandMasthead } from '@/components/layout/BrandMasthead'
 import bookDefaultCover from '@/assets/images/home/Book_defualt.png'
 import jandiImage from '@/assets/images/home/jandi.png'
-import pageNoteImage from '@/assets/images/home/page-note/page_c.png'
+import { LEGACY_PROJECT_LABELS, PROJECT_TYPES } from '@/constants/projectTypes'
 import { getUnreadCount } from '@/lib/api/notifications'
 import { getPublishedBook, type PublishedBook } from '@/lib/api/books'
 import { isDevBypass } from '@/lib/devBypass'
@@ -12,7 +12,7 @@ import { getArchivedProjects, getProjects } from '@/lib/api/projects'
 import { listRecords } from '@/lib/api/records'
 import { useAuthStore } from '@/stores/authStore'
 import { useProjectStore } from '@/stores/projectStore'
-import type { JournalRecord, Project } from '@/types/database'
+import type { JournalRecord, Project, ProjectType } from '@/types/database'
 import { getBookReadiness } from '@/utils/bookReadiness'
 
 function formatRecordDate(iso: string) {
@@ -30,9 +30,13 @@ function recordStatusLabel(record: JournalRecord) {
   return '자유 기록'
 }
 
+function projectTypeLabel(type: ProjectType) {
+  return PROJECT_TYPES.find((item) => item.type === type)?.label ?? LEGACY_PROJECT_LABELS[type] ?? ''
+}
+
 export function HomePage() {
   const navigate = useNavigate()
-  const { user, profile } = useAuthStore()
+  const { user } = useAuthStore()
   const { activeProjectId, setActiveProject } = useProjectStore()
   const [projects, setProjects] = useState<Project[]>([])
   const [recordCount, setRecordCount] = useState(0)
@@ -101,6 +105,9 @@ export function HomePage() {
   const readiness = getBookReadiness(project, recordCount)
   const isPublished = latestPublication !== null
   const bookTitle = latestPublication?.title_snapshot ?? project.title
+  const bookIndex = projects.findIndex((item) => item.id === project.id)
+  const bookNumber = String((bookIndex >= 0 ? bookIndex : 0) + 1).padStart(2, '0')
+  const bookStatus = isPublished ? '발행완료' : readiness.isReady ? '발행가능' : '진행중'
 
   const primary = isPublished
     ? {
@@ -115,9 +122,8 @@ export function HomePage() {
       }
 
   return (
-    <div className="desk-fade-in flex flex-1 flex-col overflow-y-auto bg-surface">
-      {/* Brand masthead — hero-level signal */}
-      <header className="bg-surface-alt px-5 py-2">
+    <div className="desk-fade-in flex flex-1 flex-col overflow-y-auto bg-[#FCF8EE]">
+      <header className="px-5 py-2">
         <BrandMasthead
           right={
             <button
@@ -135,16 +141,12 @@ export function HomePage() {
         />
       </header>
 
-      <section className="flex items-center gap-3 bg-surface px-5 py-5">
+      <section className="flex items-center gap-2 bg-[#FCF5E2] px-5 pb-5 pt-4">
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] leading-5 text-ink">
-            안녕하세요, {profile?.nickname ?? '회원'}님{' '}
-            <span aria-hidden>🌱</span>
-          </p>
-          <h1 className="mt-2 font-serif text-[26px] font-bold leading-[1.35] tracking-[-0.02em] text-[#3A4638]">
+          <h1 className="font-serif text-[24px] font-bold leading-[1.35] tracking-[-0.02em] text-ink">
             당신의 이야기가
             <br />
-            한 권의 책이 됩니다.
+            <span className="text-terracotta">한 권의 책</span>이 됩니다.
           </h1>
           <p className="mt-3 text-[12px] leading-5 text-ink-muted">
             하루를 기록하고, 삶을 한 권으로.
@@ -155,64 +157,87 @@ export function HomePage() {
         <img
           src={jandiImage}
           alt=""
-          width={112}
-          height={112}
-          className="h-[112px] w-[112px] shrink-0 object-contain"
+          width={88}
+          height={88}
+          className="h-[88px] w-[88px] shrink-0 object-contain"
           decoding="async"
         />
       </section>
-      <div className="mx-5 border-b border-ink" aria-hidden />
 
-      <main className="pb-10">
-        <section className="px-5 pt-5 text-ink">
-          <div className="flex flex-col items-center">
+      <main className="pb-28">
+        <section className="px-5 pt-6 text-ink">
+          <button
+            type="button"
+            className="w-full text-left active:translate-y-px"
+            onClick={() => navigate('/library')}
+            aria-label={`${bookTitle} 서재로 이동`}
+          >
+            <div className="flex gap-3">
+              <div className="relative shrink-0">
+                <div className="relative h-[189px] w-[126px]">
+                  <img
+                    src={bookDefaultCover}
+                    alt=""
+                    width={126}
+                    height={189}
+                    className="h-full w-full object-contain drop-shadow-[5px_6px_0_rgba(59,53,45,.10)]"
+                    decoding="async"
+                  />
+                </div>
+                {!isPublished ? (
+                  <span className="absolute -right-2 top-2 rounded-full bg-[#49D0BE] px-2 py-0.5 text-[8px] font-bold tracking-[0.08em] text-white">
+                    NOW
+                  </span>
+                ) : null}
+              </div>
+              <div className="min-w-0 flex-1 pt-1">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold tracking-[0.12em] text-sage">
+                      BOOK {bookNumber} · {bookStatus}
+                    </p>
+                    <h2 className="mt-2 line-clamp-2 font-serif text-[18px] font-bold leading-snug tracking-[-0.02em] text-ink">
+                      {bookTitle}
+                    </h2>
+                  </div>
+                  <span className="text-lg text-ink-faint" aria-hidden>
+                    →
+                  </span>
+                </div>
+                {projectTypeLabel(project.type) ? (
+                  <p className="mt-2 text-xs text-ink-muted">
+                    {projectTypeLabel(project.type)}
+                  </p>
+                ) : null}
+
+                {isPublished ? (
+                  <div className="mt-6">
+                    <p className="font-serif text-2xl font-bold text-ink">v{latestPublication.version}</p>
+                    <p className="mt-2 text-[10px] text-ink-faint">
+                      {new Date(latestPublication.published_at).toLocaleDateString('ko-KR')} 발행
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-6">
+                    <div className="flex items-end justify-between">
+                      <span className="text-[10px] text-ink-faint">STORY READINESS</span>
+                      <span className="font-serif text-2xl font-bold">{readiness.score}%</span>
+                    </div>
+                    <ProgressBar
+                      value={readiness.score}
+                      className="mt-2 h-[3px] rounded-full bg-[#E8DFCC] [&>div]:rounded-full [&>div]:bg-[#E2C56A]"
+                    />
+                    <p className="mt-2 text-[10px] text-ink-faint">{recordCount} pages collected</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </button>
+
+          <div className="mt-7">
             <button
               type="button"
-              className="relative w-[200px] shrink-0 active:translate-y-px"
-              onClick={() => navigate('/library')}
-              aria-label={`${bookTitle} 서재로 이동`}
-            >
-              <img
-                src={bookDefaultCover}
-                alt=""
-                width={200}
-                height={300}
-                className="h-auto w-full object-contain drop-shadow-[6px_10px_0_rgba(59,53,45,.10)]"
-                decoding="async"
-              />
-              <div className="pointer-events-none absolute inset-x-[14%] top-[10%] flex h-[42%] flex-col items-center justify-center gap-2 px-1">
-                <Badge variant={isPublished ? 'accent' : 'gray'}>
-                  {isPublished ? '발행완료' : readiness.isReady ? '발행가능' : '진행중'}
-                </Badge>
-                <h2 className="line-clamp-4 text-center font-serif text-[22px] font-bold leading-snug tracking-[-0.02em] text-ink">
-                  {bookTitle}
-                </h2>
-              </div>
-            </button>
-
-            {isPublished ? (
-              <div className="mt-5 w-full text-center">
-                <p className="font-serif text-2xl font-bold text-ink">v{latestPublication.version}</p>
-                <p className="mt-1 text-[11px] text-ink-muted">
-                  {new Date(latestPublication.published_at).toLocaleDateString('ko-KR')} 발행
-                </p>
-              </div>
-            ) : (
-              <DeskProgress
-                className="mt-2 w-1/2"
-                tone="paper"
-                compactScore
-                score={readiness.score}
-                message={readiness.message}
-                recordCount={recordCount}
-              />
-            )}
-          </div>
-
-          <div className="mt-6">
-            <button
-              type="button"
-              className="flex min-h-[52px] w-full items-center justify-center border border-ink bg-transparent px-5 text-[15px] font-semibold text-ink transition-opacity active:translate-y-px active:opacity-90"
+              className="flex min-h-[54px] w-full items-center justify-center rounded-full bg-[#FFE5A3] px-5 text-[15px] font-semibold text-ink transition-opacity active:translate-y-px active:opacity-90"
               onClick={() => navigate(primary.to)}
             >
               {primary.label}
@@ -232,7 +257,7 @@ export function HomePage() {
           </div>
 
           {!isPublished ? (
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-[26px] grid grid-cols-2 gap-3">
               {[
                 {
                   icon: 'chat' as const,
@@ -252,7 +277,7 @@ export function HomePage() {
                 <button
                   key={item.to}
                   type="button"
-                  className="flex min-h-[118px] flex-col items-start rounded-2xl border border-border bg-surface-card px-3.5 pb-4 pt-3.5 text-left shadow-paper active:translate-y-px"
+                  className="flex min-h-[118px] flex-col items-start rounded-2xl bg-surface-card px-3.5 pb-4 pt-3.5 text-left active:translate-y-px"
                   onClick={() => navigate(item.to)}
                 >
                   <FlatIcon name={item.icon} size={22} className={item.iconClass} />
@@ -316,28 +341,6 @@ export function HomePage() {
               </p>
             )}
           </section>
-        </section>
-
-        <section className="px-5 pb-2 pt-8">
-          <div className="flex items-center gap-2">
-            <img
-              src={pageNoteImage}
-              alt="PAGE"
-              width={104}
-              height={104}
-              className="h-[104px] w-[104px] shrink-0 object-contain"
-              decoding="async"
-            />
-            <div className="flex min-h-[104px] min-w-0 flex-1 items-center">
-              <p className="font-serif text-[16px] font-semibold leading-7 text-ink">
-                {isPublished
-                  ? '당신의 이야기가 한 권의 책이 되었어요.'
-                  : readiness.isReady
-                    ? '이제 기록을 한 권의 이야기로 묶을 수 있어요.'
-                    : '지금은 잘 쓰는 것보다, 계속 남기는 것이 더 중요해요.'}
-              </p>
-            </div>
-          </div>
         </section>
       </main>
     </div>

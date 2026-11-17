@@ -84,17 +84,14 @@ API 연동 화면은 다음을 정의한다.
 
 홈은 Desk다. 질문: **오늘 내가 뭘 해야 하지?**
 
-### 2.1 레이아웃 (v1.2 현행)
+### 2.1 레이아웃 (v1.2 현행 · 2026-11-17 홈 리뉴얼)
 
-1. **헤더** — CI + 알림 (`BrandMasthead`), `surface-alt` 배경, 세로 약 60px  
-2. **히어로 배너** — 인사(`안녕하세요, {닉네임}님`) · 헤드라인 · 서브카피 · 우측 `jandi` 캐릭터  
-3. **구분선** — 히어로와 책 영역 분리  
-4. **책 표지 블록** — `Book_defualt` 중앙 · 표지 위 뱃지(진행중/발행가능/발행완료) + 제목 · 탭 → `/library`  
-5. **준비도 게이지** — 표지 아래, 가로 약 50%, 점수 숫자 compact  
-6. **Primary CTA** — 미발행: `오늘 한 페이지 쓰기` → `/library` / 발행됨: `발행한 책 보기` → `/publication/:id` (아웃라인 버튼)  
-7. **기록 단축 카드 2열** — `AI 질문으로 기록` → `/record/write/question` · `자유롭게 기록` → `/record/write/free`  
-8. **최근 기록** — 최신 1건 · 좌측 폴라로이드 슬롯(에셋 대기) · `전체 보기` → `/records` · 행 탭 → `/records/:id`  
-9. **PAGE 노트** — 캐릭터(`page_c`) + 상태별 한 줄 문구 (라벨 PAGE'S NOTE 없음)
+1. **헤더** — CI + 알림 (`BrandMasthead`), 본문과 같은 `surface` `#FCF8EE`  
+2. **히어로** — 헤드라인(`한 권의 책` terracotta) · 서브카피 · 우측 `jandi` 캐릭터 · 배너 `#FCF5E2`로 헤더·본문과 구분  
+3. **활성 책 블록** — `BOOK 01 · 진행중/발행가능/발행완료` · `Book_defualt` 표지 126×189(제목 왼쪽, 표지 오른쪽 위 NOW, 서재와 동일) · 제목 · 유형 · STORY READINESS · pages collected · 탭 → `/library`  
+4. **Primary CTA** — 미발행: `오늘 한 페이지 쓰기` → `/library` / 발행됨: `발행한 책 보기` → `/publication/:id` (채워진 라운드 버튼)  
+5. **기록 단축 카드 2열** — `AI 질문으로 기록` → `/record/write/question` · `자유롭게 기록` → `/record/write/free`  
+6. **최근 기록** — 최신 1건 · 좌측 폴라로이드 슬롯(에셋 대기) · `전체 보기` → `/records` · 행 탭 → `/records/:id`
 
 ### H-01 · Empty Home
 
@@ -107,7 +104,7 @@ API 연동 화면은 다음을 정의한다.
 
 **Status:** Implemented  
 
-- 활성 책 표지 + Readiness  
+- 활성 책: 작은 표지(제목 왼쪽) + STORY READINESS + 기록 CTA  
 - CTA: 오늘 한 페이지 쓰기 / 기록 단축  
 - 알림 진입
 
@@ -462,10 +459,10 @@ Implemented: 제목·유형·readiness 스냅샷 · `ready_at` sticky · **서�
 
 | 영역 | 변경 |
 |------|------|
-| 홈 | 히어로 배너 · 중앙 `Book_defualt` · 기록 단축 2카드 · 최근 기록 · PAGE 라벨 제거 |
+| 홈 | 히어로 · 활성 책 블록(표지 대신 준비도) · 기록 단축 2카드 · 최근 기록 |
 | 서재/작업실 | 동일 기본 표지 에셋 · 제목 오버레이 |
 | TabBar | floating pill · 솔리드+opacity |
-| CTA | 홈 primary 아웃라인 · 서재 진입/발행본 보기 분기 |
+| CTA | 홈 primary 채워진 라운드 · 서재 진입/발행본 보기 분기 |
 | P-07 / M-03 / H-04 | 책 보관·삭제 · AI 사용량 · 발행 홈 secondary CTA |
 | path | 유지 (IA 라벨·카피·레이아웃만 갱신) · `/mypage/ai-usage` 추가 |
 

@@ -1,6 +1,6 @@
 # MyChapter — 실연동 E2E 현황
 
-> **최종 갱신:** 2026-10-24  
+> **최종 갱신:** 2026-11-08  
 > **운영 URL:** https://my-chapter.vercel.app  
 > **로그인 LIVE 기준 커밋:** `7ab565a6`  
 > **최신 코드 참고:** `022d998` (AI_UNAVAILABLE 수정 커밋, 별도 LIVE 검증 필요); 기록 기능 LIVE 검증 시점의 코드 기준선은 `7ab565a` 이후 문서 변경  
@@ -119,7 +119,7 @@ Work를 통한 운영 검증. Supabase 요청 29건에서 4xx·5xx 없음.
 
 1. **책 생성 → 3모드 기록 저장 → 새로고침 유지 → PAGE 정합** (§4) — **LIVE PASS, 기본 사용자 여정 차단 해소**
 2. **AI 챕터·PDF 발행 LIVE** (필수 Secret 이름: `GOOGLE_AI_API_KEY`, `SERVICE_ROLE_KEY`) — 서버 리스크·설계: `23-ai-pdf-safety.md`
-3. **운영에서 결제 우회 OFF** — `BILLING_DEV_BYPASS`≠true, `VITE_BILLING_DEV_MODE=false` (**2026-11-04: `BILLING_DEV_BYPASS` Secret 삭제 완료.** Vercel `VITE_BILLING_DEV_MODE`는 본인 확인)
+3. **운영에서 결제 우회 OFF** — `BILLING_DEV_BYPASS`≠true, `VITE_BILLING_DEV_MODE=false` (**2026-11-04: `BILLING_DEV_BYPASS` Secret 삭제. 2026-11-06: Vercel Production에 `VITE_BILLING_DEV_MODE` 없음.**)
 
 ### 채널·플랫폼 선택 (이메일 웹만이면 당장 비차단)
 
@@ -144,3 +144,5 @@ Work를 통한 운영 검증. Supabase 요청 29건에서 4xx·5xx 없음.
 
 | 2026-10-24 | Work 첫 책·3모드·PAGE·초안 운영 17 PASS / 3 미검증 반영; AI/PDF/결제/외부 SMTP는 계속 출시 게이트 |
 | 2026-11-04 | `025`·`026` 운영 적용, `edit-chapter` 배포, `generate-pdf` 재배포, Secret 이름 점검 결과·오래된 Function 목록 반영 |
+| 2026-11-06 | `GOOGLE_AI_API_KEY` 등록 · AI Function 재배포 · `VITE_AI_EDIT_ENABLED=true` 운영 반영. 실계정 E2E는 대기 |
+| 2026-11-08 | 남은 일: 실계정 AI 다듬기·챕터·PDF 확인, Play 상품·서비스 계정, 실기기 결제. 체크리스트 `31-user-checklist-pr9.md` |
