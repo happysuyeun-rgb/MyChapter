@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, Input } from '@/components/common'
+import { BrandMasthead } from '@/components/layout/BrandMasthead'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -37,12 +38,12 @@ export function NicknamePage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface px-5 pb-8 pt-7">
+    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-[#FCF8EE] px-5 pb-8 pt-7">
       <header className="border-b border-ink pb-6">
-        <div className="flex items-center justify-between">
-          <p className="text-[10px] font-semibold tracking-[0.2em] text-sage">AUTHOR SETUP · 01 / 02</p>
-          <span className="font-serif text-xs text-ink-faint">01</span>
-        </div>
+        <BrandMasthead
+          right={<span className="font-serif text-xs text-ink-faint">01</span>}
+        />
+        <p className="mt-5 text-[10px] font-semibold tracking-[0.2em] text-sage">AUTHOR SETUP · 01 / 02</p>
         <h1 className="mt-5 font-serif text-[29px] font-bold leading-snug tracking-[-0.03em]">책 안에서 당신을 뭐라고 부를까요?</h1>
         <p className="mt-3 text-sm leading-6 text-ink-muted">PAGE가 기록과 책을 안내할 때 사용할 이름이에요.</p>
       </header>

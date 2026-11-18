@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FlatIcon } from '@/components/common'
+import brandCi from '@/assets/images/brand/ci.png'
 import { getDevBypassEnv, isDevBypass } from '@/lib/devBypass'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -72,9 +72,13 @@ export function SplashPage() {
           fadeIn ? 'opacity-100' : 'opacity-0',
         ].join(' ')}
       >
-        <div className="flex items-center justify-between border-b border-surface/20 pb-5">
-          <span className="text-[10px] font-semibold tracking-[0.24em] text-surface/50">MY CHAPTER</span>
-          <FlatIcon name="book" size={22} className="text-sage" />
+        <div className="border-b border-surface/20 pb-5">
+          <img
+            src={brandCi}
+            alt="MY CHAPTER"
+            className="h-7 w-auto max-w-[180px] object-contain object-left brightness-0 invert"
+            decoding="async"
+          />
         </div>
 
         <div className="py-12">

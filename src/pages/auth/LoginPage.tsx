@@ -2,7 +2,7 @@ import { Capacitor } from '@capacitor/core'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Provider } from '@supabase/supabase-js'
-import { FlatIcon } from '@/components/common'
+import { BrandMasthead } from '@/components/layout/BrandMasthead'
 import { supabase } from '@/lib/supabase'
 
 function getOAuthRedirectUrl(): string {
@@ -40,10 +40,9 @@ export function LoginPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface px-6 py-8">
-      <header className="flex items-center justify-between border-b border-ink pb-5">
-        <p className="text-[10px] font-semibold tracking-[0.22em] text-sage">MY CHAPTER</p>
-        <FlatIcon name="book" size={22} className="text-sage" />
+    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-[#FCF8EE] px-6 py-8">
+      <header className="border-b border-ink pb-5">
+        <BrandMasthead />
       </header>
 
       <main className="flex flex-1 flex-col justify-center py-10">

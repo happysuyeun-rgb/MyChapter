@@ -47,7 +47,7 @@ export function NotificationPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-surface">
+    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-[#FCF8EE]">
       <NavBar leftLabel="← 이전" />
       <main className="flex flex-1 flex-col px-5 pb-8 pt-7">
         <section className="border-y border-ink py-7">

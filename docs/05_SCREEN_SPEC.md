@@ -64,11 +64,11 @@ API 연동 화면은 다음을 정의한다.
 
 | ID | 화면 | Route | Status | 핵심 동작 |
 |----|------|-------|--------|-----------|
-| SP-01 | Splash | `/splash` | Implemented | 세션·프로필·온보딩 후 단일 라우팅 체크포인트 |
-| A-01 | Login | `/login` | Implemented | Google / Kakao / Email 진입 |
-| A-02 | Email Login | `/login/email` | Implemented / E2E PASS | Magic Link |
-| A-03 | Nickname | `/onboarding/nickname` | Implemented | 작가명 2~10자 저장 |
-| O-01 | Notification Onboarding | `/onboarding/notification` | Implemented | 알림 선호 저장 후 온보딩 완료 |
+| SP-01 | Splash | `/splash` | Implemented | 세션·프로필·온보딩 후 단일 라우팅 체크포인트 · 상단 CI(`ci.png`, 다크면 invert) |
+| A-01 | Login | `/login` | Implemented | Google / Kakao / Email 진입 · 헤더 `BrandMasthead` CI |
+| A-02 | Email Login | `/login/email` | Implemented / E2E PASS | Magic Link · `NavBar` CI |
+| A-03 | Nickname | `/onboarding/nickname` | Implemented | 작가명 2~10자 저장 · 헤더 CI |
+| O-01 | Notification Onboarding | `/onboarding/notification` | Implemented | 알림 선호 저장 후 온보딩 완료 · `NavBar` CI |
 
 ### 최종 규칙
 

@@ -328,12 +328,6 @@ export function HomePage() {
                     <span className="text-sage">{recordStatusLabel(latestRecord)}</span>
                   </p>
                 </div>
-                <span
-                  className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border text-[14px] leading-none text-ink-faint"
-                  aria-hidden
-                >
-                  ···
-                </span>
               </button>
             ) : (
               <p className="mt-4 text-[12px] leading-5 text-ink-muted">
