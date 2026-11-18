@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { App } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
+import { useBlocker, useNavigate, useParams } from 'react-router-dom'
 import { Button, ErrorState, Input, LoadingBlock, Modal, Textarea } from '@/components/common'
 import { NavBar } from '@/components/layout/NavBar'
 import {
@@ -42,6 +44,7 @@ export function ChapterEditPage() {
   const [aiResult, setAiResult] = useState<{ text: string; notes: string[] } | null>(null)
   const [aiView, setAiView] = useState<'edited' | 'original'>('edited')
   const [aiRemaining, setAiRemaining] = useState<number | null>(null)
+  const allowNavigationRef = useRef(false)
 
   useEffect(() => {
     if (!user || !aiEditEnabled || isPro) {
@@ -82,6 +85,53 @@ export function ChapterEditPage() {
   }, [id, user, navigate, retryKey])
 
   const canSave = Boolean(title.trim() && content.trim())
+  const dirty = Boolean(
+    chapter && (title !== chapter.title || content !== getChapterDisplayContent(chapter)),
+  )
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      !allowNavigationRef.current &&
+      dirty &&
+      !saving &&
+      !regenerating &&
+      currentLocation.pathname !== nextLocation.pathname,
+  )
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') setLeaveConfirmOpen(true)
+  }, [blocker.state])
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    const listenerPromise = App.addListener('backButton', () => {
+      if (dirty) {
+        setLeaveConfirmOpen(true)
+        return
+      }
+      allowNavigationRef.current = true
+      navigate(`/book/chapter/${id}`, { replace: true })
+    })
+    return () => {
+      void listenerPromise.then((handle) => handle.remove())
+    }
+  }, [dirty, id, navigate])
+
+  const leave = () => {
+    if (!chapter) return
+    allowNavigationRef.current = true
+    setLeaveConfirmOpen(false)
+    if (blocker.state === 'blocked') {
+      blocker.proceed()
+      return
+    }
+    navigate(`/book/chapter/${chapter.id}`)
+  }
+
+  const stayEditing = () => {
+    setLeaveConfirmOpen(false)
+    if (blocker.state === 'blocked') blocker.reset()
+  }
 
   const handleSave = async () => {
     if (!chapter || saving || regenerating) return
@@ -93,7 +143,13 @@ export function ChapterEditPage() {
     try {
       const updated = await updateChapterContent(chapter.id, title.trim(), content.trim())
       setChapter(updated)
-      navigate(`/book/chapter/${chapter.id}`, { replace: true })
+      allowNavigationRef.current = true
+      setLeaveConfirmOpen(false)
+      if (blocker.state === 'blocked') {
+        blocker.proceed()
+      } else {
+        navigate(`/book/chapter/${chapter.id}`, { replace: true })
+      }
     } catch {
       showToast('저장에 실패했어요. 다시 시도해주세요.')
     } finally {
@@ -189,9 +245,6 @@ export function ChapterEditPage() {
     )
   }
 
-  const dirty = title !== chapter.title || content !== getChapterDisplayContent(chapter)
-  const leave = () => navigate(`/book/chapter/${chapter.id}`)
-
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
       <NavBar
@@ -285,18 +338,17 @@ export function ChapterEditPage() {
         <Button variant="ghost" className="mt-2" onClick={() => setConfirmOpen(false)}>취소</Button>
       </Modal>
 
-      <Modal open={leaveConfirmOpen} onClose={() => setLeaveConfirmOpen(false)} title="저장하지 않고 나갈까요?">
+      <Modal open={leaveConfirmOpen} onClose={stayEditing} title="저장하지 않고 나갈까요?">
         <p className="mb-5 text-sm leading-6 text-ink-muted">고친 제목과 원고가 사라져요.</p>
         <Button
           onClick={() => {
-            setLeaveConfirmOpen(false)
             void handleSave()
           }}
         >
           저장하고 나가기
         </Button>
         <Button variant="secondary" className="mt-2" onClick={leave}>저장하지 않고 나가기</Button>
-        <Button variant="ghost" className="mt-2" onClick={() => setLeaveConfirmOpen(false)}>계속 편집</Button>
+        <Button variant="ghost" className="mt-2" onClick={stayEditing}>계속 편집</Button>
       </Modal>
 
       <Modal open={Boolean(aiResult)} onClose={() => setAiResult(null)} title="PAGE가 다듬은 원고">

@@ -1,9 +1,11 @@
 import { Capacitor } from '@capacitor/core'
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import type { Provider } from '@supabase/supabase-js'
 import { BrandMasthead } from '@/components/layout/BrandMasthead'
 import { supabase } from '@/lib/supabase'
+
+type LoginLocationState = { authError?: string }
 
 function getOAuthRedirectUrl(): string {
   if (Capacitor.isNativePlatform()) {
@@ -23,8 +25,17 @@ async function signInWithOAuth(provider: Provider) {
 }
 
 export function LoginPage() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [error, setError] = useState('')
   const [pending, setPending] = useState<Provider | null>(null)
+
+  useEffect(() => {
+    const authError = (location.state as LoginLocationState | null)?.authError
+    if (!authError) return
+    setError(authError)
+    navigate(location.pathname, { replace: true, state: null })
+  }, [location.pathname, location.state, navigate])
 
   const handleOAuth = async (provider: Provider) => {
     if (pending) return

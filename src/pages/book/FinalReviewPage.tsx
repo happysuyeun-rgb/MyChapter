@@ -13,6 +13,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useBookStore } from '@/stores/bookStore'
 import { usePaywallStore } from '@/stores/paywallStore'
 import { useProjectStore } from '@/stores/projectStore'
+import { useToastStore } from '@/stores/toastStore'
 import type { Chapter } from '@/types/database'
 import { getBookReadiness } from '@/utils/bookReadiness'
 
@@ -44,6 +45,7 @@ export function FinalReviewPage() {
   const { project, loading: projectLoading, error: projectError, retry: retryProject } = useActiveProject()
   const { selectedCoverId, setPublishResult, publishStage, publishError, setPublishStage, resetPublishState } = useBookStore()
   const { showPaywall } = usePaywallStore()
+  const { showToast } = useToastStore()
   const { setActiveProject } = useProjectStore()
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [chapterRecordCounts, setChapterRecordCounts] = useState<Record<string, number>>({})
@@ -175,7 +177,10 @@ export function FinalReviewPage() {
       setPublishStage('body')
       setPublishStage('pdf')
       const result = await generateBookPdf(project.id, effectiveCoverId)
-      downloadPdfFromUrl(result.pdfUrl, project.title + '.pdf')
+      const downloaded = downloadPdfFromUrl(result.pdfUrl, project.title + '.pdf')
+      if (!downloaded) {
+        showToast('PDF를 열지 못했어요. 완성한 책에서 다시 열 수 있어요.')
+      }
       setPublishResult({
         project,
         recordCount,

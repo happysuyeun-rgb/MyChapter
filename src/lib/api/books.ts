@@ -290,11 +290,17 @@ export async function generateBookPdf(
   }
 }
 
-export function downloadPdfFromUrl(url: string, filename: string): void {
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.target = '_blank'
-  a.rel = 'noopener'
-  a.click()
+export function downloadPdfFromUrl(url: string, filename: string): boolean {
+  if (!url) return false
+  try {
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.target = '_blank'
+    a.rel = 'noopener'
+    a.click()
+    return true
+  } catch {
+    return false
+  }
 }

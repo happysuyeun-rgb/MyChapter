@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import brandCi from '@/assets/images/brand/ci.png'
+import { clearAuthRedirectParams, parseAuthRedirectError } from '@/lib/authCallback'
 import { getDevBypassEnv, isDevBypass } from '@/lib/devBypass'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -37,6 +38,13 @@ export function SplashPage() {
 
     if (bypassActive) {
       navigate('/home', { replace: true })
+      return
+    }
+
+    const authError = parseAuthRedirectError(window.location.href)
+    if (authError) {
+      clearAuthRedirectParams(window.location.href)
+      navigate('/login', { replace: true, state: { authError } })
       return
     }
 
